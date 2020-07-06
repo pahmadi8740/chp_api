@@ -1,0 +1,3 @@
+[submodule "submodules/bkb-pathway-provider"]
+	path = submodules/bkb-pathway-provider
+	url = git@github.com:di2ag/bkb-pathway-provider.git
