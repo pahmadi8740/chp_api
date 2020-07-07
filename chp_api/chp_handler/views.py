@@ -11,15 +11,16 @@ from chp.core.reasoner_std import ReasonerStdHandler
 
 class submit_query(APIView):
 
-    def get(self, request):
-        if request.method == 'GET':
-            params = request.GET.get('query')
+    def post(self, request):
+        if request.method == 'POST':
+            data = request.data
 
+            query = data['query']
             source_ara = query['reasoner_id']
 
-            handler = ReasonerStdHandler(source_ara, json_query=params)
-            handler.buildQueries()
-            handler.runQueries()
+            handler = ReasonerStdHandler(source_ara, dict_query=query)
+            handler.buildChpQueries()
+            handler.runChpQueries()
 
             response = handler.constructDecoratedKG()
 
@@ -27,13 +28,15 @@ class submit_query(APIView):
 
 class check_query(APIView):
 
-    def get(self, request):
-        if request.method == 'GET':
-            params = request.GET.get('query')
+    def post(self, request):
+        if request.method == 'POST':
+            data = request.data
 
-            source_ara = params['reasoner_id']
+            query = data['query']
+            source_ara = query['reasoner_id']
 
-            handler = ReasonerStdHandler(source_ara, json_query=params)
+            handler = ReasonerStdHandler(source_ara, dict_query=query)
+
             return JsonResponse(handler.checkQuery())
 
 class get_supported_node_types(APIView):
