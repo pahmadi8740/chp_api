@@ -7,7 +7,7 @@ from django.shortcuts import get_object_or_404
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework import status
-from chp.core.reasoner_std import ReasonerStdHandler
+from chp.reasoner_std import ReasonerStdHandler
 
 class submit_query(APIView):
 
