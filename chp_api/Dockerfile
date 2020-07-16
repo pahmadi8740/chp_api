@@ -13,11 +13,17 @@ RUN mkdir -p /root/.ssh/ \
 	&& ssh-keyscan intuition.thayer.dartmouth.edu >> ~/.ssh/known_hosts \
 	&& chmod 644 ~/.ssh/known_hosts
 
-# add keys
-RUN echo "${SSH_PRIVATE_KEY}" > /root/.ssh/id_rsa \
-	&& echo "${SSH_PUBLIC_KEY}" > /root/.ssh/id_rsa.pub \
-	&& chmod 600 /root/.ssh/id_rsa \
+# add keys (use in windows powershell)
+COPY ./id_rsa /root/.ssh/
+COPY ./id_rsa.pub /root/.ssh/
+RUN chmod 600 /root/.ssh/id_rsa \
 	&& chmod 600 /root/.ssh/id_rsa.pub
+
+# add keys (use in Linux)
+#RUN echo "${SSH_PRIVATE_KEY}" > /root/.ssh/id_rsa \
+#	&& echo "${SSH_PUBLIC_KEY}" > /root/.ssh/id_rsa.pub \
+#	&& chmod 600 /root/.ssh/id_rsa \
+#	&& chmod 600 /root/.ssh/id_rsa.pub
 
 #RUN ssh cyakaboski@intuition.thayer.dartmouth.edu -t -t -v -o StrictHostKeyChecking=no
 
