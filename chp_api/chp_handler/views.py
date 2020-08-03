@@ -1,3 +1,5 @@
+import os
+import multiprocessing
 from django.shortcuts import render
 from .apps import ChpHandlerConfig
 
@@ -9,6 +11,14 @@ from rest_framework.response import Response
 from rest_framework import status
 from chp.reasoner_std import ReasonerStdHandler
 
+#-- Get Hosts File if it exists
+parent_dir = os.path.dirname(os.path.realpath(__file__))
+HOSTS_FILENAME = os.path.join(parent_dir, 'hosts')
+NUM_PROCESSES_PER_HOST = multiprocessing.cpu_count()
+if not os.path.exists(HOSTS_FILENAME):
+    HOSTS_FILENAME = None
+    NUM_PROCESSES_PER_HOST = 0
+
 class submit_query(APIView):
 
     def post(self, request):
@@ -18,7 +28,10 @@ class submit_query(APIView):
             query = data['query']
             source_ara = query['reasoner_id']
 
-            handler = ReasonerStdHandler(source_ara, dict_query=query)
+            handler = ReasonerStdHandler(source_ara,
+                                         dict_query=query,
+                                         hosts_filename=HOSTS_FILENAME,
+                                         num_processes_per_host=NUM_PROCESSES_PER_HOST)
             handler.buildChpQueries()
             handler.runChpQueries()
 
