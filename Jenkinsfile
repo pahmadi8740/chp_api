@@ -3,7 +3,7 @@ pipeline {
   stages {
     stage('connect to newman service') {
       steps {
-        sh 'docker exec -it d69697d89920 sh'
+        sh 'docker exec -it d17ce8883365 ls'
       }
     }
 
