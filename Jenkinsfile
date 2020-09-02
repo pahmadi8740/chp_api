@@ -3,7 +3,7 @@ pipeline {
   stages {
     stage('connect to newman service') {
       steps {
-        sh 'docker exec -it chp-test-suite_web_1 sh'
+        sh 'docker exec -it d69697d89920 sh'
       }
     }
 
