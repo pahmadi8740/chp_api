@@ -70,4 +70,21 @@ class get_supported_edge_types(APIView):
     def get(self, request):
         if requests.method == 'GET':
             return JsonResponse(None)
+###############################################################################
+# Funcitons under this class are meant to be used for internal use and are 
+# simple health checks to determine that the api is running 
+###############################################################################
+class health_check(APIView):
 
+    ###########################################################################
+    # Input: A simple get query
+    # -----------
+    #
+    # Output: A simple string response indicateing the api is healthy.
+    # -----------
+    # The api would not be able to respond otherwise and thus no "unhealthy"
+    # response was created
+    ###########################################################################
+    def get(self, request):
+        if request.method == 'GET':
+            return HttpResponse("Healthy")
