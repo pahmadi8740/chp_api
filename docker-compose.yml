@@ -13,9 +13,10 @@ services:
                 depends_on:
                         - db
         db:
+                container_name: 'mongoDB'
                 image: mvertes/alpine-mongo
                 volumes:
-                        - mongoDB_data:/var/lib/postgresql/data/
+                        - mongoDB_data:/data/db
 
 volumes:
         mongoDB_data:
