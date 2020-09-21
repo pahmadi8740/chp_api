@@ -20,6 +20,10 @@ NUM_PROCESSES_PER_HOST = multiprocessing.cpu_count()
 HOSTS_FILENAME = None
 NUM_PROCESSES_PER_HOST = 0
 
+
+#import the transaction model so that we may store queries and responses
+from chp_handler.models import Transaction
+
 class submit_query(APIView):
 
     def post(self, request):
@@ -43,6 +47,14 @@ class submit_query(APIView):
             print('Total Time: {}'.format(time.time() - start_time))
 
             response = handler.constructDecoratedKG()
+
+            #Store the transaction in mongodb
+            transaction = Transaction()
+            transaction.source_ara = source_ara
+            transaction.query = query
+            transaction.response = response
+
+            transaction.save()
 
             return JsonResponse(response)
 
