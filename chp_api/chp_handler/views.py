@@ -32,7 +32,10 @@ class submit_query(APIView):
             data = request.data
 
             query = data['message']
-            source_ara = query['reasoner_id']
+            if 'reasoner_id' in query.keys():
+                source_ara = query['reasoner_id']
+            else:
+	        source_ara = 'default'
 
             print('Processing query from: {}'.format(source_ara))
 
