@@ -31,8 +31,11 @@ class submit_query(APIView):
             start_time = time.time()
             data = request.data
 
-            query = data['query']
-            source_ara = query['reasoner_id']
+            query = data['message']
+            if 'reasoner_id' in query.keys():
+                source_ara = query['reasoner_id']
+            else:
+	        source_ara = 'default'
 
             print('Processing query from: {}'.format(source_ara))
 
