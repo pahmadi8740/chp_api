@@ -84,5 +84,16 @@ class get_supported_edge_types(APIView):
     
     def get(self, request):
         if requests.method == 'GET':
-            return JsonResponse(None)
+            predicate_map = {
+                              'gene' : { 
+                                         'disease' : ['gene_to_disease_association']
+                                       }
+                              'drug' : {
+                                         'disease' : ['chemical_to_disease_or_phenotypic_feature_association']
+                                       }
+                              'disease' : {
+                                            'phenotypicfeature' : ['disease_to_phenotypic_association']
+                                          }
+                            }
+            return JsonResponse(predicate_map)
 
