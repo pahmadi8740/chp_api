@@ -22,8 +22,8 @@ from chp_handler import views
 urlpatterns = [
     path('admin/', admin.site.urls),
 
-    path('submitQuery/', views.submit_query.as_view()),
+    path('query/', views.submit_query.as_view()),
     path('checkQuery/', views.check_query.as_view()),
-    path('getSupportedEdgeTypes/', views.get_supported_edge_types.as_view()),
-    path('getSupportedNodeTYpes/', views.get_supported_node_types.as_view())
+    path('predicates/', views.get_supported_edge_types.as_view()),
+    path('nodes/', views.get_supported_node_types.as_view())
 ]

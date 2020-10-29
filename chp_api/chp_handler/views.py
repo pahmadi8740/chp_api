@@ -20,6 +20,10 @@ NUM_PROCESSES_PER_HOST = multiprocessing.cpu_count()
 HOSTS_FILENAME = None
 NUM_PROCESSES_PER_HOST = 0
 
+
+#import the transaction model so that we may store queries and responses
+from chp_handler.models import Transaction
+
 class submit_query(APIView):
 
     def post(self, request):
@@ -27,8 +31,11 @@ class submit_query(APIView):
             start_time = time.time()
             data = request.data
 
-            query = data['query']
-            source_ara = query['reasoner_id']
+            query = data['message']
+            if 'reasoner_id' in query.keys():
+                source_ara = query['reasoner_id']
+            else:
+	        source_ara = 'default'
 
             print('Processing query from: {}'.format(source_ara))
 
@@ -43,6 +50,14 @@ class submit_query(APIView):
             print('Total Time: {}'.format(time.time() - start_time))
 
             response = handler.constructDecoratedKG()
+
+            #Store the transaction in mongodb
+            transaction = Transaction()
+            transaction.source_ara = source_ara
+            transaction.query = query
+            transaction.response = response
+
+            transaction.save()
 
             return JsonResponse(response)
 
@@ -69,5 +84,16 @@ class get_supported_edge_types(APIView):
     
     def get(self, request):
         if requests.method == 'GET':
-            return JsonResponse(None)
+            predicate_map = {
+                              'gene' : { 
+                                         'disease' : ['gene_to_disease_association']
+                                       }
+                              'drug' : {
+                                         'disease' : ['chemical_to_disease_or_phenotypic_feature_association']
+                                       }
+                              'disease' : {
+                                            'phenotypicfeature' : ['disease_to_phenotypic_association']
+                                          }
+                            }
+            return JsonResponse(predicate_map)
 
