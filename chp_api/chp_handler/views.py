@@ -35,7 +35,7 @@ class submit_query(APIView):
             if 'reasoner_id' in query.keys():
                 source_ara = query['reasoner_id']
             else:
-	        source_ara = 'default'
+                source_ara = 'default'
 
             print('Processing query from: {}'.format(source_ara))
 
@@ -51,13 +51,14 @@ class submit_query(APIView):
 
             response = handler.constructDecoratedKG()
 
+            #-- This is block is currenlty not working.
             #Store the transaction in mongodb
-            transaction = Transaction()
-            transaction.source_ara = source_ara
-            transaction.query = query
-            transaction.response = response
+            #transaction = Transaction()
+            #transaction.source_ara = source_ara
+            #transaction.query = query
+            #transaction.response = response
 
-            transaction.save()
+            #transaction.save()
 
             return JsonResponse(response)
 
@@ -77,23 +78,23 @@ class check_query(APIView):
 class get_supported_node_types(APIView):
     
     def get(self, request):
-        if requests.method == 'GET':
+        if request.method == 'GET':
             return JsonResponse(None)
 
 class get_supported_edge_types(APIView):
     
     def get(self, request):
-        if requests.method == 'GET':
+        if request.method == 'GET':
             predicate_map = {
                               'gene' : { 
                                          'disease' : ['gene_to_disease_association']
-                                       }
+                                       },
                               'drug' : {
                                          'disease' : ['chemical_to_disease_or_phenotypic_feature_association']
-                                       }
+                                       },
                               'disease' : {
                                             'phenotypicfeature' : ['disease_to_phenotypic_association']
-                                          }
+                                          },
                             }
             return JsonResponse(predicate_map)
 
