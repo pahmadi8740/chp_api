@@ -81,7 +81,7 @@ ARG DEBIAN_FRONTEND=noninterative
 
 # install dependencies
 RUN apt-get update \
-	&& apt-get install -y python3-pip graphviz openmpi-bin libopenmpi-dev build-essential libssl-dev libffi-dev python3-dev 
+	&& apt-get install -y python3-pip graphviz openmpi-bin libopenmpi-dev build-essential libssl-dev libffi-dev python3-dev vim
 RUN apt-get install -y libgraphviz-dev python3-pygraphviz
 RUN apt-get install -y libpq-dev
 RUN apt-get install -y netcat
