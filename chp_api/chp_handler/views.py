@@ -24,7 +24,7 @@ NUM_PROCESSES_PER_HOST = 0
 #import the transaction model so that we may store queries and responses
 from chp_handler.models import Transaction
 
-class submit_query(APIView):
+class query(APIView):
 
     def post(self, request):
         if request.method == 'POST':
@@ -75,13 +75,24 @@ class check_query(APIView):
 
             return JsonResponse(handler.checkQuery())
 
-class get_supported_node_types(APIView):
+class curies(APIView):
     
     def get(self, request):
         if request.method == 'GET':
-            return JsonResponse(None)
+            data = request.data
 
-class get_supported_edge_types(APIView):
+            if 'reasoner_id' in data.keys():
+                source_ara = data['reasoner_id']
+            else:
+                source_ara = 'default'
+
+            # Get the handler with no query
+            handler = ReasonerStdHandler(source_ara)
+            curies = handler.getCuries()
+
+            return JsonResponse(curies)
+
+class predicates(APIView):
     
     def get(self, request):
         if request.method == 'GET':
