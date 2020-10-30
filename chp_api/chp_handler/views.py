@@ -103,11 +103,11 @@ class predicates(APIView):
                               'gene' : { 
                                          'disease' : ['gene_to_disease_association']
                                        },
-                              'drug' : {
+                              'chemical_substance' : {
                                          'disease' : ['chemical_to_disease_or_phenotypic_feature_association']
                                        },
                               'disease' : {
-                                            'phenotypicfeature' : ['disease_to_phenotypic_association']
+                                            'phenotypic_feature' : ['disease_to_phenotypic_feature_association']
                                           },
                             }
             return JsonResponse(predicate_map)
