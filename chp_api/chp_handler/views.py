@@ -32,6 +32,8 @@ class query(APIView):
             data = request.data
 
             query = data['message']
+            max_results = data.pop('max_results', 10)
+
             if 'reasoner_id' in query.keys():
                 source_ara = query['reasoner_id']
             else:
@@ -42,7 +44,8 @@ class query(APIView):
             handler = ReasonerStdHandler(source_ara,
                                          dict_query=query,
                                          hosts_filename=HOSTS_FILENAME,
-                                         num_processes_per_host=NUM_PROCESSES_PER_HOST)
+                                         num_processes_per_host=NUM_PROCESSES_PER_HOST,
+                                         max_results=max_results)
             handler.buildChpQueries()
             print('Built Queries.')
             handler.runChpQueries()
