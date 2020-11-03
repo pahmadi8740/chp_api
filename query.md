@@ -40,6 +40,7 @@ Standard Probablistic Query:
             "value": 500
           }
         }
+      },
       "nodes": {
         "n0": {
           "type": "gene",
@@ -47,7 +48,7 @@ Standard Probablistic Query:
         },
         "n1": {
           "type": "chemical_substance",
-          "curie": "CHEMBL:CHEMBL88"
+          "curie": "CHEMBL:CHEMBL1201585"
         },
         "n2": {
           "type": "disease",
@@ -59,7 +60,7 @@ Standard Probablistic Query:
         }
       }
     }
-}
+  }
 ```
 
 ## Success Response
@@ -72,21 +73,18 @@ Standard Probablistic Query:
 {
   "message": {
     "query_graph": {
-      "edges": [
-        {
-          "id": "e0",
+      "edges": {
+        "e0": {
           "type": "gene_to_disease_association",
           "source_id": "n0",
           "target_id": "n2"
         },
-        {
-          "id": "e1",
+        "e1": {
           "type": "chemical_to_disease_or_phenotypic_feature_association",
           "source_id": "n1",
           "target_id": "n2"
         },
-        {
-          "id": "e2",
+        "e2": {
           "type": "disease_to_phenotypic_feature_association",
           "source_id": "n2",
           "target_id": "n3",
@@ -96,89 +94,94 @@ Standard Probablistic Query:
           }
         }
       },
-      "nodes": [
-        {
-          "id": "n0",
+      "nodes": {
+        "n0": {
           "type": "gene",
           "curie": "ENSEMBL:ENSG00000132155"
         },
-        {
-          "id": "n1",
+        "n1": {
           "type": "chemical_substance",
-          "curie": "CHEMBL:CHEMBL88"
+          "curie": "CHEMBL:CHEMBL1201585"
         },
-        {
-          "id": "n2",
+        "n2": {
           "type": "disease",
           "curie": "MONDO:0007254"
         },
-        {
-          "id": "n3",
+        "n3": {
           "type": "phenotypic_feature",
           "curie": "EFO:0000714"
         }
-      ]
+      }
     },
     "knowledge_graph": {
-      "edges": [
-        {
-          "id": "cff35aa2-3a95-4e84-aa33-18ef576025e8",
+      "edges": {
+        "kge0": {
           "type": "gene_to_disease_association",
-          "source_id": "7c89d32e-2a6e-4cbc-9ece-2ca07c6a458e",
-          "target_id": "1f5fa86b-ffa7-437c-9033-74d17c3f4795"
+          "source_id": "ENSEMBL:ENSG00000132155",
+          "target_id": "MONDO:0007254"
         },
-        {
-          "id": "51cc7d6b-c63e-458a-b4f4-53c3a6210b05",
+        "kge1": {
           "type": "chemical_to_disease_or_phenotypic_feature_association",
-          "source_id": "298b0b61-7e43-4334-9516-898c10708019",
-          "target_id": "1f5fa86b-ffa7-437c-9033-74d17c3f4795"
+          "source_id": "CHEMBL:CHEMBL1201585",
+          "target_id": "MONDO:0007254"
         },
-        {
-          "id": "08cf0382-a43f-4a5b-a556-7b934dc7eb36",
+        "kge2": {
           "type": "disease_to_phenotypic_feature_association",
-          "source_id": "1f5fa86b-ffa7-437c-9033-74d17c3f4795",
-          "target_id": "4110a6b6-6178-4321-9c12-f4b253b2727c",
+          "source_id": "MONDO:0007254",
+          "target_id": "EFO:0000714",
           "properties": {
             "qualifier": ">=",
             "value": 500
           },
-          "has_confidence_level": 0.999718157375553
+          "has_confidence_level": 1.0
         }
-      ],
-      "nodes": [
-        {
-          "id": "7c89d32e-2a6e-4cbc-9ece-2ca07c6a458e",
+      },
+      "nodes": {
+        "ENSEMBL:ENSG00000132155": {
           "type": "gene",
-          "curie": "ENSEMBL:ENSG00000132155",
           "name": "RAF1"
         },
-        {
-          "id": "298b0b61-7e43-4334-9516-898c10708019",
+        "CHEMBL:CHEMBL1201585": {
           "type": "chemical_substance",
-          "curie": "CHEMBL:CHEMBL88",
-          "name": "CYTOXAN"
+          "name": "TRASTUZUMAB"
         },
-        {
-          "id": "1f5fa86b-ffa7-437c-9033-74d17c3f4795",
-          "type": "disease",
-          "curie": "MONDO:0007254"
+        "MONDO:0007254": {
+          "type": "disease"
         },
-        {
-          "id": "4110a6b6-6178-4321-9c12-f4b253b2727c",
-          "type": "phenotypic_feature",
-          "curie": "EFO:0000714"
+        "EFO:0000714": {
+          "type": "phenotypic_feature"
         }
-      ]
+      }
     },
-    "results": {
-      "node_bindings": [],
-      "edge_bindings": [
-        {
-          "qg_id": "e2",
-          "kg_id": "08cf0382-a43f-4a5b-a556-7b934dc7eb36"
+    "results": [
+      {
+        "node_bindings": {
+          "n0": {
+            "kg_id": "ENSEMBL:ENSG00000132155"
+          },
+          "n1": {
+            "kg_id": "CHEMBL:CHEMBL1201585"
+          },
+          "n2": {
+            "kg_id": "MONDO:0007254"
+          },
+          "n3": {
+            "kg_id": "EFO:0000714"
+          }
+        },
+        "edge_bindings": {
+          "e0": {
+            "kg_id": "kge0"
+          },
+          "e1": {
+            "kg_id": "kge1"
+          },
+          "e2": {
+            "kg_id": "kge2"
+          }
         }
-      ]
-    }
+      }
+    ]
   }
 }
 ```
