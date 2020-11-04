@@ -37,7 +37,7 @@ RUN chmod 600 /root/.ssh/id_rsa \
 
 RUN git clone ssh://"${INTUITION_USER}"@intuition.thayer.dartmouth.edu/home/public/git/modules/PyBKB.git
 RUN git clone ssh://"${INTUITION_USER}"@intuition.thayer.dartmouth.edu/home/public/git/projects/ChpData.git
-RUN git clone https://github.com/di2ag/bkb-pathway-provider.git
+RUN git clone https://github.com/di2ag/chp.git
 
 # install dependencies
 COPY ./requirements.txt .
