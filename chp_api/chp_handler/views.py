@@ -100,15 +100,18 @@ class predicates(APIView):
     def get(self, request):
         if request.method == 'GET':
             predicate_map = {
-                              'gene' : { 
-                                         'disease' : ['gene_to_disease_association']
-                                       },
-                              'chemical_substance' : {
-                                         'disease' : ['chemical_to_disease_or_phenotypic_feature_association']
-                                       },
-                              'disease' : {
-                                            'phenotypic_feature' : ['disease_to_phenotypic_feature_association']
-                                          },
+                              'biolink:Gene' : {
+                                                'biolink:Disease' : ['biolink:GeneToDiseaseAssociation']
+                                               },
+                              'biolink:Drug' : {
+                                                'biolink:Disease' : ['biolink:ChemicalToDiseaseOrPhenotypicFeatureAssociation']
+                                               },
+                              'biolink:Disease' : {
+                                                   'biolink:PhenotypicFeature' : ['biolink:DiseaseToPhenotypicFeatureAssociation']
+                                                  },
+                              'biolink:Drug' : {
+                                                'biolink:Gene' : ['biolink:ChemicalToGeneAssociation']
+                                               }
                             }
             return JsonResponse(predicate_map)
 
