@@ -104,14 +104,12 @@ class predicates(APIView):
                                                 'biolink:Disease' : ['biolink:GeneToDiseaseAssociation']
                                                },
                               'biolink:Drug' : {
-                                                'biolink:Disease' : ['biolink:ChemicalToDiseaseOrPhenotypicFeatureAssociation']
+                                                'biolink:Disease' : ['biolink:ChemicalToDiseaseOrPhenotypicFeatureAssociation'],
+                                                'biolink:Gene' : ['biolink:ChemicalToGeneAssociation']
                                                },
                               'biolink:Disease' : {
                                                    'biolink:PhenotypicFeature' : ['biolink:DiseaseToPhenotypicFeatureAssociation']
-                                                  },
-                              'biolink:Drug' : {
-                                                'biolink:Gene' : ['biolink:ChemicalToGeneAssociation']
-                                               }
+                                                  }
                             }
             return JsonResponse(predicate_map)
 
