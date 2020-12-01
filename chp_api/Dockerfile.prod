@@ -57,7 +57,7 @@ RUN pip3 wheel --no-cache-dir --no-deps --wheel-dir /usr/src/chp_api/wheels -r r
 RUN cd PyBKB && python3 setup.py bdist_wheel && cd dist && cp pybkb-1.0.0-py3-none-any.whl /usr/src/chp_api/wheels
 
 # gather chp wheel
-RUN cd bkb-pathway-provider && python3 setup.py bdist_wheel && cd dist && cp chp-1.0.0-py3-none-any.whl /usr/src/chp_api/wheels
+RUN cd chp && python3 setup.py bdist_wheel && cd dist && cp chp-1.0.0-py3-none-any.whl /usr/src/chp_api/wheels
 
 # gather chp-data wheel
 RUN cd ChpData && python3 setup.py bdist_wheel && cd dist && cp chp_data-0.0.1-py3-none-any.whl /usr/src/chp_api/wheels
