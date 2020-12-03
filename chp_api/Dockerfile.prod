@@ -64,7 +64,7 @@ RUN cd chp && python3 setup.py bdist_wheel && cd dist && cp chp-*-py3-none-any.w
 RUN cd chp_client && python3 setup.py bdist_wheel && cd dist && cp chp_client-*-py3-none-any.whl /usr/src/chp_api/wheels
 
 # gather chp-data wheel
-RUN cd ChpData && python3 setup.py bdist_wheel && cd dist && cp chp_data-0.0.1-py3-none-any.whl /usr/src/chp_api/wheels
+RUN cd ChpData && python3 setup.py bdist_wheel && cd dist && cp chp_data-*-py3-none-any.whl /usr/src/chp_api/wheels
 
 
 
