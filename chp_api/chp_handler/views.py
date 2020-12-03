@@ -1,6 +1,12 @@
 import os
 import time
 import multiprocessing
+
+import chp
+import chp_client
+import chp_data
+import pybkb
+
 from django.shortcuts import render
 from .apps import ChpHandlerConfig
 
@@ -113,3 +119,12 @@ class predicates(APIView):
                             }
             return JsonResponse(predicate_map)
 
+class versions(APIVIEW):
+
+    def get(self, request):
+        if request.method == 'GET':
+            versions = { 'chp' : chp.__version__,
+                         'chp_client' : chp_client.__version__,
+                         'chp_data' : chp_data.__version__,
+                         'pybkb' : pybkb.__version__ }
+        return JsonResponse(versions)
