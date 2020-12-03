@@ -119,7 +119,7 @@ class predicates(APIView):
                             }
             return JsonResponse(predicate_map)
 
-class versions(APIVIEW):
+class versions(APIView):
 
     def get(self, request):
         if request.method == 'GET':
