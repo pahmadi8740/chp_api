@@ -1,0 +1,6 @@
+[submodule "submodules/bkb-pathway-provider"]
+	path = submodules/bkb-pathway-provider
+	url = git@github.com:di2ag/bkb-pathway-provider.git
+[submodule "ChpData"]
+	path = ChpData
+	url = /home/public/git/projects/ChpData.git
