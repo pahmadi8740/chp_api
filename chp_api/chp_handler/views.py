@@ -2,6 +2,7 @@ import os
 import time
 import multiprocessing
 
+import chp
 import chp_client
 import chp_data
 import pybkb
