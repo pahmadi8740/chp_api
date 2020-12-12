@@ -3,9 +3,10 @@ import os
 import multiprocessing
 import logging
 
-from chp.reasoner_coulomb import ChpJointReasoner, ChpDynamicReasoner
+from chp.reasoner import ChpJointReasoner, ChpDynamicReasoner
 from chp_data.bkb_handler import BkbDataHandler
 
+logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
 class ChpApiConfig(AppConfig):
@@ -27,6 +28,7 @@ class ChpApiConfig(AppConfig):
         bkb_minor_version='1.0'
     )
 
+    logger.info('Instantiating reasoners.')
     # Instantiate Reasoners
     dynamic_reasoner = ChpDynamicReasoner(
         bkb_handler=bkb_handler,
