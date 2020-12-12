@@ -23,6 +23,7 @@ urlpatterns = [
     #path('admin/', admin.site.urls),
 
     path('query/', views.query.as_view()),
+    path('queryall/', views.query_all.as_view()),
     path('checkQuery/', views.check_query.as_view()),
     path('predicates/', views.predicates.as_view()),
     path('curies/', views.curies.as_view()),
