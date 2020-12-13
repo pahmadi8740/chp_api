@@ -196,7 +196,7 @@ class QueryProcessor:
             disease = parsed["disease"],
             outcome_name = parsed["outcome_name"],
             outcome_op = parsed["outcome_op"],
-            outcome_value = parsed["outcome_value"],
+            outcome_value = parsed["outcome_value"] if not parsed["outcome_value"] == '' else 0,
         )
         _transaction.save()
 
