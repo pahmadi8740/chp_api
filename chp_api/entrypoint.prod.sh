@@ -1,5 +1,6 @@
 #!/bin/sh
 
+# Wait for Database image to start
 if [ "$DATABASE" = "postgres" ]
 then
 	echo "Waiting for postgres..."
@@ -10,5 +11,15 @@ then
 
 	echo "PostgreSQL started"
 fi
+
+# Run django migrations and collect static
+echo "Collect static files"
+python3 manage.py collectstatic --noinput
+
+echo "Make database migrations"
+python3 manage.py makemigrations
+
+echo "Apply database migrations"
+python3 manage.py migrate
 
 exec "$@"
