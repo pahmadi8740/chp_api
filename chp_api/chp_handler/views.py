@@ -1,103 +1,62 @@
-import os
-import time
-import multiprocessing
+import logging
+from django.http import HttpResponse, JsonResponse
+from django.shortcuts import get_object_or_404
+from django.db import transaction
+from rest_framework.views import APIView
+from rest_framework.response import Response
+from rest_framework import status
+from django.shortcuts import render
 
 import chp
+from chp.trapi_interface import TrapiInterface
 import chp_client
 import chp_data
 import pybkb
 
-from django.shortcuts import render
-from .apps import ChpHandlerConfig
+from .util import QueryProcessor
 
-# Create your views here.
-from django.http import HttpResponse, JsonResponse
-from django.shortcuts import get_object_or_404
-from rest_framework.views import APIView
-from rest_framework.response import Response
-from rest_framework import status
-from chp.reasoner_std import ReasonerStdHandler
+# Setup logging
+logging.basicConfig(level=20)
 
-#-- Get Hosts File if it exists
-parent_dir = os.path.dirname(os.path.realpath(__file__))
-HOSTS_FILENAME = os.path.join(parent_dir, 'hosts')
-NUM_PROCESSES_PER_HOST = multiprocessing.cpu_count()
-#if not os.path.exists(HOSTS_FILENAME):
-HOSTS_FILENAME = None
-NUM_PROCESSES_PER_HOST = 0
+# Setup Logger
+logger = logging.getLogger(__name__)
 
+class query_all(APIView):
 
-#import the transaction model so that we may store queries and responses
-from chp_handler.models import Transaction
+    def post(self, request):
+        if request.method == 'POST':
+            query_processor = QueryProcessor(request)
+            return query_processor.get_response_to_query()
 
 class query(APIView):
 
     def post(self, request):
         if request.method == 'POST':
-            start_time = time.time()
-            data = request.data
-
-            query = data['message']
-            max_results = data.pop('max_results', 10)
-
-            if 'reasoner_id' in query.keys():
-                source_ara = query['reasoner_id']
-            else:
-                source_ara = 'default'
-
-            print('Processing query from: {}'.format(source_ara))
-
-            handler = ReasonerStdHandler(source_ara,
-                                         dict_query=query,
-                                         hosts_filename=HOSTS_FILENAME,
-                                         num_processes_per_host=NUM_PROCESSES_PER_HOST,
-                                         max_results=max_results)
-            handler.buildChpQueries()
-            print('Built Queries.')
-            handler.runChpQueries()
-            print('Completed Reasoning.')
-            print('Total Time: {}'.format(time.time() - start_time))
-
-            response = handler.constructDecoratedKG()
-
-            #-- This is block is currenlty not working.
-            #Store the transaction in mongodb
-            #transaction = Transaction()
-            #transaction.source_ara = source_ara
-            #transaction.query = query
-            #transaction.response = response
-
-            #transaction.save()
-
-            return JsonResponse(response)
+            query_processor = QueryProcessor(request)
+            return query_processor.get_response_to_query()
 
 class check_query(APIView):
 
     def post(self, request):
         if request.method == 'POST':
-            data = request.data
+            query, max_results, client_id = QueryProcessor._process_request(request)
 
-            query = data['query']
-            source_ara = query['reasoner_id']
+            # Instaniate interface
+            interface = TrapiInterface(query=query, client_id=client_id)
 
-            handler = ReasonerStdHandler(source_ara, dict_query=query)
-
-            return JsonResponse(handler.checkQuery())
+            return JsonResponse(interface.check_query())
 
 class curies(APIView):
     
     def get(self, request):
         if request.method == 'GET':
-            data = request.data
+            query, max_results, client_id = QueryProcessor._process_request(request)
 
-            if 'reasoner_id' in data.keys():
-                source_ara = data['reasoner_id']
-            else:
-                source_ara = 'default'
+            # Instaniate interface
+            interface = TrapiInterface(client_id=client_id)
 
-            # Get the handler with no query
-            handler = ReasonerStdHandler(source_ara)
-            curies = handler.getCuries()
+            # Get supported curies
+            curies = interface.get_curies()
 
             return JsonResponse(curies)
 
@@ -105,19 +64,14 @@ class predicates(APIView):
     
     def get(self, request):
         if request.method == 'GET':
-            predicate_map = {
-                              'biolink:Gene' : {
-                                                'biolink:Disease' : ['biolink:GeneToDiseaseAssociation']
-                                               },
-                              'biolink:Drug' : {
-                                                'biolink:Disease' : ['biolink:ChemicalToDiseaseOrPhenotypicFeatureAssociation'],
-                                                'biolink:Gene' : ['biolink:ChemicalToGeneAssociation']
-                                               },
-                              'biolink:Disease' : {
-                                                   'biolink:PhenotypicFeature' : ['biolink:DiseaseToPhenotypicFeatureAssociation']
-                                                  }
-                            }
-            return JsonResponse(predicate_map)
+            query, max_results, client_id = QueryProcessor._process_request(request)
+
+            # Instaniate interface
+            interface = TrapiInterface(client_id=client_id)
+
+            # Get supported predicates
+            predicates = interface.get_predicates()
+            return JsonResponse(predicates)
 
 class versions(APIView):
 
