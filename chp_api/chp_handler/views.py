@@ -82,3 +82,13 @@ class versions(APIView):
                          'chp_data' : chp_data.__version__,
                          'pybkb' : pybkb.__version__ }
         return JsonResponse(versions)
+
+class constants(APIView):
+
+    def get(self, request):
+        if request.method == 'GET':
+            constants = {}
+            for var, value in vars(chp_data.trapi_constants).items():
+                if 'BIOLINK' in var:
+                    constants[var] = value
+        return JsonResponse(constants)
