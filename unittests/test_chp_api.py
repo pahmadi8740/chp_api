@@ -5,6 +5,8 @@ import unittest
 import requests
 
 LOCAL_URL = 'http://127.0.0.1:8000'
+#LOCAL_URL = 'http://localhost:80'
+#LOCAL_URL = 'http://chp.thayer.dartmouth.edu'
 
 class TestChpApi(unittest.TestCase):
 
@@ -13,6 +15,7 @@ class TestChpApi(unittest.TestCase):
         self.query_all_endpoint = '/queryall/'
         self.curies_endpoint = '/curies/'
         self.predicates_endpoint = '/predicates/'
+        self.constants_endpoint = '/constants/'
 
     @staticmethod
     def _get(url, params=None):
@@ -45,6 +48,11 @@ class TestChpApi(unittest.TestCase):
     def test_predicates(self):
         url = LOCAL_URL + self.predicates_endpoint
         resp = self._get(url)
+    
+    def test_constants(self):
+        url = LOCAL_URL + self.constants_endpoint
+        resp = self._get(url)
+        print(resp)
 
     def test_single_default_query(self):
         with open('query_samples/test_reasoner_coulomb_queries.pk', 'rb') as f_:
@@ -94,6 +102,7 @@ class TestChpApi(unittest.TestCase):
         query = queries[0]
         url = LOCAL_URL + self.query_endpoint
         resp = self._post(url, query)
+        print(json.dumps(resp, indent=2))
 
     def test_batch_gene_onehop_query(self):
         with open('query_samples/random_gene_one_hop_queries.pk', 'rb') as f_:

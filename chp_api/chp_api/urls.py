@@ -27,5 +27,6 @@ urlpatterns = [
     path('checkQuery/', views.check_query.as_view()),
     path('predicates/', views.predicates.as_view()),
     path('curies/', views.curies.as_view()),
-    path('versions/', views.versions.as_view())
+    path('versions/', views.versions.as_view()),
+    path('constants/', views.constants.as_view())
 ]
