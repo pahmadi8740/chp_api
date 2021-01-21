@@ -22,11 +22,19 @@ logging.Logger.info2 = info2
 logger = logging.getLogger(__name__)
 
 class QueryProcessor:
+    """ Query Processor class used to abstract the processing infrastructure from
+        the views:
+
+        :param request: Incoming POST request with a TRAPI message.
+        :type request: request
+    """
     def __init__(self, request):
         self.query, self.max_results, self.client_id = self._process_request(request)
 
     @staticmethod
     def _process_request(request):
+        """ Helper function that extracts the query from the message.
+        """
         logger.info2('Starting query.')
         data = request.data
         query = data.pop('message', None)
@@ -35,6 +43,9 @@ class QueryProcessor:
         return query, max_results, client_id
 
     def get_response_to_query(self):
+        """ Main function of the processor that handles primary logic for obtaining
+            a cached or calculated query response.
+        """
         start_time = time.time()
         #logger.info('Database as {} entries.'.format(Transaction.objects.all().count()))
 
@@ -106,6 +117,7 @@ class QueryProcessor:
             :param threshold: The fraction (distance from outcome value) / outcome_value. If this fraction is
                 less than the threshold it will not return that query. Default None, in which no threshold of this fraction
                 is acceptable so just return None.
+            :type threshold: float
         """
         if threshold is None:
             return None
@@ -128,6 +140,8 @@ class QueryProcessor:
         return closest_obj.chp_response
 
     def _find_cached_query(self, query):
+        """ Search the database to see if the query exists.
+        """
         parsed = parse_query_graph(query["query_graph"])
         if parsed is None:
             return None
@@ -150,6 +164,8 @@ class QueryProcessor:
             return self._find_close_cached_query(parsed_query)
 
     def _get_response_from_cache(self, query):
+        """ Parent function that starts the search for a response to a specific query.
+        """
         # Testing 
         if type(query) == list:
             return query, None, {"query": [i for i in range(len(query))]}
@@ -178,6 +194,8 @@ class QueryProcessor:
                 return None, response, None
 
     def _process_transaction(self, response):
+        """ Save the query response as a transaction in the database.
+        """
         # Use the trapi interface function to get the chp client variables
         parsed = parse_query_graph(response["message"]["query_graph"])
 
@@ -201,6 +219,9 @@ class QueryProcessor:
         _transaction.save()
 
     def _reorder_response(self, response, cached_responses, query_map):
+        """ Orders the response so that queries found in the database are correctly
+            combined with queries that had to be calculated in real-time.
+        """
         unordered_response = []
         for key, indices in query_map.items():
             if key == 'query':
@@ -213,6 +234,8 @@ class QueryProcessor:
         return ordered_response
 
     def _wrap_batch_responses(self, batch_response_list):
+        """ Wraps batch response inside a message key.
+        """
         response = {"message": []}
         for resp in batch_response_list:
             response["message"].append(resp.pop("message"))
