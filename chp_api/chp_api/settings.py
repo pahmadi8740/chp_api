@@ -63,6 +63,10 @@ MIDDLEWARE = [
 
 CORS_ALLOW_ALL_ORIGINS = True
 
+CORS_ORIGIN_WHITELIST = (
+    'https://smart-api.info/',
+)
+
 CORS_ALLOW_CREDENTIALS = True
 
 ROOT_URLCONF = 'chp_api.urls'
