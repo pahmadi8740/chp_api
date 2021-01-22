@@ -63,6 +63,8 @@ MIDDLEWARE = [
 
 CORS_ALLOW_ALL_ORIGINS = True
 
+CORS_EXPOSE_HEADERS = [*]
+
 CORS_ORIGIN_WHITELIST = (
     'https://smart-api.info/',
 )
