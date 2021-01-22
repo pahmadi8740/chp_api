@@ -69,6 +69,8 @@ CORS_ORIGIN_WHITELIST = (
     'https://smart-api.info/',
 )
 
+Access-Control-Allow-Origin: *
+
 CORS_ALLOW_CREDENTIALS = True
 
 ROOT_URLCONF = 'chp_api.urls'
