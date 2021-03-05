@@ -70,6 +70,11 @@ class QueryProcessor:
 
             # Build queries
             interface.build_chp_queries()
+
+            # Check if error in processing query
+            if interface.error_msg is not None:
+                return JsonResponse('Bad request.' + interface.error_msg}, status=400)
+
             logger.info2('Built Queries.')
             # Run queries
             interface.run_chp_queries()
