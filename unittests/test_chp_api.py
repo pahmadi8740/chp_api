@@ -58,70 +58,70 @@ class TestChpApi(unittest.TestCase):
         url = LOCAL_URL + self.constants_endpoint
         resp = self._get(url)
 
-    def est_single_default_query(self):
+    def test_single_default_query(self):
         with open('query_samples/test_reasoner_coulomb_queries.pk', 'rb') as f_:
             queries = pickle.load(f_)
         query = queries[0]
         url = LOCAL_URL + self.query_endpoint
         resp = self._post(url, query)
 
-    def est_batch_default_query(self):
+    def test_batch_default_query(self):
         with open('query_samples/test_reasoner_coulomb_queries.pk', 'rb') as f_:
             queries = pickle.load(f_)
         wrapped_queries = self._wrap_batch_queries(queries)
         url = LOCAL_URL + self.query_all_endpoint
         resp = self._post(url, wrapped_queries)
 
-    def est_single_gene_wildcard_query(self):
+    def test_single_gene_wildcard_query(self):
         with open('query_samples/random_gene_wildcard_queries.pk', 'rb') as f_:
             queries = pickle.load(f_)
         query = queries[0]
         url = LOCAL_URL + self.query_endpoint
         resp = self._post(url, query)
 
-    def est_batch_gene_wildcard_query(self):
+    def test_batch_gene_wildcard_query(self):
         with open('query_samples/random_gene_wildcard_queries.pk', 'rb') as f_:
             queries = pickle.load(f_)
         wrapped_queries = self._wrap_batch_queries(queries)
         url = LOCAL_URL + self.query_all_endpoint
         resp = self._post(url, wrapped_queries)
 
-    def est_single_drug_wildcard_query(self):
+    def test_single_drug_wildcard_query(self):
         with open('query_samples/random_drug_wildcard_queries.pk', 'rb') as f_:
             queries = pickle.load(f_)
         query = queries[0]
         url = LOCAL_URL + self.query_endpoint
         resp = self._post(url, query)
 
-    def est_batch_drug_wildcard_query(self):
+    def test_batch_drug_wildcard_query(self):
         with open('query_samples/random_drug_wildcard_queries.pk', 'rb') as f_:
             queries = pickle.load(f_)
         wrapped_queries = self._wrap_batch_queries(queries)
         url = LOCAL_URL + self.query_all_endpoint
         resp = self._post(url, wrapped_queries)
 
-    def est_single_gene_onehop_query(self):
+    def test_single_gene_onehop_query(self):
         with open('query_samples/random_gene_one_hop_queries.pk', 'rb') as f_:
             queries = pickle.load(f_)
         query = queries[0]
         url = LOCAL_URL + self.query_endpoint
         resp = self._post(url, query)
 
-    def est_batch_gene_onehop_query(self):
+    def test_batch_gene_onehop_query(self):
         with open('query_samples/random_gene_one_hop_queries.pk', 'rb') as f_:
             queries = pickle.load(f_)
         wrapped_queries = self._wrap_batch_queries(queries)
         url = LOCAL_URL + self.query_all_endpoint
         resp = self._post(url, wrapped_queries)
 
-    def est_single_drug_onehop_query(self):
+    def test_single_drug_onehop_query(self):
         with open('query_samples/random_drug_one_hop_queries.pk', 'rb') as f_:
             queries = pickle.load(f_)
         query = queries[0]
         url = LOCAL_URL + self.query_endpoint
         resp = self._post(url, query)
 
-    def est_batch_drug_onehop_query(self):
+    def test_batch_drug_onehop_query(self):
         with open('query_samples/random_drug_one_hop_queries.pk', 'rb') as f_:
             queries = pickle.load(f_)
         wrapped_queries = self._wrap_batch_queries(queries)
