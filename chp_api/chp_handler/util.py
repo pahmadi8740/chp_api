@@ -56,20 +56,24 @@ class QueryProcessor:
 
         if query is not None:
             logger.info2('Running query.')
-            # Instaniate TRAPI Interface
-            interface = TrapiInterface(
-                query=query,
-                hosts_filename=ChpApiConfig.hosts_filename,
-                num_processes_per_host=ChpApiConfig.num_processes_per_host,
-                max_results=self.max_results,
-                client_id=self.client_id,
-                bkb_handler=ChpApiConfig.bkb_handler,
-                joint_reasoner=ChpApiConfig.joint_reasoner,
-                dynamic_reasoner=ChpApiConfig.dynamic_reasoner,
-            )
+            try:
+                # Instaniate TRAPI Interface
+                interface = TrapiInterface(
+                    query=query,
+                    hosts_filename=ChpApiConfig.hosts_filename,
+                    num_processes_per_host=ChpApiConfig.num_processes_per_host,
+                    max_results=self.max_results,
+                    client_id=self.client_id,
+                    bkb_handler=ChpApiConfig.bkb_handler,
+                    joint_reasoner=ChpApiConfig.joint_reasoner,
+                    dynamic_reasoner=ChpApiConfig.dynamic_reasoner,
+                )
 
-            # Build queries
-            interface.build_chp_queries()
+                # Build queries
+                interface.build_chp_queries()
+            except Exception as e:
+                return JsonResponse('Bad request. ' + str(e), status=400, safe=False)
+
             logger.info2('Built Queries.')
             # Run queries
             interface.run_chp_queries()
