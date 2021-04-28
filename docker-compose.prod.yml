@@ -32,7 +32,7 @@ services:
                         - 80:80
                 depends_on:
                         - web
-
+                #command: "certbot --nginx; nginx;"
 volumes:
         postgres_data:
         static_volume:

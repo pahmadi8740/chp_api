@@ -35,10 +35,10 @@ RUN chmod 600 /root/.ssh/id_rsa.pub
 
 #RUN ssh cyakaboski@intuition.thayer.dartmouth.edu -t -t -v -o StrictHostKeyChecking=no
 
-RUN git clone ssh://git@intuition.thayer.dartmouth.edu/home/public/git/modules/PyBKB.git
-RUN git clone ssh://git@intuition.thayer.dartmouth.edu/home/public/git/projects/ChpData.git
-RUN git clone https://github.com/di2ag/chp.git
-RUN git clone https://github.com/di2ag/chp_client.git
+RUN git clone --depth 1 ssh://git@intuition.thayer.dartmouth.edu/home/public/git/modules/PyBKB.git
+RUN git clone --depth 1 ssh://git@intuition.thayer.dartmouth.edu/home/public/git/projects/ChpData.git
+RUN git clone --depth 1 https://github.com/di2ag/chp.git
+RUN git clone --depth 1 https://github.com/di2ag/chp_client.git
 
 # lint
 RUN pip3 install --upgrade pip
