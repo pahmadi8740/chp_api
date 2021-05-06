@@ -31,6 +31,16 @@ Our API is currently live at: [chp.thayer.dartmouth.edu](http://chp.thayer.dartm
 * [predicates](predicates.md) : `GET /predicates/`
 * [curies](curies.md) : `GET /curies/`
 
+## Other Notable Links
+Our roadmap outlining or KP’s milestones and the progression of those milestones: https://github.com/di2ag/Connections-Hypothesis-Provider-Roadmap
+
+Our NCATS Wiki Page: https://github.com/NCATSTranslator/Translator-All/wiki/Connections-Hypothesis-Provider
+
+Our CHP Client repository: https://github.com/di2ag/chp_client
+
+A repository for our reasoning code: https://github.com/di2ag/chp
+
+
 ## Contacts
 Dr. Eugene Santos (PI): Eugene.Santos.Jr@dartmouth.edu
 
