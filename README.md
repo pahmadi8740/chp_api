@@ -30,3 +30,8 @@ Our API is currently live at: [chp.thayer.dartmouth.edu](http://chp.thayer.dartm
 * [query](query.md) : `POST /query/`
 * [predicates](predicates.md) : `GET /predicates/`
 * [curies](curies.md) : `GET /curies/`
+
+## Contacts
+Dr. Eugene Santos (PI): Eugene.Santos.Jr@dartmouth.edu
+Joseph Gormley (Co-PI): jgormley@tuftsmedicalcenter.org
+
