@@ -33,5 +33,6 @@ Our API is currently live at: [chp.thayer.dartmouth.edu](http://chp.thayer.dartm
 
 ## Contacts
 Dr. Eugene Santos (PI): Eugene.Santos.Jr@dartmouth.edu
+
 Joseph Gormley (Co-PI): jgormley@tuftsmedicalcenter.org
 
