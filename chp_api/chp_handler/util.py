@@ -72,7 +72,7 @@ class QueryProcessor:
                 # Build queries
                 interface.build_chp_queries()
             except Exception as e:
-                return JsonResponse('Bad request. ' + str(e), status=400, safe=False)
+                return JsonResponse(self._build_error_response(str(e)))
 
             logger.info2('Built Queries.')
             # Run queries
@@ -244,4 +244,17 @@ class QueryProcessor:
         for resp in batch_response_list:
             response["message"].append(resp.pop("message"))
         return response
+
+    def _build_error_response(self, error_msg):
+        """ Builds a stock message back in the event a 400 level error has occured.
+        """
+
+        response = { 'query_graph' : self.query,
+                     'knowledge_graph' : { 'edges': dict(), nodes: dict()},
+                     'results': [] }
+        message = {'message' : response,
+                   'description' : 'Unsupported query',
+                   'status': 'Bad Request. ' + error_msg}
+        return message
+
 
