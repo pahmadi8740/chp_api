@@ -16,11 +16,11 @@ import chp_data
 import chp_client
 
 # Setup logging
-logging.addLevelName(25, "INFO2")
+logging.addLevelName(25, "NOTE")
 # Add a special logging function
-def info2(self, message, *args, **kwargs):
+def note(self, message, *args, **kwargs):
     self._log(25, message, args, kwargs)
-logging.Logger.info2 = info2
+logging.Logger.note = note
 logger = logging.getLogger(__name__)
 
 class QueryProcessor:
@@ -31,16 +31,16 @@ class QueryProcessor:
         :type request: request
     """
     def __init__(self, request, trapi_version):
-        self.query, chp_config = self._process_request(request)
+        self.query, self.chp_config = self._process_request(request, trapi_version=trapi_version)
         self.trapi_version = trapi_version
 
     @staticmethod
-    def _process_request(request):
+    def _process_request(request, trapi_version='1.1'):
         """ Helper function that extracts the query from the message.
         """
-        logger.info2('Starting query.')
+        logger.note('Starting query.')
         data = request.data
-        host = request.header['Host']
+        host = request.headers['Host']
         # Parse host name
         host_parse = host.split('.')
         # API subdomain is the ChpConfig to use.
@@ -56,7 +56,7 @@ class QueryProcessor:
         #query = data.pop('message', None)
         #max_results = data.pop('max_results', 10)
         #client_id = data.pop('client_id', 'default')
-        query = Query(self.trapi_version, None).load(data)
+        query = Query.load(trapi_version, None, query=data)
         #return query, max_results, client_id
         return query, chp_config
 
@@ -70,51 +70,51 @@ class QueryProcessor:
         # First check if query_graph is in cache
         #query, cached_responses, query_map = self._get_response_from_cache(self.query)
         #if cached_responses is not None:
-        #    logger.info2('Found {} cached responses.'.format(len(cached_responses)))
+        #    logger.note('Found {} cached responses.'.format(len(cached_responses)))
 
         if self.query is not None:
-            logger.info2('Running query.')
-            try:
-                # Instaniate TRAPI Interface
-                interface = TrapiInterface(
-                    query=self.query,
-                    hosts_filename=self.chp_config.hosts_filename,
-                    num_processes_per_host=self.chp_config.num_processes_per_host,
-                    bkb_handler=self.chp_config.bkb_handler,
-                    joint_reasoner=self.chp_config.joint_reasoner,
-                    dynamic_reasoner=self.chp_config.dynamic_reasoner,
-                )
+            logger.note('Running query.')
+            #try:
+            # Instaniate TRAPI Interface
+            interface = TrapiInterface(
+                query=self.query,
+                hosts_filename=self.chp_config.hosts_filename,
+                num_processes_per_host=self.chp_config.num_processes_per_host,
+                bkb_handler=self.chp_config.bkb_handler,
+                joint_reasoner=self.chp_config.joint_reasoner,
+                dynamic_reasoner=self.chp_config.dynamic_reasoner,
+            )
 
-                # Build queries
-                interface.build_chp_queries()
-            except Exception as e:
-                return JsonResponse('Bad request. ' + str(e), status=400, safe=False)
+            # Build queries
+            interface.build_chp_queries()
+            #except Exception as e:
+            #    return JsonResponse('Bad request. ' + str(e), status=400, safe=False)
 
-            logger.info2('Built Queries.')
+            logger.note('Built Queries.')
             # Run queries
             interface.run_chp_queries()
-            logger.info2('Completed Reasoning in {} seconds.'.format(time.time() - start_time))
+            logger.note('Completed Reasoning in {} seconds.'.format(time.time() - start_time))
 
             # Construct Response
             response = interface.construct_trapi_response()
-            logger.info2('Constructed TRAPI response.')
+            logger.note('Constructed TRAPI response.')
 
             '''
             # Put result in cache wrapped in a single SQL transaction
             with transaction.atomic():
-                logger.info2('Putting results in cache.')
+                logger.note('Putting results in cache.')
                 if type(response) == list:
                     for _resp in response:
-                        self._process_transaction(_resp)
+                        self._prosdfcess_transaction(_resp)
                 else:
                     self._process_transaction(response)
-                logger.info2('Results saved in cache.')
+                logger.note('Results saved in cache.')
             '''
         '''
         if cached_responses is not None:
             # Check for batch query
             if type(cached_responses) == list:
-                logger.info2('Reordering batch query.')
+                logger.note('Reordering batch query.')
                 if query is not None:
                     response = self._reorder_response(response, cached_responses, query_map)
                 else:
@@ -127,7 +127,7 @@ class QueryProcessor:
             if type(response) == list:
                 response = self._wrap_batch_responses(response)
         '''
-        logger.info2('Responded in {} seconds'.format(time.time() - start_time))
+        logger.note('Responded in {} seconds'.format(time.time() - start_time))
         return JsonResponse(response.to_dict())
 
     def _find_close_cached_query(self, parsed_query, potential_objs, threshold=None):

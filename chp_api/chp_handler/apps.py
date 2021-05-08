@@ -6,11 +6,11 @@ import logging
 from chp.reasoner import ChpJointReasoner, ChpDynamicReasoner
 from chp_data.bkb_handler import BkbDataHandler
 
-logging.basicConfig(level=logging.INFO)
+#logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
 class ChpApiConfig(AppConfig):
-    logger.info('Running CHP API Configuration.')
+    logger.warning('Running CHP API Configuration. May take a minute.')
     name = 'chp_handler'
 
     # Used for distrbuted reasoning
@@ -40,7 +40,7 @@ class ChpApiConfig(AppConfig):
         num_processes_per_host=num_processes_per_host)
 
 class ChpBreastApiConfig(AppConfig):
-    logger.info('Running CHP API Configuration.')
+    logger.warning('Running CHP Breast API Configuration. May take a minute.')
     name = 'chp_breast_handler'
 
     # Used for distrbuted reasoning
@@ -71,7 +71,7 @@ class ChpBreastApiConfig(AppConfig):
         num_processes_per_host=num_processes_per_host)
 
 class ChpBrainApiConfig(AppConfig):
-    logger.info('Running CHP API Configuration.')
+    logger.warning('Running CHP Brain API Configuration. May take a minute.')
     name = 'chp_brain_handler'
 
     # Used for distrbuted reasoning
@@ -102,7 +102,7 @@ class ChpBrainApiConfig(AppConfig):
         num_processes_per_host=num_processes_per_host)
 
 class ChpLungApiConfig(AppConfig):
-    logger.info('Running CHP API Configuration.')
+    logger.warning('Running CHP Lung API Configuration. May take a minute.')
     name = 'chp_brain_handler'
 
     # Used for distrbuted reasoning
