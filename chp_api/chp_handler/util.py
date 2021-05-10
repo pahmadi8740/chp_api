@@ -8,6 +8,7 @@ from .models import Transaction
 from .apps import ChpApiConfig, ChpBreastApiConfig, ChpBrainApiConfig, ChpLungApiConfig
 
 from trapi_model.query import Query
+from trapi_model.biolink.constants import *
 
 from chp.trapi_interface import TrapiInterface, parse_query_graph
 import chp
@@ -32,6 +33,7 @@ class QueryProcessor:
     """
     def __init__(self, request, trapi_version):
         self.query, self.chp_config = self._process_request(request, trapi_version=trapi_version)
+        self.query_copy = self.query.get_copy()
         self.trapi_version = trapi_version
 
     @staticmethod
@@ -45,6 +47,11 @@ class QueryProcessor:
         host_parse = host.split('.')
         # API subdomain is the ChpConfig to use.
         api = host_parse[0]
+
+
+        query = Query.load(trapi_version, None, query=data)
+        disease_node = query.message.query_graph.find_nodes(categories=[BIOLINK_DISEASE_ENTITY])
+
         if 'breast' in api:
             chp_config = ChpBreastApiConfig
         elif 'brain' in api:
@@ -52,11 +59,17 @@ class QueryProcessor:
         elif 'lung' in api:
             chp_config = ChpLungApiConfig
         else:
-            chp_config = ChpApiConfig
+            if disease_node is not None and disease_node.ids[0] == 'MONDO:0005061':
+                chp_config = ChpLungApiConfig
+            elif disease_node is not None and disease_node.ids[0] == 'MONDO:0001657':
+                chp_config = ChpBrainApiConfig
+            elif disease_node is not None and disease_node.ids[0] == 'MONDO:0007254':
+                chp_config = ChpBreastApiConfig
+            else:
+                chp_config = ChpApiConfig
         #query = data.pop('message', None)
         #max_results = data.pop('max_results', 10)
         #client_id = data.pop('client_id', 'default')
-        query = Query.load(trapi_version, None, query=data)
         #return query, max_results, client_id
         return query, chp_config
 
@@ -74,21 +87,23 @@ class QueryProcessor:
 
         if self.query is not None:
             logger.note('Running query.')
-            #try:
+            try:
             # Instaniate TRAPI Interface
-            interface = TrapiInterface(
-                query=self.query,
-                hosts_filename=self.chp_config.hosts_filename,
-                num_processes_per_host=self.chp_config.num_processes_per_host,
-                bkb_handler=self.chp_config.bkb_handler,
-                joint_reasoner=self.chp_config.joint_reasoner,
-                dynamic_reasoner=self.chp_config.dynamic_reasoner,
-            )
+                interface = TrapiInterface(
+                    query=self.query,
+                    hosts_filename=self.chp_config.hosts_filename,
+                    num_processes_per_host=self.chp_config.num_processes_per_host,
+                    bkb_handler=self.chp_config.bkb_handler,
+                    joint_reasoner=self.chp_config.joint_reasoner,
+                    dynamic_reasoner=self.chp_config.dynamic_reasoner,
+                )
 
-            # Build queries
-            interface.build_chp_queries()
-            #except Exception as e:
-            #    return JsonResponse('Bad request. ' + str(e), status=400, safe=False)
+                # Build queries
+                interface.build_chp_queries()
+            except Exception as e:
+                query_dict = self.query_copy.to_dict()
+                query_dict['status'] = 'Bad request.' + str(e)
+                return JsonResponse(query_dict)
 
             logger.note('Built Queries.')
             # Run queries
