@@ -7,7 +7,7 @@ from django.core.exceptions import ObjectDoesNotExist
 from .models import Transaction
 from .apps import ChpApiConfig, ChpBreastApiConfig, ChpBrainApiConfig, ChpLungApiConfig
 
-from trapi_model import Query
+from trapi_model.query import Query
 
 from chp.trapi_interface import TrapiInterface, parse_query_graph
 import chp
