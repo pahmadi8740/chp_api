@@ -48,22 +48,27 @@ class QueryProcessor:
         # API subdomain is the ChpConfig to use.
         api = host_parse[0]
         query = Query.load(trapi_version, None, query=data)
-        disease_node = query.message.query_graph.find_nodes(categories=[BIOLINK_DISEASE_ENTITY])
+        disease_nodes_ids = query.message.query_graph.find_nodes(categories=[BIOLINK_DISEASE_ENTITY])
         if 'breast' in api:
             chp_config = ChpBreastApiConfig
         elif 'brain' in api:
             chp_config = ChpBrainApiConfig
         elif 'lung' in api:
             chp_config = ChpLungApiConfig
-        else:
-            if disease_node is not None and disease_node.ids[0] == 'MONDO:0005061':
+        elif disease_nodes_ids is not None:
+            if len(disease_nodes_ids) > 1:
+                chp_config = ChpApiConfig
+            disease_node = query.message.query_graph.nodes[disease_nodes_ids[0]]
+            if disease_node.ids[0] == 'MONDO:0005061':
                 chp_config = ChpLungApiConfig
-            elif disease_node is not None and disease_node.ids[0] == 'MONDO:0001657':
+            elif disease_node.ids[0] == 'MONDO:0001657':
                 chp_config = ChpBrainApiConfig
-            elif disease_node is not None and disease_node.ids[0] == 'MONDO:0007254':
+            elif disease_node.ids[0] == 'MONDO:0007254':
                 chp_config = ChpBreastApiConfig
             else:
                 chp_config = ChpApiConfig
+        else:
+            chp_config = ChpApiConfig
         #query = data.pop('message', None)
         #max_results = data.pop('max_results', 10)
         #client_id = data.pop('client_id', 'default')
@@ -74,7 +79,6 @@ class QueryProcessor:
         """ Main function of the processor that handles primary logic for obtaining
             a cached or calculated query response.
         """
-        start_time = time.time()
         #logger.info('Database as {} entries.'.format(Transaction.objects.all().count()))
 
         # First check if query_graph is in cache
@@ -82,6 +86,7 @@ class QueryProcessor:
         #if cached_responses is not None:
         #    logger.note('Found {} cached responses.'.format(len(cached_responses)))
 
+        start_time = time.time()
         if self.query is not None:
             logger.note('Running query.')
             try:
@@ -102,10 +107,18 @@ class QueryProcessor:
                 query_dict['status'] = 'Bad request.' + str(e)
                 return JsonResponse(query_dict)
 
+
             logger.note('Built Queries.')
             # Run queries
-            interface.run_chp_queries()
-            logger.note('Completed Reasoning in {} seconds.'.format(time.time() - start_time))
+            try:
+                reasoning_start_time = time.time()
+                interface.run_chp_queries()
+                logger.note('Completed Reasoning in {} seconds.'.format(time.time() - reasoning_start_time))
+            except Exception as e:
+                logger.critical('Error during reasoning.')
+                query_dict = self.query_copy.to_dict()
+                query_dict['status'] = 'Unexpected error.' + str(e)
+                return JsonResponse(query_dict)
 
             # Construct Response
             response = interface.construct_trapi_response()
@@ -140,7 +153,9 @@ class QueryProcessor:
                 response = self._wrap_batch_responses(response)
         '''
         logger.note('Responded in {} seconds'.format(time.time() - start_time))
-        return JsonResponse(response.to_dict())
+        response_dict = response.to_dict()
+        response_dict['status'] = 'Success'
+        return JsonResponse(response_dict)
 
     def _find_close_cached_query(self, parsed_query, potential_objs, threshold=None):
         """ This fuction will find a query that matches exactly genes, drugs, disease, outcome name,
