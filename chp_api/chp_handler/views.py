@@ -16,44 +16,66 @@ import pybkb
 from .util import QueryProcessor
 
 # Setup logging
-logging.basicConfig(level=20)
+#logging.basicConfig(level=20)
 
 # Setup Logger
 logger = logging.getLogger(__name__)
 
 class query_all(APIView):
+    trapi_version = '1.1'
+    #def __init__(self, trapi_version='1.1', **kwargs):
+    #    self.trapi_version = trapi_version
+    #    super(query_all, self).__init__(**kwargs)
 
     def post(self, request):
         if request.method == 'POST':
-            query_processor = QueryProcessor(request)
+            query_processor = QueryProcessor(request, self.trapi_version)
             return query_processor.get_response_to_query()
 
 class query(APIView):
+    trapi_version = '1.1'
+    #def __init__(self, trapi_version='1.1', **kwargs):
+    #    self.trapi_version = trapi_version
+    #    super(query, self).__init__(**kwargs)
 
     def post(self, request):
         if request.method == 'POST':
-            query_processor = QueryProcessor(request)
+            query_processor = QueryProcessor(request, self.trapi_version)
             return query_processor.get_response_to_query()
 
 class check_query(APIView):
+    trapi_version = '1.1'
+    #def __init__(self, trapi_version='1.1', **kwargs):
+    #    self.trapi_version = trapi_version
+    #    super(check_query, self).__init__(**kwargs)
 
     def post(self, request):
         if request.method == 'POST':
-            query, max_results, client_id = QueryProcessor._process_request(request)
+            #query, max_results, client_id = QueryProcessor._process_request(
+            #        request,
+            #        self.trapi_version,
+            #        )
 
             # Instaniate interface
-            interface = TrapiInterface(query=query, client_id=client_id)
+            interface = TrapiInterface()
 
             return JsonResponse(interface.check_query())
 
 class curies(APIView):
+    trapi_version = '1.1'
+    #def __init__(self, trapi_version='1.1', **kwargs):
+    #    self.trapi_version = trapi_version
+    #    super(curies, self).__init__(**kwargs)
     
     def get(self, request):
         if request.method == 'GET':
-            query, max_results, client_id = QueryProcessor._process_request(request)
+            #query, max_results, client_id = QueryProcessor._process_request(
+            #        request,
+            #        self.trapi_version,
+            #        )
 
             # Instaniate interface
-            interface = TrapiInterface(client_id=client_id)
+            interface = TrapiInterface()
 
             # Get supported curies
             curies = interface.get_curies()
@@ -61,19 +83,30 @@ class curies(APIView):
             return JsonResponse(curies)
 
 class predicates(APIView):
+    trapi_version = '1.1'
+    #def __init__(self, trapi_version='1.1', **kwargs):
+    #    self.trapi_version = trapi_version
+    #    super(predicates, self).__init__(**kwargs)
     
     def get(self, request):
         if request.method == 'GET':
-            query, max_results, client_id = QueryProcessor._process_request(request)
+            #query, max_results, client_id = QueryProcessor._process_request(
+            #        request,
+            #        self.trapi_version,
+            #        )
 
             # Instaniate interface
-            interface = TrapiInterface(client_id=client_id)
+            interface = TrapiInterface()
 
             # Get supported predicates
             predicates = interface.get_predicates()
             return JsonResponse(predicates)
 
 class versions(APIView):
+    trapi_version = '1.1'
+    #def __init__(self, trapi_version='1.1', **kwargs):
+    #    self.trapi_version = trapi_version
+    #    super(versions, self).__init__(**kwargs)
 
     def get(self, request):
         if request.method == 'GET':
@@ -84,6 +117,10 @@ class versions(APIView):
         return JsonResponse(versions)
 
 class constants(APIView):
+    trapi_version = '1.1'
+    #def __init__(self, trapi_version='1.1', **kwargs):
+    #    self.trapi_version = trapi_version
+    #    super(constants, self).__init__(**kwargs)
 
     def get(self, request):
         if request.method == 'GET':
