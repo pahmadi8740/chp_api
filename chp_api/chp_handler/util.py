@@ -15,6 +15,7 @@ import chp
 import pybkb
 import chp_data
 import chp_client
+import requests
 
 # Setup logging
 logging.addLevelName(25, "NOTE")
@@ -35,6 +36,18 @@ class QueryProcessor:
         self.query, self.chp_config = self._process_request(request, trapi_version=trapi_version)
         self.query_copy = self.query.get_copy()
         self.trapi_version = trapi_version
+
+    @staticmethod
+    def _process_curie_subclasses(request, trapi_version='1.1'):
+
+        data = request.data
+
+        query = Query.load(trapi_version, None, query=data)
+        disease_nodes_ids = query.message.query_graph.find_nodes(categories=[BIOLINK_DISEASE_ENTITY])
+
+
+        url = 'https://nodenormalization-sri.renci.org/get_normalized_nodes'
+        response = requests.post(url, json=message, params=params)
 
     @staticmethod
     def _process_request(request, trapi_version='1.1'):
