@@ -35,6 +35,7 @@ class QueryProcessor:
         self.query, self.chp_config = self._process_request(request, trapi_version=trapi_version)
         self.query_copy = self.query.get_copy()
         self.trapi_version = trapi_version
+        self.request_process_failure_response = None
 
     @staticmethod
     def _process_request(request, trapi_version='1.1'):
@@ -50,8 +51,8 @@ class QueryProcessor:
         try:
             query = Query.load(trapi_version, None, query=data)
         except Exception as e:
-            error_response = self._build_error_response(str(e))
-            return JsonResponse(error_response)
+            self.request_process_failure_response = self._build_error_response(str(e))
+            return None, None
 
         disease_nodes_ids = query.message.query_graph.find_nodes(categories=[BIOLINK_DISEASE_ENTITY])
         if 'breast' in api:
@@ -90,6 +91,10 @@ class QueryProcessor:
         #query, cached_responses, query_map = self._get_response_from_cache(self.query)
         #if cached_responses is not None:
         #    logger.note('Found {} cached responses.'.format(len(cached_responses)))
+
+        # for errors found in _process_request. Particularly malformed TRAPI
+        if self.request_process_failure_response is not None:
+            return JsonResponse(self.request_process_failure_response)
 
         start_time = time.time()
         if self.query is not None:
