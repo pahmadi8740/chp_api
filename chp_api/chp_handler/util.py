@@ -32,9 +32,15 @@ class QueryProcessor:
         :type request: request
     """
     def __init__(self, request, trapi_version):
-        self.query, self.chp_config = self._process_request(request, trapi_version=trapi_version)
-        self.query_copy = self.query.get_copy()
-        self.trapi_version = trapi_version
+        # checks for malformed trapi error in try except
+        self.request_process_failure_response = None
+        try:
+            self.query, self.chp_config = self._process_request(request, trapi_version=trapi_version)
+        except Exception as e:
+            self.request_process_failure_response = self._build_error_response(str(e))
+        if self.request_process_failure_response is None:
+            self.query_copy = self.query.get_copy()
+            self.trapi_version = trapi_version
 
     @staticmethod
     def _process_request(request, trapi_version='1.1'):
@@ -85,6 +91,10 @@ class QueryProcessor:
         #query, cached_responses, query_map = self._get_response_from_cache(self.query)
         #if cached_responses is not None:
         #    logger.note('Found {} cached responses.'.format(len(cached_responses)))
+
+        # for errors found in _process_request. Particularly malformed TRAPI
+        if self.request_process_failure_response is not None:
+            return JsonResponse(self.request_process_failure_response)
 
         start_time = time.time()
         if self.query is not None:
@@ -295,8 +305,8 @@ class QueryProcessor:
         """ Builds a stock message back in the event a 400 level error has occured.
         """
 
-        response = { 'query_graph' : self.query,
-                     'knowledge_graph' : { 'edges': dict(), nodes: dict()},
+        response = { 'query_graph' : { 'edges': dict(), 'nodes': dict()},
+                     'knowledge_graph' : { 'edges': dict(), 'nodes': dict()},
                      'results': [] }
         message = {'message' : response,
                    'description' : 'Unsupported query',
