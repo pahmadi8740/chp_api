@@ -44,6 +44,7 @@ class QueryProcessor:
 
         query = Query.load(trapi_version, None, query=data)
         disease_nodes_ids = query.message.query_graph.find_nodes(categories=[BIOLINK_DISEASE_ENTITY])
+        print(disease_nodes_ids)
 
 
         url = 'https://nodenormalization-sri.renci.org/get_normalized_nodes'
