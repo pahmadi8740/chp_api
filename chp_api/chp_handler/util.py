@@ -32,10 +32,15 @@ class QueryProcessor:
         :type request: request
     """
     def __init__(self, request, trapi_version):
-        self.query, self.chp_config = self._process_request(request, trapi_version=trapi_version)
-        self.query_copy = self.query.get_copy()
-        self.trapi_version = trapi_version
+        # checks for malformed trapi error in try except
         self.request_process_failure_response = None
+        try:
+            self.query, self.chp_config = self._process_request(request, trapi_version=trapi_version)
+        except Exception as e:
+            self.request_process_failure_response = self._build_error_response(str(e))
+        if self.request_process_failure_response is None:
+            self.query_copy = self.query.get_copy()
+            self.trapi_version = trapi_version
 
     @staticmethod
     def _process_request(request, trapi_version='1.1'):
@@ -48,12 +53,7 @@ class QueryProcessor:
         host_parse = host.split('.')
         # API subdomain is the ChpConfig to use.
         api = host_parse[0]
-        try:
-            query = Query.load(trapi_version, None, query=data)
-        except Exception as e:
-            self.request_process_failure_response = self._build_error_response(str(e))
-            return None, None
-
+        query = Query.load(trapi_version, None, query=data)
         disease_nodes_ids = query.message.query_graph.find_nodes(categories=[BIOLINK_DISEASE_ENTITY])
         if 'breast' in api:
             chp_config = ChpBreastApiConfig
@@ -305,8 +305,8 @@ class QueryProcessor:
         """ Builds a stock message back in the event a 400 level error has occured.
         """
 
-        response = { 'query_graph' : self.query,
-                     'knowledge_graph' : { 'edges': dict(), nodes: dict()},
+        response = { 'query_graph' : { 'edges': dict(), 'nodes': dict()},
+                     'knowledge_graph' : { 'edges': dict(), 'nodes': dict()},
                      'results': [] }
         message = {'message' : response,
                    'description' : 'Unsupported query',
