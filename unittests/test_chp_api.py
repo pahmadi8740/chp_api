@@ -21,6 +21,7 @@ class TestChpApi(unittest.TestCase):
         self.query_all_endpoint = '/queryall/'
         self.curies_endpoint = '/curies/'
         self.predicates_endpoint = '/predicates/'
+        self.meta_knowledge_graph_endpoint = '/meta_knowledge_graph/'
         self.constants_endpoint = '/constants/'
 
     @staticmethod
@@ -59,6 +60,11 @@ class TestChpApi(unittest.TestCase):
     def test_predicates(self):
         url = LOCAL_URL + self.predicates_endpoint
         resp = self._get(url)
+
+    def test_meta_knowledge_graph(self):
+        url = LOCAL_URL + self.meta_knowledge_graph_endpoint
+        resp = self._get(url)
+        print(resp)
 
     def test_constants(self):
         url = LOCAL_URL + self.constants_endpoint
