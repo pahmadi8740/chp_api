@@ -102,6 +102,15 @@ class predicates(APIView):
             predicates = interface.get_predicates()
             return JsonResponse(predicates)
 
+class meta_knowledge_graph(APIView):
+    trapi_version = '1.1'
+
+    def get(self, request):
+        if request.method == 'GET':
+            interface = TrapiInterface()
+            meta_knowledge_graph = interface.get_meta_knowledge_graph()
+            return JsonResponse(meta_knowledge_graph)
+
 class versions(APIView):
     trapi_version = '1.1'
     #def __init__(self, trapi_version='1.1', **kwargs):
