@@ -47,7 +47,12 @@ class QueryProcessor:
         host_parse = host.split('.')
         # API subdomain is the ChpConfig to use.
         api = host_parse[0]
-        query = Query.load(trapi_version, None, query=data)
+        try:
+            query = Query.load(trapi_version, None, query=data)
+        except Exception as e:
+            error_response = self._build_error_response(str(e))
+            return JsonResponse(error_response)
+
         disease_nodes_ids = query.message.query_graph.find_nodes(categories=[BIOLINK_DISEASE_ENTITY])
         if 'breast' in api:
             chp_config = ChpBreastApiConfig
