@@ -41,6 +41,7 @@ class query(APIView):
     def post(self, request):
         if request.method == 'POST':
             query_processor = QueryProcessor(request, self.trapi_version)
+            #query_processor.process_subclasses(request, self.trapi_version)
             return query_processor.get_response_to_query()
 
 class check_query(APIView):

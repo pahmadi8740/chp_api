@@ -16,6 +16,8 @@ import pybkb
 import chp_data
 import chp_client
 import requests
+import json
+from copy import deepcopy
 
 # Setup logging
 logging.addLevelName(25, "NOTE")
@@ -33,34 +35,189 @@ class QueryProcessor:
         :type request: request
     """
     def __init__(self, request, trapi_version):
+        #self.process_subclasses(request, trapi_version=trapi_version)
         self.query, self.chp_config = self._process_request(request, trapi_version=trapi_version)
         self.query_copy = self.query.get_copy()
         self.trapi_version = trapi_version
-
-    @staticmethod
-    def _process_curie_subclasses(request, trapi_version='1.1'):
-
-        data = request.data
-
-        query = Query.load(trapi_version, None, query=data)
-        disease_nodes_ids = query.message.query_graph.find_nodes(categories=[BIOLINK_DISEASE_ENTITY])
-        print(disease_nodes_ids)
-
-
-        url = 'https://nodenormalization-sri.renci.org/get_normalized_nodes'
-        response = requests.post(url, json=message, params=params)
+        self.original_query_graph = request.data['message']['query_graph']
 
     @staticmethod
     def _process_request(request, trapi_version='1.1'):
+
+        def _biolink_category_descendent_lookup(biolinkCategory):
+            url = "https://bl-lookup-sri.renci.org/bl/"+biolinkCategory+"/descendants?version=latest"
+            response = requests.get(url)
+            return response.json()
+        
+        def _process_subclasses(data, trapi_version='1.1'):
+            query = Query.load(trapi_version, biolink_version=None, query=data)
+            #get nodes
+            drug_nodes_found = False
+            gene_nodes_found = False
+            nodes = query.message.query_graph.nodes
+            for node in nodes:
+                node_obj = nodes[node]
+                curies = node_obj.ids
+
+                passed_categories = []
+                categories = node_obj.categories             
+
+                if curies is not None:
+                    for curie in curies:
+                        if "MONDO" in curie:
+                            #check if we support the specificied categories
+                            #if we do not support the specified categories, see if we can support descendants 
+                            logger.note('what the fuck')
+                            if get_biolink_entity("biolink:Disease") not in node_obj.categories:
+                                for category in node_obj.categories:
+                                    descendants = _biolink_category_descendent_lookup(category.passed_name)
+                                    if "biolink:Disease" in descendants:
+                                        node_obj.set_categories("biolink:Disease")
+                        elif "ENSEMBL" in curie:
+                            logger.note('im tired')
+                            gene_nodes_found = True
+                            if get_biolink_entity("biolink:Gene") not in node_obj.categories:
+                                for category in node_obj.categories:
+                                    descendants = _biolink_category_descendent_lookup(category.passed_name)
+                                    if "biolink:Gene" in descendants:
+                                        node_obj.set_categories("biolink:Gene")
+                        elif "CHEMBL" in curie:
+                            logger.note('blah')
+                            drug_nodes_found = True
+                            if get_biolink_entity("biolink:Drug") not in node_obj.categories:
+                                for category in node_obj.categories:
+                                    descendants = _biolink_category_descendent_lookup(category.passed_name)
+                                    if "biolink:Drug" in descendants:
+                                        node_obj.set_categories("biolink:Drug")
+                        elif "EFO" in curie:
+                            logger.note('suh')
+                            if get_biolink_entity("biolink:PhenotypicFeature") not in node_obj.categories:
+                                for category in node_obj.categories:
+                                    descendants = _biolink_category_descendent_lookup(category.passed_name)
+                                    if "biolink:PhenotypicFeature" in descendants:
+                                        node_obj.set_categories("biolink:PhenotypicFeature")
+                query.message.query_graph.nodes[node] = node_obj
+
+            #get edges
+            edges = query.message.query_graph.edges              
+            for edge in edges:
+                edge_obj = edges[edge]
+                if nodes[edge_obj.subject].ids is not None and nodes[edge_obj.object].ids is not None:  
+                    for subject_id in nodes[edge_obj.subject].ids:
+                        for object_id in nodes[edge_obj.object].ids:
+                            if "ENSEMBL" in subject_id:
+                                if "CHEMBL" in object_id:
+                                    if get_biolink_entity("biolink:interacts_with") not in edge_obj.predicates:
+                                        for predicate in edge_obj.predicates:
+                                            descendants = _biolink_category_descendent_lookup(predicate.passed_name)
+                                            if "biolink:interacts_with" in descendants:
+                                                edge_obj.set_predicates("biolink:interacts_with")
+                                if "MONDO" in object_id:
+                                    if get_biolink_entity("biolink:gene_associated_with_condition") not in edge_obj.predicates:
+                                        for predicate in edge_obj.predicates:
+                                            descendants = _biolink_category_descendent_lookup(predicate.passed_name)
+                                            if "biolink:gene_associated_with_condition" in descendants:
+                                                edge_obj.set_predicates("biolink:gene_associated_with_condition")
+                            if "CHEMBL" in subject_id:
+                                if "MONDO" in object_id:
+                                    if get_biolink_entity("biolink:treats") not in edge_obj.predicates:
+                                        for predicate in edge_obj.predicates:
+                                            descendants = _biolink_category_descendent_lookup(predicate.passed_name)
+                                            if "biolink:treats" in descendants:
+                                                edge_obj.set_predicates("biolink:treats")
+                                if "ENSEMBL" in object_id:
+                                    if get_biolink_entity("biolink:interacts_with") not in edge_obj.predicates:
+                                        for predicate in edge_obj.predicates:
+                                            descendants = _biolink_category_descendent_lookup(predicate.passed_name)
+                                            if "biolink:interacts_with" in descendants:
+                                                edge_obj.set_predicates("biolink:interacts_with")
+                            if "MONDO" in subject_id:
+                                if "EFO" in object_id:
+                                    if get_biolink_entity("biolink:has_phenotype") not in edge_obj.predicates:
+                                        for predicate in edge_obj.predicates:
+                                            descendants = _biolink_category_descendent_lookup(predicate.passed_name)
+                                            if "biolink:has_phenotype" in descendants:
+                                                edge_obj.set_predicates("biolink:has_phenotype")
+                            query.message.query_graph.edges[edge] = edge_obj
+
+            data = query.to_dict()
+            #handle wildcard queries
+            #drugwildcard with genes specified
+            if drug_nodes_found and not gene_nodes_found:
+                for node in nodes:
+                    node_obj = nodes[node]
+                    if node_obj.ids is None:
+                        for category in node_obj.categories:
+                            descendants = _biolink_category_descendent_lookup(category.passed_name)
+                            if "biolink:Gene" in descendants:
+                                node_obj.set_categories("biolink:Gene")
+                                query.message.query_graph.nodes[node] = node_obj
+                data = query.to_dict()
+            #genewildcard with drugs specified
+            elif gene_nodes_found and not drug_nodes_found:
+                for node in nodes:
+                    node_obj = nodes[node]
+                    if node_obj.ids is None:
+                        for category in node_obj.categories:
+                            descendants = _biolink_category_descendent_lookup(category.passed_name)
+                            if "biolink:Drug" in descendants:
+                                node_obj.set_categories("biolink:Drug")
+                                query.message.query_graph.nodes[node] = node_obj
+                data = query.to_dict()
+            elif not gene_nodes_found and not drug_nodes_found:
+                for node in nodes:
+                    node_obj = nodes[node]
+                    if node_obj.ids == None:    
+                        #find edge for this node
+                        for edge in edges:
+                            edge_obj = edges[edge]
+                            if edge_obj.subject == node:
+                                #check constraints for context
+                                drug_constraint = edge_obj.find_constraint("drug")
+                                gene_constraint = edge_obj.find_constraint("gene")
+                                #gene wildcard by drug found in constraint
+                                if drug_constraint is not None:
+                                    node_obj.set_categories("biolink:Gene")
+                                    query.message.query_graph.nodes[node] = node_obj
+                                    if nodes[edge_obj.object].category == "biolink:Gene":
+                                        edge_obj.set_predicates("biolink:interacts_with")
+                                        query.message.query_graph.edges[edge] = edge_obj
+                                    elif nodes[edge_obj.object].category == "biolink:Disease":
+                                        edge_obj.set_predicates("biolink:gene_associated_with_condition")
+                                        query.message.query_graph.edges[edge] = edge_obj
+                                    data = query.to_dict()
+                                #drug wildcard by gene found in constraint
+                                elif gene_constraint is not None:
+                                    node_obj.set_categories("biolink:Drug")
+                                    query.message.query_graph.nodes[node] = node_obj
+                                    if nodes[edge_obj.object].category == "biolink:Gene":
+                                        edge_obj.set_predicates("biolink:interacts_with")
+                                        query.message.query_graph.edges[edge] = edge_obj
+                                    elif nodes[edge_obj.object].category == "biolink:Disease":
+                                        edge_obj.set_predicates("biolink:treats")
+                                        query.message.query_graph.edges[edge] = edge_obj
+                                    data = query.to_dict()
+                                else:
+                                    #create batch queries because not enough context found
+                                    #create copy of query
+                                    #query.message.query_graph.nodes[node].set_categories(["biolink:Gene","biolink:Drug"])
+                                    #query.message.query_graph.edges[edge].set_predicates(["biolink:gene_associated_with_condition","biolink:treats"])
+                                    #data = query.to_dict()
+                                    continue
+                            continue
+            return data
+
         """ Helper function that extracts the query from the message.
         """
         logger.note('Starting query.')
         data = request.data
+        data = _process_subclasses(data, trapi_version=trapi_version)
         host = request.headers['Host']
         # Parse host name
         host_parse = host.split('.')
         # API subdomain is the ChpConfig to use.
         api = host_parse[0]
+        logger.note(data)
         query = Query.load(trapi_version, None, query=data)
         disease_nodes_ids = query.message.query_graph.find_nodes(categories=[BIOLINK_DISEASE_ENTITY])
         if 'breast' in api:
@@ -169,6 +326,7 @@ class QueryProcessor:
         '''
         logger.note('Responded in {} seconds'.format(time.time() - start_time))
         response_dict = response.to_dict()
+        response_dict['message']['query_graph']=self.original_query_graph
         response_dict['status'] = 'Success'
         return JsonResponse(response_dict)
 
