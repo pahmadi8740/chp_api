@@ -5,7 +5,7 @@ import unittest
 import requests
 
 #from trapi_model import Query
-LOCAL_URL = 'http://127.0.0.1:8000'
+LOCAL_URL = 'http://127.0.0.1:80'
 #LOCAL_URL = 'http://localhost:80'
 #LOCAL_URL = 'http://chp.thayer.dartmouth.edu'
 
@@ -205,6 +205,68 @@ class TestChpApi(unittest.TestCase):
                 resp, status = self._post(url, query)
                 self.assertEqual(status, 200)
 
+    def test_semantic_operations_on_standard_queries(self):
+        query_endpoint = self.query_endpoint
+        with open('query_samples/semantic_operation_samples/standard_single_onehop_queries.pk', 'rb') as f_:
+            queries = pickle.load(f_)
+            for name, query in queries.items():
+                url = LOCAL_URL + query_endpoint
+                resp, status = self._post(url, query)
+                self.assertEqual(status, 200)
+    
+    def test_semantic_operations_on_drug_one_hop_queries(self):
+        query_endpoint = self.query_endpoint
+        with open('query_samples/semantic_operation_samples/drug_one_hop_queries.pk', 'rb') as f_:
+            queries = pickle.load(f_)
+            for name, query in queries.items():
+                url = LOCAL_URL + query_endpoint
+                resp, status = self._post(url, query)
+                self.assertEqual(status, 200)
+    
+    def test_semantic_operations_on_drug_one_hop_queries(self):
+        query_endpoint = self.query_endpoint
+        with open('query_samples/semantic_operation_samples/drug_one_hop_queries.pk', 'rb') as f_:
+            queries = pickle.load(f_)
+            for name, query in queries.items():
+                url = LOCAL_URL + query_endpoint
+                resp, status = self._post(url, query)
+                self.assertEqual(status, 200)
+    
+    def test_semantic_operations_on_gene_one_hop_queries(self):
+        query_endpoint = self.query_endpoint
+        with open('query_samples/semantic_operation_samples/gene_one_hop_queries.pk', 'rb') as f_:
+            queries = pickle.load(f_)
+            for name, query in queries.items():
+                url = LOCAL_URL + query_endpoint
+                resp, status = self._post(url, query)
+                self.assertEqual(status, 200)
+    
+    def test_semantic_operations_on_gene_wildcard_queries(self):
+        query_endpoint = self.query_endpoint
+        with open('query_samples/semantic_operation_samples/gene_one_hop_queries.pk', 'rb') as f_:
+            queries = pickle.load(f_)
+            for name, query in queries.items():
+                url = LOCAL_URL + query_endpoint
+                resp, status = self._post(url, query)
+                self.assertEqual(status, 200)
+
+    def test_semantic_operations_on_dug_wildcard_queries(self):
+        query_endpoint = self.query_endpoint
+        with open('query_samples/semantic_operation_samples/drug_wildcard_queries.pk', 'rb') as f_:
+            queries = pickle.load(f_)
+            for name, query in queries.items():
+                url = LOCAL_URL + query_endpoint
+                resp, status = self._post(url, query)
+                self.assertEqual(status, 200)
+    
+    def test_semantic_operations_on_dug_wildcard_queries(self):
+        query_endpoint = self.query_endpoint
+        with open('query_samples/semantic_operation_samples/gene_wildcard_queries.pk', 'rb') as f_:
+            queries = pickle.load(f_)
+            for name, query in queries.items():
+                url = LOCAL_URL + query_endpoint
+                resp, status = self._post(url, query)
+                self.assertEqual(status, 200)
     '''
     def test_single_gene_onehop_query(self):
         with open('query_samples/random_gene_one_hop_queries.pk', 'rb') as f_:

@@ -16,8 +16,6 @@ import pybkb
 import chp_data
 import chp_client
 import requests
-import json
-from copy import deepcopy
 
 # Setup logging
 logging.addLevelName(25, "NOTE")
@@ -35,11 +33,10 @@ class QueryProcessor:
         :type request: request
     """
     def __init__(self, request, trapi_version):
-        #self.process_subclasses(request, trapi_version=trapi_version)
+        self.query_copy = query = Query.load(trapi_version, biolink_version=None, query=request.data)
         self.query, self.chp_config = self._process_request(request, trapi_version=trapi_version)
-        self.query_copy = self.query.get_copy()
-        self.trapi_version = trapi_version
-        self.original_query_graph = request.data['message']['query_graph']
+        #self.query_copy = self.query.get_copy()
+        self.trapi_version = trapi_version        
 
     @staticmethod
     def _process_request(request, trapi_version='1.1'):
@@ -57,24 +54,19 @@ class QueryProcessor:
             nodes = query.message.query_graph.nodes
             for node in nodes:
                 node_obj = nodes[node]
-                curies = node_obj.ids
-
-                passed_categories = []
-                categories = node_obj.categories             
+                curies = node_obj.ids    
 
                 if curies is not None:
                     for curie in curies:
                         if "MONDO" in curie:
                             #check if we support the specificied categories
                             #if we do not support the specified categories, see if we can support descendants 
-                            logger.note('what the fuck')
                             if get_biolink_entity("biolink:Disease") not in node_obj.categories:
                                 for category in node_obj.categories:
                                     descendants = _biolink_category_descendent_lookup(category.passed_name)
                                     if "biolink:Disease" in descendants:
                                         node_obj.set_categories("biolink:Disease")
                         elif "ENSEMBL" in curie:
-                            logger.note('im tired')
                             gene_nodes_found = True
                             if get_biolink_entity("biolink:Gene") not in node_obj.categories:
                                 for category in node_obj.categories:
@@ -82,7 +74,6 @@ class QueryProcessor:
                                     if "biolink:Gene" in descendants:
                                         node_obj.set_categories("biolink:Gene")
                         elif "CHEMBL" in curie:
-                            logger.note('blah')
                             drug_nodes_found = True
                             if get_biolink_entity("biolink:Drug") not in node_obj.categories:
                                 for category in node_obj.categories:
@@ -90,7 +81,6 @@ class QueryProcessor:
                                     if "biolink:Drug" in descendants:
                                         node_obj.set_categories("biolink:Drug")
                         elif "EFO" in curie:
-                            logger.note('suh')
                             if get_biolink_entity("biolink:PhenotypicFeature") not in node_obj.categories:
                                 for category in node_obj.categories:
                                     descendants = _biolink_category_descendent_lookup(category.passed_name)
@@ -198,11 +188,7 @@ class QueryProcessor:
                                         query.message.query_graph.edges[edge] = edge_obj
                                     data = query.to_dict()
                                 else:
-                                    #create batch queries because not enough context found
-                                    #create copy of query
-                                    #query.message.query_graph.nodes[node].set_categories(["biolink:Gene","biolink:Drug"])
-                                    #query.message.query_graph.edges[edge].set_predicates(["biolink:gene_associated_with_condition","biolink:treats"])
-                                    #data = query.to_dict()
+                                    #cannot support mixed batches
                                     continue
                             continue
             return data
@@ -217,7 +203,6 @@ class QueryProcessor:
         host_parse = host.split('.')
         # API subdomain is the ChpConfig to use.
         api = host_parse[0]
-        logger.note(data)
         query = Query.load(trapi_version, None, query=data)
         disease_nodes_ids = query.message.query_graph.find_nodes(categories=[BIOLINK_DISEASE_ENTITY])
         if 'breast' in api:
@@ -326,7 +311,8 @@ class QueryProcessor:
         '''
         logger.note('Responded in {} seconds'.format(time.time() - start_time))
         response_dict = response.to_dict()
-        response_dict['message']['query_graph']=self.original_query_graph
+        logger.note(response_dict)
+        response_dict['message']['query_graph']=self.query_copy.message.query_graph.to_dict()
         response_dict['status'] = 'Success'
         return JsonResponse(response_dict)
 
