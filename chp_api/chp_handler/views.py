@@ -12,14 +12,18 @@ from chp.trapi_interface import TrapiInterface
 import chp_client
 import chp_data
 import pybkb
+from copy import deepcopy
+from processing_and_validation.meta_kg_validator import UnsupportedPrefix
+import logging
+# Setup logging
+logging.addLevelName(25, "NOTE")
+# Add a special logging function
+def note(self, message, *args, **kwargs):
+    self._log(25, message, args, kwargs)
+logging.Logger.note = note
+logger = logging.getLogger(__name__)
 
 from .util import QueryProcessor
-
-# Setup logging
-#logging.basicConfig(level=20)
-
-# Setup Logger
-logger = logging.getLogger(__name__)
 
 class query_all(APIView):
     trapi_version = '1.1'
@@ -29,7 +33,17 @@ class query_all(APIView):
 
     def post(self, request):
         if request.method == 'POST':
-            query_processor = QueryProcessor(request, self.trapi_version)
+            try:
+                data_copy = deepcopy(request.data)
+                query_processor = QueryProcessor(request, self.trapi_version)
+            except UnsupportedPrefix as e:
+                response_dict = data_copy
+                response_dict['status'] = 'Bad request.' + str(e)
+                return JsonResponse(response_dict, status=400) 
+            except Exception as e:
+                response_dict = data_copy
+                response_dict['status'] = 'Bad request.' + str(e)
+                return JsonResponse(response_dict) 
             return query_processor.get_response_to_query()
 
 class query(APIView):
@@ -40,8 +54,17 @@ class query(APIView):
 
     def post(self, request):
         if request.method == 'POST':
-            query_processor = QueryProcessor(request, self.trapi_version)
-            #query_processor.process_subclasses(request, self.trapi_version)
+            try:
+                data_copy = deepcopy(request.data)
+                query_processor = QueryProcessor(request, self.trapi_version)
+            except UnsupportedPrefix as e:
+                response_dict = data_copy
+                response_dict['status'] = 'Bad request.' + str(e)
+                return JsonResponse(response_dict, status=400) 
+            except Exception as e:
+                response_dict = data_copy
+                response_dict['status'] = 'Bad request.' + str(e)
+                return JsonResponse(response_dict) 
             return query_processor.get_response_to_query()
 
 class check_query(APIView):
