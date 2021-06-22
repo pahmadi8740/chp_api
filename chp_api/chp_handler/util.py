@@ -3,8 +3,6 @@ import logging
 from django.db import transaction
 from django.http import JsonResponse
 from django.core.exceptions import ObjectDoesNotExist
-from rest_framework import status
-from trapi_model import query_graph
 from .models import Transaction
 from .apps import ChpApiConfig, ChpBreastApiConfig, ChpBrainApiConfig, ChpLungApiConfig
 
@@ -35,7 +33,7 @@ class QueryProcessor:
         :type request: request
     """
     def __init__(self, request, trapi_version):
-        self.message_copy = deepcopy(request.data)
+        self.data_copy = deepcopy(request.data)
         self.query, self.chp_config = self._process_request(request, trapi_version=trapi_version)
 
         self.trapi_version = trapi_version        
@@ -112,8 +110,8 @@ class QueryProcessor:
             # Build queries
                 interface.build_chp_queries()
             except Exception as e:
-                self.message_copy['status'] = 'Bad request.' + str(e)
-                return JsonResponse(self.message_copy)
+                self.data_copy['status'] = 'Bad request.' + str(e)
+                return JsonResponse(self.data_copy)
 
 
 
@@ -125,8 +123,8 @@ class QueryProcessor:
                 logger.note('Completed Reasoning in {} seconds.'.format(time.time() - reasoning_start_time))
             except Exception as e:
                 logger.critical('Error during reasoning.')
-                self.message_copy['status'] = 'Unexpected error.' + str(e)
-                return JsonResponse(self.message_copy)
+                self.data_copy['status'] = 'Unexpected error.' + str(e)
+                return JsonResponse(self.data_copy)
 
             # Construct Response
             response = interface.construct_trapi_response()
@@ -162,7 +160,7 @@ class QueryProcessor:
         '''
         logger.note('Responded in {} seconds'.format(time.time() - start_time))
         response_dict = response.to_dict()
-        response_dict['message']['query_graph']=self.message_copy['message']['query_graph']
+        response_dict['message']['query_graph']=self.data_copy['message']['query_graph']
         response_dict['status'] = 'Success'
         return JsonResponse(response_dict)
 

@@ -111,7 +111,6 @@ COPY --from=intermediate /usr/src/chp_api/wheels /wheels
 COPY --from=intermediate /usr/src/chp_api/requirements.txt .
 RUN pip3 install --upgrade pip
 RUN pip3 install --no-cache /wheels/*
-#RUN pip3 install linkml-model
 
 # copy entry point
 COPY ./entrypoint.prod.sh $APP_HOME
