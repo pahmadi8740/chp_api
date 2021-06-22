@@ -8,7 +8,6 @@ from .apps import ChpApiConfig, ChpBreastApiConfig, ChpBrainApiConfig, ChpLungAp
 
 from trapi_model.query import Query
 from trapi_model.biolink.constants import *
-from processing_and_validation.semantic_processor_exceptions import *
 
 from chp.trapi_interface import TrapiInterface, parse_query_graph
 import chp
