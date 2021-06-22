@@ -44,7 +44,6 @@ class QueryProcessor:
         """
         logger.note('Starting query.')
         data = request.data
-        #data = _process_subclasses(data, trapi_version=trapi_version)
         host = request.headers['Host']
         # Parse host name
         host_parse = host.split('.')
