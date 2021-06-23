@@ -14,14 +14,7 @@ import chp_data
 import pybkb
 from copy import deepcopy
 from processing_and_validation.meta_kg_validator import UnsupportedPrefix
-import logging
-# Setup logging
-logging.addLevelName(25, "NOTE")
-# Add a special logging function
-def note(self, message, *args, **kwargs):
-    self._log(25, message, args, kwargs)
-logging.Logger.note = note
-logger = logging.getLogger(__name__)
+
 
 from .util import QueryProcessor
 

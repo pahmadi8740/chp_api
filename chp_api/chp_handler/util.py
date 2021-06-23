@@ -15,6 +15,7 @@ import pybkb
 import chp_data
 import chp_client
 from copy import deepcopy
+import json
 
 # Setup logging
 logging.addLevelName(25, "NOTE")
@@ -95,7 +96,7 @@ class QueryProcessor:
         if self.query is not None:
             logger.note('Running query.')
             try:
-            # Instaniate TRAPI Interface
+                # Instaniate TRAPI Interface
                 interface = TrapiInterface(
                     query=self.query,
                     hosts_filename=self.chp_config.hosts_filename,
@@ -105,7 +106,7 @@ class QueryProcessor:
                     dynamic_reasoner=self.chp_config.dynamic_reasoner,
                 )
 
-            # Build queries
+                # Build queries
                 interface.build_chp_queries()
             except Exception as e:
                 self.data_copy['status'] = 'Bad request.' + str(e)
@@ -158,7 +159,7 @@ class QueryProcessor:
         '''
         logger.note('Responded in {} seconds'.format(time.time() - start_time))
         response_dict = response.to_dict()
-        response_dict['message']['query_graph']=self.data_copy['message']['query_graph']
+        #response_dict['message']['query_graph']=self.data_copy['message']['query_graph']
         response_dict['status'] = 'Success'
         return JsonResponse(response_dict)
 

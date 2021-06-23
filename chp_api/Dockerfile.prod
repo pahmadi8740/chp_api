@@ -37,9 +37,9 @@ RUN chmod 600 /root/.ssh/id_rsa.pub
 
 RUN git clone ssh://git@intuition.thayer.dartmouth.edu/home/public/git/modules/PyBKB.git
 RUN git clone --depth 1 --single-branch --branch master ssh://git@intuition.thayer.dartmouth.edu/home/public/git/projects/ChpData.git
-RUN git clone --single-branch --branch master https://github.com/di2ag/chp.git
+RUN git clone --single-branch --branch fix_one_hop https://github.com/di2ag/chp.git
 RUN git clone --single-branch --branch main https://github.com/di2ag/chp_client.git
-RUN git clone --single-branch --branch master https://github.com/di2ag/trapi_model.git
+RUN git clone --single-branch --branch meta_kg_validation https://github.com/di2ag/trapi_model.git
 RUN git clone https://github.com/di2ag/reasoner-validator.git
 
 # lint
