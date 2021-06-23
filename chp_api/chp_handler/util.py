@@ -15,7 +15,6 @@ import pybkb
 import chp_data
 import chp_client
 from copy import deepcopy
-import json
 
 # Setup logging
 logging.addLevelName(25, "NOTE")
