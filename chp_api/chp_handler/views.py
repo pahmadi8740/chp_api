@@ -36,7 +36,7 @@ class query_all(APIView):
                 return JsonResponse(response_dict, status=400) 
             except ValidationError as e:
                 response = { 'query_graph' : self.query,
-                     'knowledge_graph' : { 'edges': dict(), nodes: dict()},
+                     'knowledge_graph' : { 'edges': dict(), 'nodes': dict()},
                      'results': [] }
                 message = {'message' : response,
                         'description' : 'Unsupported query',
