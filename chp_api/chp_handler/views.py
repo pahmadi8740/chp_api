@@ -14,6 +14,7 @@ import chp_data
 import pybkb
 from copy import deepcopy
 from processing_and_validation.meta_kg_validator import UnsupportedPrefix
+from jsonschema import ValidationError
 
 
 from .util import QueryProcessor
@@ -33,6 +34,14 @@ class query_all(APIView):
                 response_dict = data_copy
                 response_dict['status'] = 'Bad request.' + str(e)
                 return JsonResponse(response_dict, status=400) 
+            except ValidationError as e:
+                response = { 'query_graph' : self.query,
+                     'knowledge_graph' : { 'edges': dict(), nodes: dict()},
+                     'results': [] }
+                message = {'message' : response,
+                        'description' : 'Unsupported query',
+                        'status': 'Bad Request. ' + str(e)}
+                return JsonResponse(message, status=400)
             except Exception as e:
                 response_dict = data_copy
                 response_dict['status'] = 'Bad request.' + str(e)
