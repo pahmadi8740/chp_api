@@ -3,7 +3,6 @@ import logging
 from django.db import transaction
 from django.http import JsonResponse
 from django.core.exceptions import ObjectDoesNotExist
-
 from .models import Transaction
 from .apps import ChpApiConfig, ChpBreastApiConfig, ChpBrainApiConfig, ChpLungApiConfig
 
@@ -15,6 +14,7 @@ import chp
 import pybkb
 import chp_data
 import chp_client
+from copy import deepcopy
 
 # Setup logging
 logging.addLevelName(25, "NOTE")
@@ -32,15 +32,11 @@ class QueryProcessor:
         :type request: request
     """
     def __init__(self, request, trapi_version):
-        # checks for malformed trapi error in try except
-        self.request_process_failure_response = None
-        try:
-            self.query, self.chp_config = self._process_request(request, trapi_version=trapi_version)
-        except Exception as e:
-            self.request_process_failure_response = self._build_error_response(str(e))
-        if self.request_process_failure_response is None:
-            self.query_copy = self.query.get_copy()
-            self.trapi_version = trapi_version
+        self.data_copy = deepcopy(request.data)
+        self.query, self.chp_config = self._process_request(request, trapi_version=trapi_version)
+
+        self.trapi_version = trapi_version        
+
 
     @staticmethod
     def _process_request(request, trapi_version='1.1'):
@@ -53,7 +49,11 @@ class QueryProcessor:
         host_parse = host.split('.')
         # API subdomain is the ChpConfig to use.
         api = host_parse[0]
-        query = Query.load(trapi_version, None, query=data)
+        logger.note('loading query')
+        
+        query = Query.load(trapi_version, biolink_version=None, query=data)
+        
+        logger.note('query loaded')
         disease_nodes_ids = query.message.query_graph.find_nodes(categories=[BIOLINK_DISEASE_ENTITY])
         if 'breast' in api:
             chp_config = ChpBreastApiConfig
@@ -100,7 +100,7 @@ class QueryProcessor:
         if self.query is not None:
             logger.note('Running query.')
             try:
-            # Instaniate TRAPI Interface
+                # Instaniate TRAPI Interface
                 interface = TrapiInterface(
                     query=self.query,
                     hosts_filename=self.chp_config.hosts_filename,
@@ -113,9 +113,8 @@ class QueryProcessor:
                 # Build queries
                 interface.build_chp_queries()
             except Exception as e:
-                query_dict = self.query_copy.to_dict()
-                query_dict['status'] = 'Bad request.' + str(e)
-                return JsonResponse(query_dict)
+                self.data_copy['status'] = 'Bad request.' + str(e)
+                return JsonResponse(self.data_copy)
 
 
 
@@ -127,9 +126,8 @@ class QueryProcessor:
                 logger.note('Completed Reasoning in {} seconds.'.format(time.time() - reasoning_start_time))
             except Exception as e:
                 logger.critical('Error during reasoning.')
-                query_dict = self.query_copy.to_dict()
-                query_dict['status'] = 'Unexpected error.' + str(e)
-                return JsonResponse(query_dict)
+                self.data_copy['status'] = 'Unexpected error.' + str(e)
+                return JsonResponse(self.data_copy)
 
             # Construct Response
             response = interface.construct_trapi_response()
@@ -165,6 +163,7 @@ class QueryProcessor:
         '''
         logger.note('Responded in {} seconds'.format(time.time() - start_time))
         response_dict = response.to_dict()
+        #response_dict['message']['query_graph']=self.data_copy['message']['query_graph']
         response_dict['status'] = 'Success'
         return JsonResponse(response_dict)
 
@@ -312,5 +311,3 @@ class QueryProcessor:
                    'description' : 'Unsupported query',
                    'status': 'Bad Request. ' + error_msg}
         return message
-
-
