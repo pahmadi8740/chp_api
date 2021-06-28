@@ -130,7 +130,7 @@ class TestChpApi(unittest.TestCase):
                 query_endpoint = self.query_endpoint
             query = _queries[0]
             url = LOCAL_URL + query_endpoint
-            status = self._post(url, query)
+            resp, status = self._post(url, query)
             self.assertEqual(status, 200)
 
     def test_single_drug_wildcard_query(self):
