@@ -13,7 +13,7 @@ import chp_client
 import chp_data
 import pybkb
 from copy import deepcopy
-from processing_and_validation.meta_kg_validator import UnsupportedPrefix
+from trapi_model.processing_and_validation.meta_kg_validator import UnsupportedPrefix
 from jsonschema import ValidationError
 
 
