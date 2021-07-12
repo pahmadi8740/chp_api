@@ -36,7 +36,7 @@ class TestChpApi(unittest.TestCase):
         res = requests.post(url, json=params)
         if res.status_code != 200:
             print(res.status_code)
-            #print(res.content)
+            print(res.content)
             return res.content
         else:
             ret = res.json()
