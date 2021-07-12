@@ -4,10 +4,10 @@ import logging
 import unittest
 import requests
 
-#from trapi_model import Query
-LOCAL_URL = 'http://127.0.0.1:80'
+from trapi_model import *
+#LOCAL_URL = 'http://127.0.0.1:80'
 #LOCAL_URL = 'http://localhost:80'
-#LOCAL_URL = 'http://chp.thayer.dartmouth.edu'
+LOCAL_URL = 'http://chp-dev.thayer.dartmouth.edu'
 
 class TestChpApi(unittest.TestCase):
 
@@ -64,7 +64,6 @@ class TestChpApi(unittest.TestCase):
     def test_meta_knowledge_graph(self):
         url = LOCAL_URL + self.meta_knowledge_graph_endpoint
         resp = self._get(url)
-        print(resp)
 
     def test_constants(self):
         url = LOCAL_URL + self.constants_endpoint
@@ -119,6 +118,14 @@ class TestChpApi(unittest.TestCase):
             url = LOCAL_URL + query_endpoint
             resp, status = self._post(url, query)
             self.assertEqual(status, 200)
+
+    def test_single_gene_to_gene_wildcard_query(self):
+        with open('query_samples/gene_to_gene_onehop_query.pk', 'rb') as f_:
+            query = pickle.load(f_)
+            query_endpoint = self.query_endpoint
+            url = LOCAL_URL + query_endpoint
+            resp, status = self._post(url, query)
+            self.assertEqual(status,200)
 
     def test_batch_gene_wildcard_query(self):
         with open('query_samples/random_gene_wildcard_batch_queries.pk', 'rb') as f_:
@@ -273,7 +280,7 @@ class TestChpApi(unittest.TestCase):
                 url = LOCAL_URL + query_endpoint
                 resp, status = self._post(url, query)
                 self.assertEqual(status, 200)
-    '''
+
     def test_single_gene_onehop_query(self):
         with open('query_samples/random_gene_one_hop_queries.pk', 'rb') as f_:
             queries = pickle.load(f_)
@@ -372,13 +379,6 @@ class TestChpApi(unittest.TestCase):
         url = LOCAL_URL + self.query_endpoint
         resp = self._post(url,query)
 
-    def test_unknown_edge_default(self):
-        with open('query_samples/error_samples/test_unknown_edge_default.pk', 'rb') as f_:
-            query = pickle.load(f_)
-        query = {'message':query}
-        url = LOCAL_URL + self.query_endpoint
-        resp = self._post(url,query)
-
     def test_illegal_gene_to_disease_wildcard(self):
         with open('query_samples/error_samples/test_illegal_gene_to_disease_wildcard.pk', 'rb') as f_:
             query = pickle.load(f_)
@@ -407,22 +407,8 @@ class TestChpApi(unittest.TestCase):
         url = LOCAL_URL + self.query_endpoint
         resp = self._post(url,query)
 
-    def test_unknown_edge_wildcard(self):
-        with open('query_samples/error_samples/test_unknown_edge_wildcard.pk', 'rb') as f_:
-            query = pickle.load(f_)
-        query = {'message':query}
-        url = LOCAL_URL + self.query_endpoint
-        resp = self._post(url,query)
-
     def test_illegal_drug_to_disease_one_hop(self):
         with open('query_samples/error_samples/test_illegal_drug_to_disease_one_hop.pk', 'rb') as f_:
-            query = pickle.load(f_)
-        query = {'message':query}
-        url = LOCAL_URL + self.query_endpoint
-        resp = self._post(url,query)
-
-    def test_illegal_gene_to_drug_one_hop(self):
-        with open('query_samples/error_samples/test_illegal_gene_to_drug_one_hop.pk', 'rb') as f_:
             query = pickle.load(f_)
         query = {'message':query}
         url = LOCAL_URL + self.query_endpoint
@@ -434,21 +420,6 @@ class TestChpApi(unittest.TestCase):
         query = {'message':query}
         url = LOCAL_URL + self.query_endpoint
         resp = self._post(url,query)
-
-    def test_backwards_contribution_node_one_hop(self):
-        with open('query_samples/error_samples/test_backwards_contribution_node_one_hop.pk', 'rb') as f_:
-            query = pickle.load(f_)
-        query = {'message':query}
-        url = LOCAL_URL + self.query_endpoint
-        resp = self._post(url,query)
-
-    def test_unknown_edge_one_hop(self):
-        with open('query_samples/error_samples/test_unknown_edge_one_hop.pk', 'rb') as f_:
-            query = pickle.load(f_)
-        query = {'message':query}
-        url = LOCAL_URL + self.query_endpoint
-        resp = self._post(url,query)
-    '''
 
 if __name__ == '__main__':
     unittest.main()
