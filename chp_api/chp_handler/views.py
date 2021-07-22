@@ -14,7 +14,9 @@ import chp_data
 import trapi_model.biolink as tp
 import pybkb
 from copy import deepcopy
+
 from trapi_model.processing_and_validation.metakg_validation_exceptions import UnsupportedPrefix
+
 from jsonschema import ValidationError
 
 
