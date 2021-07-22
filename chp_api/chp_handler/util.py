@@ -33,6 +33,7 @@ class QueryProcessor:
     """
     def __init__(self, request, trapi_version):
         self.data_copy = deepcopy(request.data)
+        self.request_process_failure_response = None
         self.query, self.chp_config = self._process_request(request, trapi_version=trapi_version)
 
         self.trapi_version = trapi_version        

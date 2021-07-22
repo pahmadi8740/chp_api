@@ -11,9 +11,12 @@ import chp
 from chp.trapi_interface import TrapiInterface
 import chp_client
 import chp_data
+import trapi_model.biolink as tp
 import pybkb
 from copy import deepcopy
-from trapi_model.processing_and_validation.meta_kg_validator import UnsupportedPrefix
+
+from trapi_model.processing_and_validation.metakg_validation_exceptions import UnsupportedPrefix
+
 from jsonschema import ValidationError
 
 
@@ -160,7 +163,7 @@ class constants(APIView):
     def get(self, request):
         if request.method == 'GET':
             constants = {}
-            for var, value in vars(chp_data.trapi_constants).items():
+            for var, value in vars(tp.trapi_constants).items():
                 if 'BIOLINK' in var:
                     constants[var] = value
         return JsonResponse(constants)

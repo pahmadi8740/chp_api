@@ -1,0 +1,205 @@
+{
+  "gene_one_hop_with_gene_category_ancestor": {
+    "message": {
+      "query_graph": {
+        "edges": {
+          "e0": {
+            "predicate": "biolink:interacts_with",
+            "subject": "n0",
+            "object": "n1"
+          }
+        },
+        "nodes": {
+          "n0": {
+            "category": "biolink:NamedThing"
+          },
+          "n1": {
+            "category": "biolink:Drug",
+            "id": [
+              "CHEMBL.COMPOUND:CHEMBL1201334"
+            ]
+          }
+        }
+      },
+      "knowledge_graph": {
+        "edges": {},
+        "nodes": {}
+      },
+      "results": []
+    }
+  },
+  "gene_one_hop_with_drug_category_ancestor": {
+    "message": {
+      "query_graph": {
+        "edges": {
+          "e0": {
+            "predicate": "biolink:interacts_with",
+            "subject": "n0",
+            "object": "n1"
+          }
+        },
+        "nodes": {
+          "n0": {
+            "category": "biolink:Gene"
+          },
+          "n1": {
+            "category": "biolink:NamedThing",
+            "id": [
+              "CHEMBL.COMPOUND:CHEMBL1201334"
+            ]
+          }
+        }
+      },
+      "knowledge_graph": {
+        "edges": {},
+        "nodes": {}
+      },
+      "results": []
+    }
+  },
+  "gene_one_hop_with_gene_catetgory_and_drug_category_ancestor": {
+    "message": {
+      "query_graph": {
+        "edges": {
+          "e0": {
+            "predicate": "biolink:interacts_with",
+            "subject": "n0",
+            "object": "n1"
+          }
+        },
+        "nodes": {
+          "n0": {
+            "category": "biolink:NamedThing"
+          },
+          "n1": {
+            "category": "biolink:NamedThing",
+            "id": [
+              "CHEMBL.COMPOUND:CHEMBL1201334"
+            ]
+          }
+        }
+      },
+      "knowledge_graph": {
+        "edges": {},
+        "nodes": {}
+      },
+      "results": []
+    }
+  },
+  "gene_one_hop_with_predicate_ancestor": {
+    "message": {
+      "query_graph": {
+        "edges": {
+          "e0": {
+            "predicate": "biolink:related_to",
+            "subject": "n0",
+            "object": "n1"
+          }
+        },
+        "nodes": {
+          "n0": {
+            "category": "biolink:Gene"
+          },
+          "n1": {
+            "category": "biolink:Drug",
+            "id": [
+              "CHEMBL.COMPOUND:CHEMBL1201334"
+            ]
+          }
+        }
+      },
+      "knowledge_graph": {
+        "edges": {},
+        "nodes": {}
+      },
+      "results": []
+    }
+  },
+  "gene_one_hop_with_predicate_and_gene_category_ancestor": {
+    "message": {
+      "query_graph": {
+        "edges": {
+          "e0": {
+            "predicate": "biolink:related_to",
+            "subject": "n0",
+            "object": "n1"
+          }
+        },
+        "nodes": {
+          "n0": {
+            "category": "biolink:NamedThing"
+          },
+          "n1": {
+            "category": "biolink:Drug",
+            "id": [
+              "CHEMBL.COMPOUND:CHEMBL1201334"
+            ]
+          }
+        }
+      },
+      "knowledge_graph": {
+        "edges": {},
+        "nodes": {}
+      },
+      "results": []
+    }
+  },
+  "gene_one_hop_with_predicate_and_drug_category_ancestor": {
+    "message": {
+      "query_graph": {
+        "edges": {
+          "e0": {
+            "predicate": "biolink:related_to",
+            "subject": "n0",
+            "object": "n1"
+          }
+        },
+        "nodes": {
+          "n0": {
+            "category": "biolink:Gene"
+          },
+          "n1": {
+            "category": "biolink:NamedThing",
+            "id": [
+              "CHEMBL.COMPOUND:CHEMBL1201334"
+            ]
+          }
+        }
+      },
+      "knowledge_graph": {
+        "edges": {},
+        "nodes": {}
+      },
+      "results": []
+    }
+  },
+  "gene_one_hop_with_predicate_and_drug_category_and_gene_category_ancestor": {
+    "message": {
+      "query_graph": {
+        "edges": {
+          "e0": {
+            "predicate": "biolink:related_to",
+            "subject": "n0",
+            "object": "n1"
+          }
+        },
+        "nodes": {
+          "n0": {
+            "category": "biolink:NamedThing"
+          },
+          "n1": {
+            "category": "biolink:NamedThing",
+            "id": [
+              "CHEMBL.COMPOUND:CHEMBL1201334"
+            ]
+          }
+        }
+      },
+      "knowledge_graph": {
+        "edges": {},
+        "nodes": {}
+      },
+      "results": []
+    }
+  }
+}
