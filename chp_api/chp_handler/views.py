@@ -31,14 +31,11 @@ class query_all(APIView):
                 data_copy = deepcopy(request.data)
                 query_processor = QueryProcessor(request, self.trapi_version)
             except UnsupportedPrefix as e:
-                response = { 'query_graph' : data_copy,
-                     'knowledge_graph' : { 'edges': dict(), 'nodes': dict()},
-                     'results': [] }
-                message = {'message' : response,
-                        'description' : 'Unsupported query',
-                        'status': 'Bad Request. ' + str(e)}
+                response_dict = data_copy
+                response_dict['status'] = 'Bad request.' + str(e)
+                return JsonResponse(response_dict, status=400) 
             except ValidationError as e:
-                response = { 'query_graph' : data_copy,
+                response = { 'query_graph' : self.query,
                      'knowledge_graph' : { 'edges': dict(), 'nodes': dict()},
                      'results': [] }
                 message = {'message' : response,
@@ -46,12 +43,9 @@ class query_all(APIView):
                         'status': 'Bad Request. ' + str(e)}
                 return JsonResponse(message, status=400)
             except Exception as e:
-                response = { 'query_graph' : data_copy,
-                     'knowledge_graph' : { 'edges': dict(), 'nodes': dict()},
-                     'results': [] }
-                message = {'message' : response,
-                        'description' : 'Unsupported query',
-                        'status': 'Bad Request. ' + str(e)} 
+                response_dict = data_copy
+                response_dict['status'] = 'Bad request.' + str(e)
+                return JsonResponse(response_dict) 
             return query_processor.get_response_to_query()
 
 class query(APIView):
@@ -66,21 +60,13 @@ class query(APIView):
                 data_copy = deepcopy(request.data)
                 query_processor = QueryProcessor(request, self.trapi_version)
             except UnsupportedPrefix as e:
-                response = { 'query_graph' : data_copy,
-                     'knowledge_graph' : { 'edges': dict(), 'nodes': dict()},
-                     'results': [] }
-                message = {'message' : response,
-                        'description' : 'Unsupported query',
-                        'status': 'Bad Request. ' + str(e)}
-                return JsonResponse(message, status=400) 
+                response_dict = data_copy
+                response_dict['status'] = 'Bad request.' + str(e)
+                return JsonResponse(response_dict, status=400) 
             except Exception as e:
-                response = { 'query_graph' : data_copy,
-                     'knowledge_graph' : { 'edges': dict(), 'nodes': dict()},
-                     'results': [] }
-                message = {'message' : response,
-                        'description' : 'Unsupported query',
-                        'status': 'Bad Request. ' + str(e)}
-                return JsonResponse(message) 
+                response_dict = data_copy
+                response_dict['status'] = 'Bad request.' + str(e)
+                return JsonResponse(response_dict) 
             return query_processor.get_response_to_query()
 
 class check_query(APIView):
