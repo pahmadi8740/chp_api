@@ -4,10 +4,10 @@ import logging
 import unittest
 import requests
 
-#from trapi_model import Query
-LOCAL_URL = 'http://127.0.0.1:80'
+from trapi_model import *
+#LOCAL_URL = 'http://127.0.0.1:80'
 #LOCAL_URL = 'http://localhost:80'
-#LOCAL_URL = 'http://chp.thayer.dartmouth.edu'
+LOCAL_URL = 'http://chp-dev.thayer.dartmouth.edu'
 
 class TestChpApi(unittest.TestCase):
 
@@ -36,7 +36,7 @@ class TestChpApi(unittest.TestCase):
         res = requests.post(url, json=params)
         if res.status_code != 200:
             print(res.status_code)
-            #print(res.content)
+            print(res.content)
             return res.content
         else:
             ret = res.json()
@@ -64,15 +64,14 @@ class TestChpApi(unittest.TestCase):
     def test_meta_knowledge_graph(self):
         url = LOCAL_URL + self.meta_knowledge_graph_endpoint
         resp = self._get(url)
-        print(resp)
 
     def test_constants(self):
         url = LOCAL_URL + self.constants_endpoint
         resp = self._get(url)
 
     def test_single_default_query(self):
-        with open('query_samples/random_queries.pk', 'rb') as f_:
-            queries = pickle.load(f_)
+        with open('query_samples/random_queries.json', 'rb') as f_:
+            queries = json.load(f_)
         for trapi_version, _queries in queries.items():
             if trapi_version == '1.0':
                 query_endpoint = self.v1_0_query_endpoint
@@ -89,8 +88,8 @@ class TestChpApi(unittest.TestCase):
             resp = self._post(url, query)
 
     def test_batch_default_query(self):
-        with open('query_samples/random_batch_queries.pk', 'rb') as f_:
-            queries = pickle.load(f_)
+        with open('query_samples/random_batch_queries.json', 'rb') as f_:
+            queries = json.load(f_)
         # Test simple
         for trapi_version, _queries in queries.items():
             if trapi_version == '1.0':
@@ -108,8 +107,8 @@ class TestChpApi(unittest.TestCase):
             self.assertEqual(status, 200)
 
     def test_single_gene_wildcard_query(self):
-        with open('query_samples/random_gene_wildcard_queries.pk', 'rb') as f_:
-            queries = pickle.load(f_)
+        with open('query_samples/random_gene_wildcard_queries.json', 'rb') as f_:
+            queries = json.load(f_)
         for trapi_version, _queries in queries.items():
             if trapi_version == '1.0':
                 query_endpoint = self.v1_0_query_endpoint
@@ -120,9 +119,17 @@ class TestChpApi(unittest.TestCase):
             resp, status = self._post(url, query)
             self.assertEqual(status, 200)
 
+    def test_single_gene_to_gene_wildcard_query(self):
+        with open('query_samples/gene_to_gene_onehop_query.json', 'rb') as f_:
+            query = json.load(f_)
+            query_endpoint = self.query_endpoint
+            url = LOCAL_URL + query_endpoint
+            resp, status = self._post(url, query)
+            self.assertEqual(status,200)
+
     def test_batch_gene_wildcard_query(self):
-        with open('query_samples/random_gene_wildcard_batch_queries.pk', 'rb') as f_:
-            queries = pickle.load(f_)
+        with open('query_samples/random_gene_wildcard_batch_queries.json', 'rb') as f_:
+            queries = json.load(f_)
         for trapi_version, _queries in queries.items():
             if trapi_version == '1.0':
                 query_endpoint = self.v1_0_query_endpoint
@@ -134,8 +141,8 @@ class TestChpApi(unittest.TestCase):
             self.assertEqual(status, 200)
 
     def test_single_drug_wildcard_query(self):
-        with open('query_samples/random_drug_wildcard_queries.pk', 'rb') as f_:
-            queries = pickle.load(f_)
+        with open('query_samples/random_drug_wildcard_queries.json', 'rb') as f_:
+            queries = json.load(f_)
         for trapi_version, _queries in queries.items():
             if trapi_version == '1.0':
                 query_endpoint = self.v1_0_query_endpoint
@@ -147,8 +154,8 @@ class TestChpApi(unittest.TestCase):
             self.assertEqual(status, 200)
 
     def test_batch_drug_wildcard_query(self):
-        with open('query_samples/random_drug_wildcard_batch_queries.pk', 'rb') as f_:
-            queries = pickle.load(f_)
+        with open('query_samples/random_drug_wildcard_batch_queries.json', 'rb') as f_:
+            queries = json.load(f_)
         for trapi_version, _queries in queries.items():
             if trapi_version == '1.0':
                 query_endpoint = self.v1_0_query_endpoint
@@ -160,8 +167,8 @@ class TestChpApi(unittest.TestCase):
             self.assertEqual(status, 200)
 
     def test_standard_single_onehop_query(self):
-        with open('query_samples/standard_single_onehop_queries.pk', 'rb') as f_:
-            queries = pickle.load(f_)
+        with open('query_samples/standard_single_onehop_queries.json', 'rb') as f_:
+            queries = json.load(f_)
         for trapi_version, _queries in queries.items():
             for name, query in _queries.items():
                 if trapi_version == '1.0':
@@ -169,12 +176,12 @@ class TestChpApi(unittest.TestCase):
                 else:
                     query_endpoint = self.query_endpoint
                 url = LOCAL_URL + query_endpoint
-                resp, status = self._post(url, query)
+                resp, status = self._post(url, query[0])
                 self.assertEqual(status, 200)
     
     def test_standard_batch_onehop_query(self):
-        with open('query_samples/standard_batch_onehop_queries.pk', 'rb') as f_:
-            queries = pickle.load(f_)
+        with open('query_samples/standard_batch_onehop_queries.json', 'rb') as f_:
+            queries = json.load(f_)
         for trapi_version, _queries in queries.items():
             for name, query in _queries.items():
                 if trapi_version == '1.0':
@@ -182,12 +189,12 @@ class TestChpApi(unittest.TestCase):
                 else:
                     query_endpoint = self.query_endpoint
                 url = LOCAL_URL + query_endpoint
-                resp, status = self._post(url, query)
+                resp, status = self._post(url, query[0])
                 self.assertEqual(status, 200)
     
     def test_wildcard_single_onehop_query(self):
-        with open('query_samples/wildcard_single_onehop_queries.pk', 'rb') as f_:
-            queries = pickle.load(f_)
+        with open('query_samples/wildcard_single_onehop_queries.json', 'rb') as f_:
+            queries = json.load(f_)
         for trapi_version, _queries in queries.items():
             for name, query in _queries.items():
                 if trapi_version == '1.0':
@@ -195,12 +202,12 @@ class TestChpApi(unittest.TestCase):
                 else:
                     query_endpoint = self.query_endpoint
                 url = LOCAL_URL + query_endpoint
-                resp, status = self._post(url, query)
+                resp, status = self._post(url, query[0])
                 self.assertEqual(status, 200)
 
     def test_wildcard_batch_onehop_query(self):
-        with open('query_samples/wildcard_batch_onehop_queries.pk', 'rb') as f_:
-            queries = pickle.load(f_)
+        with open('query_samples/wildcard_batch_onehop_queries.json', 'rb') as f_:
+            queries = json.load(f_)
         for trapi_version, _queries in queries.items():
             for name, query in _queries.items():
                 if trapi_version == '1.0':
@@ -208,13 +215,13 @@ class TestChpApi(unittest.TestCase):
                 else:
                     query_endpoint = self.query_endpoint
                 url = LOCAL_URL + query_endpoint
-                resp, status = self._post(url, query)
+                resp, status = self._post(url, query[0])
                 self.assertEqual(status, 200)
 
     def test_semantic_operations_on_standard_queries(self):
         query_endpoint = self.query_endpoint
-        with open('query_samples/semantic_operation_samples/standard_single_onehop_queries.pk', 'rb') as f_:
-            queries = pickle.load(f_)
+        with open('query_samples/semantic_operation_samples/standard_single_onehop_queries.json', 'rb') as f_:
+            queries = json.load(f_)
             for name, query in queries.items():
                 url = LOCAL_URL + query_endpoint
                 resp, status = self._post(url, query)
@@ -222,8 +229,8 @@ class TestChpApi(unittest.TestCase):
     
     def test_semantic_operations_on_drug_one_hop_queries(self):
         query_endpoint = self.query_endpoint
-        with open('query_samples/semantic_operation_samples/drug_one_hop_queries.pk', 'rb') as f_:
-            queries = pickle.load(f_)
+        with open('query_samples/semantic_operation_samples/drug_one_hop_queries.json', 'rb') as f_:
+            queries = json.load(f_)
             for name, query in queries.items():
                 url = LOCAL_URL + query_endpoint
                 resp, status = self._post(url, query)
@@ -231,8 +238,8 @@ class TestChpApi(unittest.TestCase):
     
     def test_semantic_operations_on_drug_one_hop_queries(self):
         query_endpoint = self.query_endpoint
-        with open('query_samples/semantic_operation_samples/drug_one_hop_queries.pk', 'rb') as f_:
-            queries = pickle.load(f_)
+        with open('query_samples/semantic_operation_samples/drug_one_hop_queries.json', 'rb') as f_:
+            queries = json.load(f_)
             for name, query in queries.items():
                 url = LOCAL_URL + query_endpoint
                 resp, status = self._post(url, query)
@@ -240,8 +247,8 @@ class TestChpApi(unittest.TestCase):
     
     def test_semantic_operations_on_gene_one_hop_queries(self):
         query_endpoint = self.query_endpoint
-        with open('query_samples/semantic_operation_samples/gene_one_hop_queries.pk', 'rb') as f_:
-            queries = pickle.load(f_)
+        with open('query_samples/semantic_operation_samples/gene_one_hop_queries.json', 'rb') as f_:
+            queries = json.load(f_)
             for name, query in queries.items():
                 url = LOCAL_URL + query_endpoint
                 resp, status = self._post(url, query)
@@ -249,8 +256,8 @@ class TestChpApi(unittest.TestCase):
     
     def test_semantic_operations_on_gene_wildcard_queries(self):
         query_endpoint = self.query_endpoint
-        with open('query_samples/semantic_operation_samples/gene_one_hop_queries.pk', 'rb') as f_:
-            queries = pickle.load(f_)
+        with open('query_samples/semantic_operation_samples/gene_one_hop_queries.json', 'rb') as f_:
+            queries = json.load(f_)
             for name, query in queries.items():
                 url = LOCAL_URL + query_endpoint
                 resp, status = self._post(url, query)
@@ -258,8 +265,8 @@ class TestChpApi(unittest.TestCase):
 
     def test_semantic_operations_on_dug_wildcard_queries(self):
         query_endpoint = self.query_endpoint
-        with open('query_samples/semantic_operation_samples/drug_wildcard_queries.pk', 'rb') as f_:
-            queries = pickle.load(f_)
+        with open('query_samples/semantic_operation_samples/drug_wildcard_queries.json', 'rb') as f_:
+            queries = json.load(f_)
             for name, query in queries.items():
                 url = LOCAL_URL + query_endpoint
                 resp, status = self._post(url, query)
@@ -267,37 +274,37 @@ class TestChpApi(unittest.TestCase):
     
     def test_semantic_operations_on_dug_wildcard_queries(self):
         query_endpoint = self.query_endpoint
-        with open('query_samples/semantic_operation_samples/gene_wildcard_queries.pk', 'rb') as f_:
-            queries = pickle.load(f_)
+        with open('query_samples/semantic_operation_samples/gene_wildcard_queries.json', 'rb') as f_:
+            queries = json.load(f_)
             for name, query in queries.items():
                 url = LOCAL_URL + query_endpoint
                 resp, status = self._post(url, query)
                 self.assertEqual(status, 200)
-    '''
+
     def test_single_gene_onehop_query(self):
-        with open('query_samples/random_gene_one_hop_queries.pk', 'rb') as f_:
-            queries = pickle.load(f_)
+        with open('query_samples/random_gene_one_hop_queries.json', 'rb') as f_:
+            queries = json.load(f_)
         query = queries[0]
         url = LOCAL_URL + self.query_endpoint
         resp = self._post(url, query)
 
     def test_batch_gene_onehop_query(self):
-        with open('query_samples/random_gene_one_hop_queries.pk', 'rb') as f_:
-            queries = pickle.load(f_)
+        with open('query_samples/random_gene_one_hop_queries.json', 'rb') as f_:
+            queries = json.load(f_)
         wrapped_queries = self._wrap_batch_queries(queries)
         url = LOCAL_URL + self.query_all_endpoint
         resp = self._post(url, wrapped_queries)
 
     def test_single_drug_onehop_query(self):
-        with open('query_samples/random_drug_one_hop_queries.pk', 'rb') as f_:
-            queries = pickle.load(f_)
+        with open('query_samples/random_drug_one_hop_queries.json', 'rb') as f_:
+            queries = json.load(f_)
         query = queries[0]
         url = LOCAL_URL + self.query_endpoint
         resp = self._post(url, query)
 
     def test_batch_drug_onehop_query(self):
-        with open('query_samples/random_drug_one_hop_queries.pk', 'rb') as f_:
-            queries = pickle.load(f_)
+        with open('query_samples/random_drug_one_hop_queries.json', 'rb') as f_:
+            queries = json.load(f_)
         wrapped_queries = self._wrap_batch_queries(queries)
         url = LOCAL_URL + self.query_all_endpoint
         resp = self._post(url, wrapped_queries)
@@ -372,13 +379,6 @@ class TestChpApi(unittest.TestCase):
         url = LOCAL_URL + self.query_endpoint
         resp = self._post(url,query)
 
-    def test_unknown_edge_default(self):
-        with open('query_samples/error_samples/test_unknown_edge_default.pk', 'rb') as f_:
-            query = pickle.load(f_)
-        query = {'message':query}
-        url = LOCAL_URL + self.query_endpoint
-        resp = self._post(url,query)
-
     def test_illegal_gene_to_disease_wildcard(self):
         with open('query_samples/error_samples/test_illegal_gene_to_disease_wildcard.pk', 'rb') as f_:
             query = pickle.load(f_)
@@ -407,22 +407,8 @@ class TestChpApi(unittest.TestCase):
         url = LOCAL_URL + self.query_endpoint
         resp = self._post(url,query)
 
-    def test_unknown_edge_wildcard(self):
-        with open('query_samples/error_samples/test_unknown_edge_wildcard.pk', 'rb') as f_:
-            query = pickle.load(f_)
-        query = {'message':query}
-        url = LOCAL_URL + self.query_endpoint
-        resp = self._post(url,query)
-
     def test_illegal_drug_to_disease_one_hop(self):
         with open('query_samples/error_samples/test_illegal_drug_to_disease_one_hop.pk', 'rb') as f_:
-            query = pickle.load(f_)
-        query = {'message':query}
-        url = LOCAL_URL + self.query_endpoint
-        resp = self._post(url,query)
-
-    def test_illegal_gene_to_drug_one_hop(self):
-        with open('query_samples/error_samples/test_illegal_gene_to_drug_one_hop.pk', 'rb') as f_:
             query = pickle.load(f_)
         query = {'message':query}
         url = LOCAL_URL + self.query_endpoint
@@ -434,21 +420,6 @@ class TestChpApi(unittest.TestCase):
         query = {'message':query}
         url = LOCAL_URL + self.query_endpoint
         resp = self._post(url,query)
-
-    def test_backwards_contribution_node_one_hop(self):
-        with open('query_samples/error_samples/test_backwards_contribution_node_one_hop.pk', 'rb') as f_:
-            query = pickle.load(f_)
-        query = {'message':query}
-        url = LOCAL_URL + self.query_endpoint
-        resp = self._post(url,query)
-
-    def test_unknown_edge_one_hop(self):
-        with open('query_samples/error_samples/test_unknown_edge_one_hop.pk', 'rb') as f_:
-            query = pickle.load(f_)
-        query = {'message':query}
-        url = LOCAL_URL + self.query_endpoint
-        resp = self._post(url,query)
-    '''
 
 if __name__ == '__main__':
     unittest.main()

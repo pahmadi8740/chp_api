@@ -1,0 +1,272 @@
+[
+  {
+    "message": {
+      "query_graph": {
+        "edges": {
+          "e0": {
+            "predicate": "biolink:interacts_with",
+            "subject": "n1",
+            "object": "n0"
+          }
+        },
+        "nodes": {
+          "n0": {
+            "category": "biolink:Gene",
+            "id": "ENSEMBL:ENSG00000162402"
+          },
+          "n1": {
+            "category": "biolink:Drug"
+          }
+        }
+      },
+      "knowledge_graph": {
+        "edges": {},
+        "nodes": {}
+      },
+      "results": []
+    }
+  },
+  {
+    "message": {
+      "query_graph": {
+        "edges": {
+          "e0": {
+            "predicate": "biolink:interacts_with",
+            "subject": "n1",
+            "object": "n0"
+          }
+        },
+        "nodes": {
+          "n0": {
+            "category": "biolink:Gene",
+            "id": "ENSEMBL:ENSG00000134760"
+          },
+          "n1": {
+            "category": "biolink:Drug"
+          }
+        }
+      },
+      "knowledge_graph": {
+        "edges": {},
+        "nodes": {}
+      },
+      "results": []
+    }
+  },
+  {
+    "message": {
+      "query_graph": {
+        "edges": {
+          "e0": {
+            "predicate": "biolink:interacts_with",
+            "subject": "n1",
+            "object": "n0"
+          }
+        },
+        "nodes": {
+          "n0": {
+            "category": "biolink:Gene",
+            "id": "ENSEMBL:ENSG00000138035"
+          },
+          "n1": {
+            "category": "biolink:Drug"
+          }
+        }
+      },
+      "knowledge_graph": {
+        "edges": {},
+        "nodes": {}
+      },
+      "results": []
+    }
+  },
+  {
+    "message": {
+      "query_graph": {
+        "edges": {
+          "e0": {
+            "predicate": "biolink:interacts_with",
+            "subject": "n1",
+            "object": "n0"
+          }
+        },
+        "nodes": {
+          "n0": {
+            "category": "biolink:Gene",
+            "id": "ENSEMBL:ENSG00000079435"
+          },
+          "n1": {
+            "category": "biolink:Drug"
+          }
+        }
+      },
+      "knowledge_graph": {
+        "edges": {},
+        "nodes": {}
+      },
+      "results": []
+    }
+  },
+  {
+    "message": {
+      "query_graph": {
+        "edges": {
+          "e0": {
+            "predicate": "biolink:interacts_with",
+            "subject": "n1",
+            "object": "n0"
+          }
+        },
+        "nodes": {
+          "n0": {
+            "category": "biolink:Gene",
+            "id": "ENSEMBL:ENSG00000123607"
+          },
+          "n1": {
+            "category": "biolink:Drug"
+          }
+        }
+      },
+      "knowledge_graph": {
+        "edges": {},
+        "nodes": {}
+      },
+      "results": []
+    }
+  },
+  {
+    "message": {
+      "query_graph": {
+        "edges": {
+          "e0": {
+            "predicate": "biolink:interacts_with",
+            "subject": "n1",
+            "object": "n0"
+          }
+        },
+        "nodes": {
+          "n0": {
+            "category": "biolink:Gene",
+            "id": "ENSEMBL:ENSG00000273899"
+          },
+          "n1": {
+            "category": "biolink:Drug"
+          }
+        }
+      },
+      "knowledge_graph": {
+        "edges": {},
+        "nodes": {}
+      },
+      "results": []
+    }
+  },
+  {
+    "message": {
+      "query_graph": {
+        "edges": {
+          "e0": {
+            "predicate": "biolink:interacts_with",
+            "subject": "n1",
+            "object": "n0"
+          }
+        },
+        "nodes": {
+          "n0": {
+            "category": "biolink:Gene",
+            "id": "ENSEMBL:ENSG00000198856"
+          },
+          "n1": {
+            "category": "biolink:Drug"
+          }
+        }
+      },
+      "knowledge_graph": {
+        "edges": {},
+        "nodes": {}
+      },
+      "results": []
+    }
+  },
+  {
+    "message": {
+      "query_graph": {
+        "edges": {
+          "e0": {
+            "predicate": "biolink:interacts_with",
+            "subject": "n1",
+            "object": "n0"
+          }
+        },
+        "nodes": {
+          "n0": {
+            "category": "biolink:Gene",
+            "id": "ENSEMBL:ENSG00000116678"
+          },
+          "n1": {
+            "category": "biolink:Drug"
+          }
+        }
+      },
+      "knowledge_graph": {
+        "edges": {},
+        "nodes": {}
+      },
+      "results": []
+    }
+  },
+  {
+    "message": {
+      "query_graph": {
+        "edges": {
+          "e0": {
+            "predicate": "biolink:interacts_with",
+            "subject": "n1",
+            "object": "n0"
+          }
+        },
+        "nodes": {
+          "n0": {
+            "category": "biolink:Gene",
+            "id": "ENSEMBL:ENSG00000043039"
+          },
+          "n1": {
+            "category": "biolink:Drug"
+          }
+        }
+      },
+      "knowledge_graph": {
+        "edges": {},
+        "nodes": {}
+      },
+      "results": []
+    }
+  },
+  {
+    "message": {
+      "query_graph": {
+        "edges": {
+          "e0": {
+            "predicate": "biolink:interacts_with",
+            "subject": "n1",
+            "object": "n0"
+          }
+        },
+        "nodes": {
+          "n0": {
+            "category": "biolink:Gene",
+            "id": "ENSEMBL:ENSG00000146376"
+          },
+          "n1": {
+            "category": "biolink:Drug"
+          }
+        }
+      },
+      "knowledge_graph": {
+        "edges": {},
+        "nodes": {}
+      },
+      "results": []
+    }
+  }
+]
