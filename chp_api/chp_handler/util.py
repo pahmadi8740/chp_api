@@ -3,11 +3,15 @@ import logging
 from django.db import transaction
 from django.http import JsonResponse
 from django.core.exceptions import ObjectDoesNotExist
+from trapi_model import query_graph
 from .models import Transaction
 from .apps import ChpApiConfig, ChpBreastApiConfig, ChpBrainApiConfig, ChpLungApiConfig
 
 from trapi_model.query import Query
 from trapi_model.biolink.constants import *
+
+from chp_utils.semantic_operations.semantic_processor import SemanticProcessor
+from chp_utils.meta_kg_validation.meta_kg_validator import MetaKGValidator
 
 from chp.trapi_interface import TrapiInterface, parse_query_graph
 import chp
@@ -53,6 +57,11 @@ class QueryProcessor:
         logger.note('loading query')
         
         query = Query.load(trapi_version, biolink_version=None, query=data)
+        sp = SemanticProcessor()
+        query.message.query_graph = sp.process(query.message.query_graph)
+
+        mkgp = MetaKGValidator(query.message.query_graph)
+        mkgp.validate_graph()
         
         logger.note('query loaded')
         disease_nodes_ids = query.message.query_graph.find_nodes(categories=[BIOLINK_DISEASE_ENTITY])
@@ -164,7 +173,7 @@ class QueryProcessor:
         '''
         logger.note('Responded in {} seconds'.format(time.time() - start_time))
         response_dict = response.to_dict()
-        #response_dict['message']['query_graph']=self.data_copy['message']['query_graph']
+        response_dict['message']['query_graph']=self.data_copy['message']['query_graph']
         response_dict['status'] = 'Success'
         return JsonResponse(response_dict)
 
