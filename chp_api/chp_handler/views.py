@@ -6,8 +6,7 @@ from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework import status
 from django.shortcuts import render
-
-import chp
+from chp_utils.meta_kg_validation.metakg_validation_exceptions import *
 from chp.trapi_interface import TrapiInterface
 import chp_client
 import chp_data
@@ -15,7 +14,7 @@ import trapi_model.biolink as tp
 import pybkb
 from copy import deepcopy
 
-from trapi_model.processing_and_validation.metakg_validation_exceptions import UnsupportedPrefix
+#from trapi_model.processing_and_validation.metakg_validation_exceptions import UnsupportedPrefix
 
 from jsonschema import ValidationError
 
