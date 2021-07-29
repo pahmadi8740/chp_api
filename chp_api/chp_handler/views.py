@@ -125,26 +125,6 @@ class curies(APIView):
 
             return JsonResponse(curies)
 
-class predicates(APIView):
-    trapi_version = '1.1'
-    #def __init__(self, trapi_version='1.1', **kwargs):
-    #    self.trapi_version = trapi_version
-    #    super(predicates, self).__init__(**kwargs)
-    
-    def get(self, request):
-        if request.method == 'GET':
-            #query, max_results, client_id = QueryProcessor._process_request(
-            #        request,
-            #        self.trapi_version,
-            #        )
-
-            # Instaniate interface
-            interface = TrapiInterface()
-
-            # Get supported predicates
-            predicates = interface.get_predicates()
-            return JsonResponse(predicates)
-
 class meta_knowledge_graph(APIView):
     trapi_version = '1.1'
 
@@ -152,7 +132,7 @@ class meta_knowledge_graph(APIView):
         if request.method == 'GET':
             interface = TrapiInterface()
             meta_knowledge_graph = interface.get_meta_knowledge_graph()
-            return JsonResponse(meta_knowledge_graph)
+            return JsonResponse(meta_knowledge_graph.json())
 
 class versions(APIView):
     trapi_version = '1.1'
