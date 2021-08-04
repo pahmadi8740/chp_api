@@ -58,11 +58,8 @@ RUN rm "${SSH_PRIVATE_KEY}" && rm "${SSH_PUBLIC_KEY}"
 COPY ./requirements.txt .
 RUN pip3 wheel --no-cache-dir --no-deps --wheel-dir /usr/src/chp_api/wheels -r requirements.txt
 
-#make directory to store api apps in
-RUN mkdir /usr/src/chp_api/api-apps/ 
-
 # gather chp-look-up app
-RUN cd chp-look-up && mv look-up-service/ /usr/src/chp_api/api-apps/
+RUN cd chp-look-up && python3 setup.py bdist_wheel && cd dist && cp pybkb-*-py3-none-any.whl /usr/src/chp_api/wheels
 
 # gather pybkb wheel
 RUN cd PyBKB && python3 setup.py bdist_wheel && cd dist && cp pybkb-*-py3-none-any.whl /usr/src/chp_api/wheels
@@ -84,6 +81,7 @@ RUN cd reasoner-validator && python3 setup.py bdist_wheel && cd dist && cp reaso
 
 # gather chp-utils wheel
 RUN cd chp_utils && python3 setup.py bdist_wheel && cd dist && cp chp_utils-*-py3-none-any.whl /usr/src/chp_api/wheels
+
 
 
 
@@ -124,9 +122,6 @@ COPY --from=intermediate /usr/src/chp_api/wheels /wheels
 COPY --from=intermediate /usr/src/chp_api/requirements.txt .
 RUN pip3 install --upgrade pip
 RUN pip3 install --no-cache /wheels/*
-
-# copy look up service into django
-COPY --from=intermediate /usr/src/chp_api/api-apps/* /home/chp_api/web/
 
 # copy entry point
 COPY ./entrypoint.prod.sh $APP_HOME

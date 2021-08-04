@@ -22,4 +22,7 @@ python3 manage.py makemigrations
 echo "Apply database migrations"
 python3 manage.py migrate
 
+echo "loading look up data into database"
+python manage.py loaddata 
+
 exec "$@"
