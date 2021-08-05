@@ -3,13 +3,13 @@ version: '3.7'
 services:
         web:
                 build: ./chp_api
-                command: python3 manage.py runserver 0.0.0.0:8000
+                command: python3 manage.py runserver 0.0.0.0:8000 --settings=chp_api.settings.local
                 volumes:
                         - ./chp_api/:/usr/src/chp_api
                 ports:
                         - 8000:8000
                 env_file:
-                        - ./.env.dev
+                        - ./.env.local
                 depends_on:
                         - db
         db:
