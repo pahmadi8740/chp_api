@@ -1,0 +1,26 @@
+#!/bin/bash
+
+intuition_user=$(whoami)
+
+echo "Taking down the NCATS Server."
+docker-compose -f docker-compose.stage.yml down -v
+
+echo "Building back from scratch."
+docker system prune
+
+echo "Copying over SSH credentials to chp_api folder."
+cp ~/.ssh/id_rsa* chp_api
+
+docker-compose -f docker-compose.stage.yml build --build-arg SSH_PRIVATE_KEY=./id_rsa --build-arg SSH_PUBLIC_KEY=./id_rsa.pub --no-cache
+
+echo "Bringing up server."
+docker-compose -f docker-compose.prod.yml up -d
+docker-compose -f docker-compose.prod.yml exec web python3 manage.py makemigrations
+docker-compose -f docker-compose.prod.yml exec web python3 manage.py migrate --noinput
+docker-compose -f docker-compose.prod.yml exec web python3 manage.py collectstatic --no-input --clear
+echo "Server should now be up."
+
+echo "Removing ssh keys"
+rm chp_api/id_rsa*
+
+echo "Check logs with: docker-compose -f docker-compose.prod.yml logs -f"
