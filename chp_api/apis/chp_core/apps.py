@@ -11,7 +11,8 @@ logger = logging.getLogger(__name__)
 
 class ChpApiConfig(AppConfig):
     logger.warning('Running CHP API Configuration. May take a minute.')
-    name = 'chp_handler'
+    name = 'apis.chp_core'
+    default = True
 
     # Used for distrbuted reasoning
     # Get Hosts File if it exists
@@ -41,7 +42,7 @@ class ChpApiConfig(AppConfig):
 
 class ChpBreastApiConfig(AppConfig):
     logger.warning('Running CHP Breast API Configuration. May take a minute.')
-    name = 'chp_breast_handler'
+    name = 'chp_core_breast'
 
     # Used for distrbuted reasoning
     # Get Hosts File if it exists
@@ -72,7 +73,7 @@ class ChpBreastApiConfig(AppConfig):
 
 class ChpBrainApiConfig(AppConfig):
     logger.warning('Running CHP Brain API Configuration. May take a minute.')
-    name = 'chp_brain_handler'
+    name = 'chp_core_brain'
 
     # Used for distrbuted reasoning
     # Get Hosts File if it exists
@@ -103,7 +104,7 @@ class ChpBrainApiConfig(AppConfig):
 
 class ChpLungApiConfig(AppConfig):
     logger.warning('Running CHP Lung API Configuration. May take a minute.')
-    name = 'chp_brain_handler'
+    name = 'chp_core_lung'
 
     # Used for distrbuted reasoning
     # Get Hosts File if it exists

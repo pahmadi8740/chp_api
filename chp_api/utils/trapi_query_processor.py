@@ -1,15 +1,16 @@
 import logging
 from copy import deepcopy
 
-from django.db import transaction
-from django.http import JsonResponse
-from django.core.exceptions import ObjectDoesNotExist
+#from django.db import transaction
+#from django.http import JsonResponse
+#from django.core.exceptions import ObjectDoesNotExist
 
-from trapi_model.query import Query
-from trapi_model.biolink.constants import *
-from chp_utils.client import SriNodeNormalizerApiClient, SriOntologyKpApiClient
+#from trapi_model.query import Query
+#from trapi_model.biolink.constants import *
 
 from chp_utils.trapi_query_processor import BaseQueryProcessor
+
+from utils.mixins.chp_core_query_processor_mixin import ChpCoreQueryProcessorMixin
 
 # Setup logging
 logging.addLevelName(25, "NOTE")
@@ -18,6 +19,7 @@ def note(self, message, *args, **kwargs):
     self._log(25, message, args, kwargs)
 logging.Logger.note = note
 logger = logging.getLogger(__name__)
+
 
 class ApiBaseProcessor(BaseQueryProcessor):
     def __init__(self, request, trapi_version):
@@ -28,140 +30,32 @@ class ApiBaseProcessor(BaseQueryProcessor):
             :param request: Incoming POST request with a TRAPI message.
             :type request: requests.request
         """
-        self.data_copy = deepcopy(request.data)
-        self.request_process_failure_response = None
-        self.query, self.chp_config = self._process_request(request, trapi_version=trapi_version)
+        self.request_data = deepcopy(request.data)
+        self.chp_config, self.passed_subdomain = self.get_app_config(request)
         self.trapi_version = trapi_version      
-        super().__init__(Query.load(trapi_version, None, query=request.data))
+        super().__init__(None)
 
     @staticmethod
-    def _process_request(request, trapi_version):
+    def get_app_config(request):
+       pass
+
+    def process_request(self, request, trapi_version):
         pass
+
+    def get_response(self, query):
+        pass
+
+    def add_transactions(self, responses):
+        for response in responses:
+            self.add_transaction(response)
+    
+    def add_transaction(self, response):
+        pass
+
 
 class ChpCoreQueryProcessor(ChpCoreQueryProcessorMixin, ApiBaseProcessor):
     pass
         
-
-
-class BaseQueryProcessor:
-    def __init__(self, request, trapi_version):
-    
-    def _process_request(request, trapi_version):
-        pass
-
-    def fill_biolink_categories(self, query):
-        return query
-
-    def _extract_all_curies(self, query):
-        curies = []
-        query_graph = query.message.query_graph
-        for node_id, node in query_graph.items():
-            if node.ids is not None:
-                curies.extend(node.ids)
-        return curies
-
-    def _get_most_general_preference(self, possible_preferences):
-        unsorted_entities = []
-        for curie, category in possible_preferences:
-            unsorted_entities.append((len(category.get_ancestors()), curie, category))
-        return sorted(unsorted_entities)[0]
-
-    def _get_preferred(self, query, curie, categories, normalization_dict, meta_knowledge_graph):
-        # Ensure query graph categories and normalization type (categories) are consistent
-        curie_types = normalization_dict[curie]["types"]
-        curie_prefix = curie.split(':')[0]
-        possible_preferences = []
-        for curie_type in curie_types:
-            if curie_type in meta_knowledge_graph.nodes:
-                preferred_prefix = meta_knowledge_graph[curie_type]
-                if curie_prefix != preferred_prefix:
-                    for equivalent_id in normalization_dict[curie]['equivalent_identifers']:
-                        equiv_prefix = equivalent_id.split(':')[0]
-                        if equiv_prefix == preferred_prefix:
-                            possible_preferences.append(
-                                    (equivalent_id, curie_type)
-                                    )
-                            break
-                else:
-                    possible_preferences.append(
-                            (curie, curie_type)
-                            )
-        # Go through each possible preference and return the preferred curie that with the most general category
-        if len(possible_preferences) == 0:
-            query.warning('Could not normalize curie: {}, probably will cause failure.'.format(curie))
-            return curie, categories
-        if len(possible_preferences) > 1:
-            preferred_curie, preferred_category = self._get_most_general_preference(possible_preferences)
-        else:
-            preferred_curie, preferred_category = possible_preferences[0]
-        return preferred_curie, preferred_category
-
-    def _normalize_query_graphs(self, queries, normalization_dict, meta_knowledge_graph):
-        normalization_map = {}
-        for query in queries:
-            query_graph = query.message.query_graph
-            for node_id, node in query_graph.items():
-                if node.ids is None:
-                    continue
-                # Get preferred curie and category based on meta kg
-                preferred_curie, preferred_category = self._get_preferred(
-                        query,
-                        node.ids[0],
-                        node.categories[0],
-                        normalization_dict, 
-                        meta_knowledge_graph,
-                        )
-                # Check if curie was actually converted
-                if curie != preferred_curie:
-                    normalization_map[preferred_curie] = curie
-                    node.ids = [preferred_curie]
-                # Check categories alignment
-                if node.categories is None:
-                    node.categories = [preferred_category]
-                    query.info(
-                            'Filling in empty category for node {}, with {}'.format(
-                                node_id,
-                                preferred_category,
-                                )
-                            )
-                elif node.categories[0] != preferred_category:
-                    node.categories = [preferred_category]
-                    query.warning(
-                        'Passed category for node: {}, did not match our \
-                            preferred category {} for this curie. Going with our preferred category.'.format(
-                                node_id,
-                                preferred_category,
-                                )
-                            )
-        return queries, normalization_map
-
-    def normalize_to_preferred(self, queries, meta_knowledge_graph):
-        # Instantiate client
-        node_normalizer_client = SriNodeNormalizerApiClient()
-        
-        # Get all curies to normalize
-        curies_to_normalize = self._extract_all_curies(queries)
-
-        # Get normalized nodes
-        normalization_dict = node_normalizer_client.get_normalized_nodes(curies_to_normalize)
-
-        # Normalize query graph
-        return self._normalize_query_graphs(queries, normalization_dict, meta_knowledge_graph)
-    
-    def expand_batch_query(self, query):
-        # Expand if batch query
-        if query.is_batch_query():
-            return query.expand_batch_query()
-        # Otherwise wrap query in list
-        return [query]
-
-    def expand_supported_ontological_descendents(self, queries):
-        #TODO: For each query in queries expand that single query to cover all supported ontology classes,
-        # append them to a set of new queries, don't append the more general one only supported descendents.
-        return queries
-
-    def expand_with_semantic_ops(self, queries):
-        return queries
 
 ''' Depreciate
 
@@ -310,6 +204,3 @@ class BaseQueryProcessor:
                    'status': 'Bad Request. ' + error_msg}
         return message
 '''
-
-class ChpCoreQueryProcessor(ChpCoreQueryProcessorMixin, BaseQueryProcessor):
-    pass
