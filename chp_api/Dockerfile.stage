@@ -41,6 +41,7 @@ RUN git clone --single-branch --branch staging https://github.com/di2ag/chp.git
 RUN git clone --single-branch --branch staging https://github.com/di2ag/chp_client.git
 RUN git clone --single-branch --branch staging https://github.com/di2ag/trapi_model.git
 RUN git clone --single-branch --branch staging https://github.com/di2ag/reasoner-validator.git
+RUN git clone --single-branch --branch staging https://github.com/di2ag/chp_utils.git
 
 # lint
 RUN pip3 install --upgrade pip
@@ -73,6 +74,9 @@ RUN cd trapi_model && python3 setup.py bdist_wheel && cd dist && cp trapi_model-
 
 # gather reasoner-validator wheel
 RUN cd reasoner-validator && python3 setup.py bdist_wheel && cd dist && cp reasoner_validator-*-py3-none-any.whl /usr/src/chp_api/wheels
+
+# gather chp_utils wheel
+RUN cd chp_utils && python3 setup.py bdist_wheel && cd dist && cp chp_utils-*-py3-none-any.whl /usr/src/chp_api/wheels
 
 #########
 # FINAL #
