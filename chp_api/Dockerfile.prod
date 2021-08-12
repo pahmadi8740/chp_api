@@ -121,7 +121,8 @@ COPY ./entrypoint.prod.sh $APP_HOME
 
 # copy project
 COPY ./chp_api $APP_HOME/chp_api
-COPY ./chp_handler $APP_HOME/chp_handler
+COPY ./apis $APP_HOME/apis
+COPY ./utils $APP_HOME/utils
 COPY ./manage.py $APP_HOME
 COPY ./gunicorn.config.py $APP_HOME 
 
