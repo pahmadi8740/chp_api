@@ -21,6 +21,7 @@ from apis.chp_core import views
 
 urlpatterns = [
     path('query/', views.query.as_view()),
+    path('query', views.query.as_view()),
     path('meta_knowledge_graph/', views.meta_knowledge_graph.as_view()),
     path('curies/', views.curies.as_view()),
     path('versions/', views.versions.as_view()),
