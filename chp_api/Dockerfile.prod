@@ -35,13 +35,13 @@ RUN chmod 600 /root/.ssh/id_rsa.pub
 
 #RUN ssh cyakaboski@intuition.thayer.dartmouth.edu -t -t -v -o StrictHostKeyChecking=no
 
-RUN git clone --single-branch --branch staging ssh://git@intuition.thayer.dartmouth.edu/home/public/git/modules/PyBKB.git
-RUN git clone --depth 1 --single-branch --branch staging ssh://git@intuition.thayer.dartmouth.edu/home/public/git/projects/ChpData.git
-RUN git clone --single-branch --branch staging https://github.com/di2ag/chp.git
-RUN git clone --single-branch --branch staging https://github.com/di2ag/chp_client.git
-RUN git clone --single-branch --branch staging https://github.com/di2ag/trapi_model.git
-RUN git clone --single-branch --branch staging https://github.com/di2ag/reasoner-validator.git
-RUN git clone --single-branch --branch staging https://github.com/di2ag/chp_utils.git
+RUN git clone --single-branch --branch production ssh://git@intuition.thayer.dartmouth.edu/home/public/git/modules/PyBKB.git
+RUN git clone --depth 1 --single-branch --branch production ssh://git@intuition.thayer.dartmouth.edu/home/public/git/projects/ChpData.git
+RUN git clone --single-branch --branch production https://github.com/di2ag/chp.git
+RUN git clone --single-branch --branch production https://github.com/di2ag/chp_client.git
+RUN git clone --single-branch --branch production https://github.com/di2ag/trapi_model.git
+RUN git clone --single-branch --branch production https://github.com/di2ag/reasoner-validator.git
+RUN git clone --single-branch --branch production https://github.com/di2ag/chp_utils.git
 
 # lint
 RUN pip3 install --upgrade pip
@@ -121,7 +121,8 @@ COPY ./entrypoint.prod.sh $APP_HOME
 
 # copy project
 COPY ./chp_api $APP_HOME/chp_api
-COPY ./chp_handler $APP_HOME/chp_handler
+COPY ./apis $APP_HOME/apis
+COPY ./utils $APP_HOME/utils
 COPY ./manage.py $APP_HOME
 COPY ./gunicorn.config.py $APP_HOME 
 

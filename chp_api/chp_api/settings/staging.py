@@ -35,5 +35,4 @@ STATIC_URL = '/staticfiles/'
 STATIC_ROOT = os.path.join(BASE_DIR, "staticfiles")
 
 # Hosts Configuration
-ROOT_HOSTCONF = 'chp_api.hosts'
-DEFAULT_HOST = 'chp-dev.thayer.dartmouth.edu'
+DEFAULT_HOST = 'chp-core'
