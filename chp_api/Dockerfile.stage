@@ -12,29 +12,6 @@ WORKDIR /usr/src/chp_api
 RUN apt-get update \
 	&& apt-get install -y git python3-pip python3-dev dos2unix
 
-# add credentials on build
-ARG SSH_PRIVATE_KEY
-ARG SSH_PUBLIC_KEY
-RUN mkdir -p /root/.ssh/ \
-	&& chmod 0700 /root/.ssh \
-	&& ssh-keyscan intuition.thayer.dartmouth.edu >> ~/.ssh/known_hosts \
-	&& chmod 644 ~/.ssh/known_hosts
-
-# add keys (use in windows powershell)
-COPY "${SSH_PRIVATE_KEY}" /root/.ssh/
-COPY "${SSH_PUBLIC_KEY}" /root/.ssh/
-RUN chmod 600 /root/.ssh/id_rsa \
-	&& chmod 600 /root/.ssh/id_rsa.pub
-RUN chmod 600 /root/.ssh/id_rsa.pub
-
-# add keys (use in Linux)
-#RUN echo "${SSH_PRIVATE_KEY}" > /root/.ssh/id_rsa \
-#	&& echo "${SSH_PUBLIC_KEY}" > /root/.ssh/id_rsa.pub \
-#	&& chmod 600 /root/.ssh/id_rsa \
-#	&& chmod 600 /root/.ssh/id_rsa.pub
-
-#RUN ssh cyakaboski@intuition.thayer.dartmouth.edu -t -t -v -o StrictHostKeyChecking=no
-
 RUN git clone --single-branch --branch staging ssh://git@intuition.thayer.dartmouth.edu/home/public/git/modules/PyBKB.git
 RUN git clone --depth 1 --single-branch --branch staging ssh://git@intuition.thayer.dartmouth.edu/home/public/git/projects/ChpData.git
 RUN git clone --single-branch --branch staging https://github.com/di2ag/chp.git
@@ -47,11 +24,6 @@ RUN git clone --single-branch --branch staging https://github.com/di2ag/chp_util
 RUN pip3 install --upgrade pip
 RUN pip3 install flake8 wheel
 COPY . .
-
-# remove ssh key files (used in windows)
-RUN rm "${SSH_PRIVATE_KEY}" && rm "${SSH_PUBLIC_KEY}"
-
-#RUN flake8 --ignore=E501,F401 .
 
 # install dependencies
 COPY ./requirements.txt .
