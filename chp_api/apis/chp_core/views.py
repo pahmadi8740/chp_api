@@ -18,6 +18,9 @@ from utils.trapi_query_processor import ChpCoreQueryProcessor
 
 class query(APIView):
     trapi_version = '1.1'
+    def __init__(self, trapi_version='1.1', **kwargs):
+        self.trapi_version = trapi_version
+        super(query, self).__init__(**kwargs)
 
     def post(self, request):
         if request.method == 'POST':
@@ -30,6 +33,9 @@ class query(APIView):
 
 class curies(APIView):
     trapi_version = '1.1'
+    def __init__(self, trapi_version='1.1', **kwargs):
+        self.trapi_version = trapi_version
+        super(curies, self).__init__(**kwargs)
     
     def get(self, request):
         if request.method == 'GET':
@@ -49,6 +55,9 @@ class curies(APIView):
 
 class meta_knowledge_graph(APIView):
     trapi_version = '1.1'
+    def __init__(self, trapi_version='1.1', **kwargs):
+        self.trapi_version = trapi_version
+        super(meta_knowledge_graph, self).__init__(**kwargs)
 
     def get(self, request):
         if request.method == 'GET':
@@ -67,6 +76,9 @@ class meta_knowledge_graph(APIView):
 
 class versions(APIView):
     trapi_version = '1.1'
+    def __init__(self, trapi_version='1.1', **kwargs):
+        self.trapi_version = trapi_version
+        super(version, self).__init__(**kwargs)
 
     def get(self, request):
         if request.method == 'GET':
