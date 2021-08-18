@@ -11,6 +11,7 @@ import pybkb
 
 from trapi_model.query import Query
 from trapi_model.biolink.constants import *
+from trapi_model.biolink import TOOLKIT
 from chp.trapi_interface import TrapiInterface
 from chp_utils.exceptions import SriOntologyKpException, SriNodeNormalizerException
 
@@ -57,16 +58,16 @@ class ChpCoreQueryProcessorMixin:
                 'chp' : chp.__version__,
                 'chp_client' : chp_client.__version__,
                 'chp_data' : chp_data.__version__,
-                'd5726a43-35c0-4719-9ab0-d649dc337432pybkb' : pybkb.__version__,
+                'pybkb' : pybkb.__version__,
                 'chp_utils': chp_utils.__version__,
                 }
 
-    def process_request(self, request, trapi_version='1.1'):
+    def process_request(self, request):
         """ Helper function that extracts the query from the message.
         """
         logger.info('Starting query.')
         
-        query = Query.load(trapi_version, biolink_version=None, query=request.data)
+        query = Query.load(self.trapi_version, biolink_version=None, query=request.data)
 
         # Setup query in Base Processor
         self.setup_query(query)
@@ -278,7 +279,13 @@ class ChpCoreQueryProcessorMixin:
         
         logger.info('Responded in {} seconds'.format(time.time() - start_time))
         unnormalized_response.set_status('Success')
-        
+       
+        # Add workflow
+        unnormalized_response.add_workflow("lookup")
+
+        # Set the used biolink version
+        unnormalized_response.biolink_version = TOOLKIT.get_model_version()
+
         # Add response to database
         self.add_transaction(unnormalized_response)
         
