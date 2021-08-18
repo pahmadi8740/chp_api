@@ -1,6 +1,106 @@
 [
     {
     "message": {
+        "query_graph": {
+            "edges": {
+                "e01": {
+                    "object": "n0",
+                    "subject": "n1",
+                    "predicates": [
+                        "biolink:entity_negatively_regulates_entity",
+                        "biolink:genetically_interacts_with"
+                    ]
+                }
+            },
+            "nodes": {
+                "n0": {
+                    "ids": [
+                        "NCBIGene:23221"
+                    ],
+                    "categories": [
+                        "biolink:Gene"
+                    ]
+                },
+                "n1": {
+                    "categories": [
+                        "biolink:Gene"
+                        ]
+                    }
+                }
+            }
+        },
+    "test_description": "Gene to gene with normalization. Make sure results and knowledge graph are unnormalized.",
+    "trapi_version": "1.1"
+    },
+    {
+    "message": {
+        "query_graph": {
+            "nodes": {
+                "n0": {
+                    "ids": [
+                        "HP:0002013"
+                    ],
+                    "categories": [
+                        "biolink:DiseaseOrPhenotypicFeature"
+                    ]
+                },
+                "n1": {
+                     "categories":[
+                         "biolink:ChemicalEntity"
+                        ]
+                }
+            },
+            "edges": {
+                "e0": {
+                    "subject": "n0",
+                    "object": "n1",
+                    "predicates":["biolink:related_to"]
+
+                }
+            }
+        }
+    },
+    "test_description": "Standup query. No empty results or knowledge graph.",
+    "trapi_version": "1.1"
+    },
+    {
+    "message": {
+        "query_graph": {
+            "nodes": {
+                "n0": {
+                  "categories": [
+                    "biolink:SmallMolecule"
+                  ],
+                  "name": "Small Molecule"
+                },
+                "n1": {
+                  "name": "EGFR",
+                  "ids": ["NCBIGene:1956"]
+                }
+              },
+              "edges": {
+                "e0": {
+                  "subject": "n0",
+                  "object": "n1",
+                  "predicates": [
+                    "biolink:decreases_abundance_of",
+                    "biolink:decreases_activity_of",
+                    "biolink:decreases_expression_of",
+                    "biolink:decreases_synthesis_of",
+                    "biolink:increases_degradation_of",
+                    "biolink:disrupts",
+                    "biolink:entity_negatively_regulates_entity",
+                    "biolink:related_to"
+                  ]
+                }
+              }
+            }
+        },
+        "trapi_version": "1.1",
+        "test_description": "No knowledge graph or results present and no categories and batch predicates."
+    },
+    {
+    "message": {
       "query_graph": {
         "nodes": {
           "n0": {
