@@ -13,7 +13,6 @@ from trapi_model.query import Query
 from trapi_model.biolink.constants import *
 from trapi_model.biolink import TOOLKIT
 from chp.trapi_interface import TrapiInterface
-from chp_utils.exceptions import SriOntologyKpException, SriNodeNormalizerException
 
 from apis.chp_core.models import Transaction
 from apis.chp_core.apps import ChpApiConfig, ChpBreastApiConfig, ChpBrainApiConfig, ChpLungApiConfig
@@ -21,10 +20,15 @@ from apis.chp_core.apps import ChpApiConfig, ChpBreastApiConfig, ChpBrainApiConf
 # Setup logging
 logging.addLevelName(25, "NOTE")
 # Add a special logging function
+
+
 def note(self, message, *args, **kwargs):
     self._log(25, message, args, kwargs)
+
+
 logging.Logger.note = note
 logger = logging.getLogger(__name__)
+
 
 class ChpCoreQueryProcessorMixin:
     @staticmethod
@@ -55,10 +59,10 @@ class ChpCoreQueryProcessorMixin:
 
     def get_versions(self):
         return { 
-                'chp' : chp.__version__,
-                'chp_client' : chp_client.__version__,
-                'chp_data' : chp_data.__version__,
-                'pybkb' : pybkb.__version__,
+                'chp': chp.__version__,
+                'chp_client': chp_client.__version__,
+                'chp_data': chp_data.__version__,
+                'pybkb': pybkb.__version__,
                 'chp_utils': chp_utils.__version__,
                 }
 
@@ -67,7 +71,11 @@ class ChpCoreQueryProcessorMixin:
         """
         logger.info('Starting query.')
         
-        query = Query.load(self.trapi_version, biolink_version=None, query=request.data)
+        query = Query.load(
+                self.trapi_version,
+                biolink_version=None,
+                query=request.data
+                )
 
         # Setup query in Base Processor
         self.setup_query(query)
@@ -84,6 +92,8 @@ class ChpCoreQueryProcessorMixin:
         return None
 
     def get_disease_specific_config(self, disease_node):
+        if disease_node.ids is None:
+            raise ValueError('Do not support Disease wildcards. Must specify a disease curie.')
         if disease_node.ids[0] == 'MONDO:0005061':
             chp_config = ChpLungApiConfig
         elif disease_node.ids[0] == 'MONDO:0001657':
@@ -188,10 +198,18 @@ class ChpCoreQueryProcessorMixin:
             self.add_transaction(query_copy)
             return JsonResponse(query_copy.to_dict())
             
-        # Get disease specific interfaces if a subdomain was not used
-        interface_dict = self.setup_queries_based_on_disease_interfaces(consistent_queries)
-
         logger.info('Number of consistent queries derived from passed query: {}.'.format(len(consistent_queries)))
+        # Get disease specific interfaces if a subdomain was not used
+        try:
+            interface_dict = self.setup_queries_based_on_disease_interfaces(consistent_queries)
+        except ValueError as ex:
+            # Add logs from consistent queries
+            query_copy = self.add_logs_from_query_list(query_copy, consistent_queries)
+            query_copy.set_status('Bad request. See description.')
+            query_copy.set_description('Problem during setup. ' + str(ex))
+            self.add_transaction(query_copy)
+            return JsonResponse(query_copy.to_dict())
+
         # Setup for CHP inferencing
         try:
             setup_time = time.time()
