@@ -1,31 +1,53 @@
 .. CHP API documentation master file, created by
-   sphinx-quickstart on Thu Jan 21 03:07:07 2021.
+   sphinx-quickstart on Thu Aug 26 13:21:53 2021.
    You can adapt this file completely to your liking, but it should at least
    contain the root `toctree` directive.
 
-Connections Hypothesis Provider (CHP) API
-=========================================
+Welcome to CHP API's documentation!
+===================================
 
 .. toctree::
    :maxdepth: 2
-    
-   code_reference
+   :caption: Contents:
+
+
+This documentation will detail information for building the Connections Hypothesis 
+Provider (CHP) API as well as developing apps inside the CHP ecosystem.
+
+Overview
+--------
+
+The CHP ecosystem resembles the following structure:
+
+.. code-block:: 
+
+   chp_api [Repo Root]/
+   |-- chp_api [Project Root]/
+   |   |-- chp_api/
+   |   |   |-- __init__.py
+   |   |   |--  asgi.py
+   |   |   |-- hosts.py
+   |   |   |-- urls.py
+   |   |   |-- wsgi.py
+   |   |   |__ settings
+   |   |   |   |-- __init__.py
+   |   |   |   |-- base.py
+   |   |   |   |-- local.py
+   |   |   |   |-- staging.py
+   |   |   |   |-- production.py
+   |   |-- apis/
+
+
+
+
+
+
+
+
 
 Indices and tables
-------------------
+==================
 
 * :ref:`genindex`
 * :ref:`modindex`
 * :ref:`search`
-
-What is the CHP API?
---------------------
-
-Connections Hypothesis Provider uses the Django REST Framework to run an TRAPI
-Compliant Web API for the National Institute of Health's (NIH) National Center
-for Advaning Translational Sciences (NCATS) Project. 
-
-The API is currently:
-
-* TRAPI 1.0.0 Compliant
-* Supports Biolink curies and predicates.
