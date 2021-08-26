@@ -2,6 +2,37 @@
     {
     "message": {
         "query_graph": {
+            "nodes": {
+                "n0": {
+                    "ids": [
+                        "PUBCHEM.COMPOUND:62883",
+
+                        "CHEBI:3535"
+                    ],
+                    "categories": [
+                        "biolink:SmallMolecule"
+                    ]
+                },
+                "n1": {
+		             "categories":[
+                         "biolink:Disease"
+                        ]
+                }
+            },
+            "edges": {
+                "e0": {
+                    "subject": "n0",
+                    "object": "n1",
+                    "predicates":["biolink:related_to"]
+                    }
+                }
+            }
+        },
+    "test_description": "Test disease wildcard response with normalization."
+    },
+    {
+    "message": {
+        "query_graph": {
             "edges": {
                 "e01": {
                     "object": "n0",

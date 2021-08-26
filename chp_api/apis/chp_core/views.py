@@ -27,7 +27,10 @@ class query(APIView):
             # Initialize Query Processor
             query_processor = ChpCoreQueryProcessor(request, self.trapi_version)
             # Process Query
-            query = query_processor.process_request(request)
+            try:
+                query = query_processor.process_request(request)
+            except:
+                return query_processor.process_invalid_trapi(request)
             # Return responses
             return query_processor.get_response(query)
 
