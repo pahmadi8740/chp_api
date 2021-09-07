@@ -26,7 +26,7 @@ class ChpApiConfig(AppConfig):
     # Instantiate BKB handler
     bkb_handler = BkbDataHandler(
         bkb_major_version='darwin',
-        bkb_minor_version='1.0'
+        bkb_minor_version='2.0'
     )
 
     logger.info('Instantiating reasoners.')
@@ -57,7 +57,7 @@ class ChpBreastApiConfig(AppConfig):
     bkb_handler = BkbDataHandler(
         disease='tcga_brca',
         bkb_major_version='darwin',
-        bkb_minor_version='1.0'
+        bkb_minor_version='2.0'
     )
 
     logger.info('Instantiating reasoners.')
@@ -88,7 +88,7 @@ class ChpBrainApiConfig(AppConfig):
     bkb_handler = BkbDataHandler(
         disease='tcga_gbm',
         bkb_major_version='darwin',
-        bkb_minor_version='1.0'
+        bkb_minor_version='2.0'
     )
 
     logger.info('Instantiating reasoners.')
@@ -119,7 +119,7 @@ class ChpLungApiConfig(AppConfig):
     bkb_handler = BkbDataHandler(
         disease='tcga_luad',
         bkb_major_version='darwin',
-        bkb_minor_version='1.0'
+        bkb_minor_version='2.0'
     )
 
     logger.info('Instantiating reasoners.')
