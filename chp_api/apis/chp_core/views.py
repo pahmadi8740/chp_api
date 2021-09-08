@@ -29,8 +29,11 @@ class query(APIView):
             # Process Query
             try:
                 query = query_processor.process_request(request)
-            except:
-                return query_processor.process_invalid_trapi(request)
+            except Exception as e:
+                if 'Workflow Error' in str(e):
+                    return query_processor.process_invalid_workflow(request, str(e))
+                else:
+                    return query_processor.process_invalid_trapi(request)
             # Return responses
             return query_processor.get_response(query)
 
