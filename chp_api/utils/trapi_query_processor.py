@@ -34,6 +34,11 @@ class ApiBaseProcessor(BaseQueryProcessor):
         invalid_query_json['status'] = 'Bad TRAPI.'
         return JsonResponse(invalid_query_json, status=400)
 
+    def process_invalid_workflow(self, request, status_msg):
+        invalid_query_json = request.data
+        invalid_query_json['status'] = status_msg
+        return JsonResponse(invalid_query_json, status=400)
+
     @staticmethod
     def get_app_config(request):
        pass
