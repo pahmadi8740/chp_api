@@ -300,6 +300,7 @@ class ChpCoreQueryProcessorMixin:
        
         # Add workflow
         unnormalized_response.add_workflow("lookup")
+        unnormalized_response.add_workflow("filter_results_top_n")
 
         # Set the used biolink version
         unnormalized_response.biolink_version = TOOLKIT.get_model_version()
