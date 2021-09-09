@@ -5,7 +5,7 @@ services:
                 build: 
                         context: ./chp_api
                         dockerfile: Dockerfile.prod
-                command: gunicorn -c gunicorn.config.py --env DJANGO_SETTINGS_MODULE=chp_api.settings.production chp_api.wsgi:application --bind 0.0.0.0:8000
+                command: gunicorn -c gunicorn.config-prod.py --env DJANGO_SETTINGS_MODULE=chp_api.settings.production chp_api.wsgi:application --bind 0.0.0.0:8000
                 volumes:
                         - static_volume:/home/chp_api/web/staticfiles
                 expose:
