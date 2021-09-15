@@ -22,7 +22,7 @@ CHP is registered with Smart API: https://smart-api.info/ui/855adaa128ce5aa58a09
 ## How To Use
 We encourage anyone looking for tooling/instructions, to interface with our API, to the following repository, CHP Client, https://github.com/di2ag/chp_client. CHP Client is a lightweight Python client that interfaces CHP. It is meant to be an easy-to-use wrapper utility to both run and build TRAPI queries that the CHP web service will understand. 
 
-Our API is in active developement and is currently following [Translator Reasoner API standards 1.0.0](https://github.com/NCATSTranslator/ReasonerAPI)
+Our API is in active developement and is currently following [Translator Reasoner API standards 1.2.0](https://github.com/NCATSTranslator/ReasonerAPI)
 
 Our API is currently live at: [chp.thayer.dartmouth.edu](http://chp.thayer.dartmouth.edu/)
 
