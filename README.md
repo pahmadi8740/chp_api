@@ -1,4 +1,4 @@
-# Connections Hypothesis Provider API Documentation 
+# Connections Hypothesis Provider API Documentation
 
 ## Description
 Connections Hypothesis Provider (CHP) is a service built by Dartmouth College (PI – Dr. Eugene Santos) and Tufts University (Co-PI – Joseph Gormley) in collaboration with the National Center for Advancing Translational Sciences (NCATS). CHP aims to leverage clinical data along with structured biochemical knowledge to derive a computational representation of pathway structures and molecular components to support human and machine-driven interpretation, enable pathway-based biomarker discovery, and aid in the drug development process.
