@@ -3,7 +3,7 @@
 intuition_user=$(whoami)
 
 echo "Taking down the NCATS Server."
-#docker kill $(docker ps -q)
+docker rm $(docker ps -q -f "network=chp_apimasterbuild_default")
 
 echo "Building back from scratch."
 docker system prune
