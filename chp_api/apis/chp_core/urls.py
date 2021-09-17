@@ -20,14 +20,14 @@ from rest_framework.urlpatterns import format_suffix_patterns
 from apis.chp_core import views
 
 urlpatterns = [
-    path('query/', views.query.as_view()),
-    path('query', views.query.as_view()),
-    path('meta_knowledge_graph/', views.meta_knowledge_graph.as_view()),
-    path('curies/', views.curies.as_view()),
-    path('versions/', views.versions.as_view()),
+    path('query/', views.query.as_view(trapi_version='1.2')),
+    path('query', views.query.as_view(trapi_version='1.2')),
+    path('meta_knowledge_graph/', views.meta_knowledge_graph.as_view(trapi_version='1.2')),
+    path('curies/', views.curies.as_view(trapi_version='1.2')),
+    path('versions/', views.versions.as_view(trapi_version='1.2')),
     path('v1.1/query/', views.query.as_view(trapi_version='1.1')),
     path('v1.1/query', views.query.as_view(trapi_version='1.1')),
-    path('v1.1/meta_knowledge_graph/', views.meta_knowledge_graph.as_view()),
+    path('v1.1/meta_knowledge_graph/', views.meta_knowledge_graph.as_view(trapi_version='1.1')),
     path('v1.1/curies/', views.curies.as_view(trapi_version='1.1')),
     path('v1.1/versions/', views.versions.as_view(trapi_version='1.1')),
     path('v1.2/query/', views.query.as_view(trapi_version='1.2')),
