@@ -17,8 +17,8 @@ from rest_framework import generics
 from utils.trapi_query_processor import ChpCoreQueryProcessor
 
 class query(APIView):
-    trapi_version = '1.1'
-    def __init__(self, trapi_version='1.1', **kwargs):
+    trapi_version = '1.2'
+    def __init__(self, trapi_version='1.2', **kwargs):
         self.trapi_version = trapi_version
         super(query, self).__init__(**kwargs)
 
@@ -38,8 +38,8 @@ class query(APIView):
             return query_processor.get_response(query)
 
 class curies(APIView):
-    trapi_version = '1.1'
-    def __init__(self, trapi_version='1.1', **kwargs):
+    trapi_version = '1.2'
+    def __init__(self, trapi_version='1.2', **kwargs):
         self.trapi_version = trapi_version
         super(curies, self).__init__(**kwargs)
     
@@ -60,8 +60,8 @@ class curies(APIView):
             return JsonResponse(curies_db.to_dict())
 
 class meta_knowledge_graph(APIView):
-    trapi_version = '1.1'
-    def __init__(self, trapi_version='1.1', **kwargs):
+    trapi_version = '1.2'
+    def __init__(self, trapi_version='1.2', **kwargs):
         self.trapi_version = trapi_version
         super(meta_knowledge_graph, self).__init__(**kwargs)
 
@@ -81,8 +81,8 @@ class meta_knowledge_graph(APIView):
             return JsonResponse(meta_knowledge_graph.to_dict())
 
 class versions(APIView):
-    trapi_version = '1.1'
-    def __init__(self, trapi_version='1.1', **kwargs):
+    trapi_version = '1.2'
+    def __init__(self, trapi_version='1.2', **kwargs):
         self.trapi_version = trapi_version
         super(version, self).__init__(**kwargs)
 
