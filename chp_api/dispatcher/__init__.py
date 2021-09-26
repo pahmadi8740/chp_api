@@ -1,5 +1,6 @@
 import logging
 from copy import deepcopy
+from re import A
 from django.http import JsonResponse
 from importlib import import_module
 from collections import defaultdict
@@ -17,15 +18,17 @@ logger = logging.getLogger(__name__)
 
 # Installed CHP Apps
 CHP_APPS = [
-        "chp.app",
+        #"chp.app",
+        #"chp_look_up.app",
         ]
-
+print(CHP_APPS)
 # Import CHP Apps
 APPS = [import_module(app) for app in CHP_APPS]
-
+print(APPS)
 
 class Dispatcher(BaseQueryProcessor):
     def __init__(self, request, trapi_version):
+        print("dispatcher init")
         """ Base API Query Processor class used to abstract the processing infrastructure from
             the views. Inherits from the CHP Utilities Trapi Query Processor which handles
             node normalization, curie ontology expansion, and semantic operations.
@@ -39,6 +42,7 @@ class Dispatcher(BaseQueryProcessor):
         super().__init__(None)
 
     def get_curies(self):
+        
         curies_dbs = []
         for app in APPS:
             get_app_curies_fn = getattr(app, 'get_curies')
@@ -262,7 +266,6 @@ class Dispatcher(BaseQueryProcessor):
         )
         transaction.save()
         
-
     def add_transactions(self, responses):
         for response in responses:
             self.add_transaction(response)
