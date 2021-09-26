@@ -54,6 +54,7 @@ class curies(APIView):
             return JsonResponse(curies_db.to_dict())
 
 class meta_knowledge_graph(APIView):
+    print("foo")
     trapi_version = '1.2'
     def __init__(self, trapi_version='1.2', **kwargs):
         self.trapi_version = trapi_version

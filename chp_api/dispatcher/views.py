@@ -45,13 +45,16 @@ class curies(APIView):
     
     def get(self, request):
         if request.method == 'GET':
-            # Initialize dispatcher
-            dispatcher = Dispatcher(request, self.trapi_version)
+            print("curies view")
+            return JsonResponse({"foo":"goo"})
+    #     if request.method == 'GET':
+    #         # Initialize dispatcher
+    #         dispatcher = Dispatcher(request, self.trapi_version)
 
-            # Get all chp app curies
-            curies_db = dispatcher.get_curies()
+    #         # Get all chp app curies
+    #         curies_db = dispatcher.get_curies()
 
-            return JsonResponse(curies_db.to_dict())
+    #         return JsonResponse(curies_db.to_dict())
 
 class meta_knowledge_graph(APIView):
     trapi_version = '1.2'
@@ -66,7 +69,7 @@ class meta_knowledge_graph(APIView):
            
             # Get merged meta KG
             meta_knowledge_graph = dispatcher.get_meta_knowledge_graph()
-            
+            print(meta_knowledge_graph.to_dict())
             return JsonResponse(meta_knowledge_graph.to_dict())
 
 class versions(APIView):

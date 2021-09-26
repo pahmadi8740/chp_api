@@ -269,4 +269,3 @@ class Dispatcher(BaseQueryProcessor):
     
     def add_transaction(self, response):
         pass
-

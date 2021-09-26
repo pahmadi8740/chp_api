@@ -34,8 +34,11 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     'django.contrib.staticfiles',
     'rest_framework',
-    #'chp.app.apps.ChpApiConfig',
+    'django_extensions',
+    'chp_look_up.app.apps.ChpLookUpConfig',
     'dispatcher',
+    #'chp.app.apps.ChpApiConfig',
+    
     #'utils',
     #'django_hosts',
 
@@ -53,7 +56,7 @@ MIDDLEWARE = [
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
 ]
 
-ROOT_URLCONF = 'chp_api.urls'
+ROOT_URLCONF = 'dispatcher.urls'
 
 TEMPLATES = [
     {
