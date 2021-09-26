@@ -1,7 +1,7 @@
 ### Gunicorn Configuration File ###
 
-timeout = 0
-graceful_timeout = 0
+timeout = 360
+graceful_timeout = 360
 limit_request_field_size  = 0
 limit_request_line = 0
 limit_request_fields = 0
