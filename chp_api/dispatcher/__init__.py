@@ -4,10 +4,14 @@ from re import A
 from django.http import JsonResponse
 from importlib import import_module
 from collections import defaultdict
-
+import time
+import json
 from chp_utils.trapi_query_processor import BaseQueryProcessor
 from chp_utils.curie_database import merge_curies_databases
 from trapi_model.meta_knowledge_graph import merge_meta_knowledge_graphs
+from trapi_model.query import Query
+
+
 # Setup logging
 logging.addLevelName(25, "NOTE")
 # Add a special logging function
@@ -19,16 +23,16 @@ logger = logging.getLogger(__name__)
 # Installed CHP Apps
 CHP_APPS = [
         #"chp.app",
-        #"chp_look_up.app",
+        "chp_look_up.app",
         ]
-print(CHP_APPS)
+
 # Import CHP Apps
 APPS = [import_module(app) for app in CHP_APPS]
-print(APPS)
+
+
 
 class Dispatcher(BaseQueryProcessor):
     def __init__(self, request, trapi_version):
-        print("dispatcher init")
         """ Base API Query Processor class used to abstract the processing infrastructure from
             the views. Inherits from the CHP Utilities Trapi Query Processor which handles
             node normalization, curie ontology expansion, and semantic operations.
@@ -37,17 +41,18 @@ class Dispatcher(BaseQueryProcessor):
             :type request: requests.request
         """
         self.request_data = deepcopy(request.data)
+
         #self.chp_config, self.passed_subdomain = self.get_app_config(request)
-        self.trapi_version = trapi_version      
+        self.trapi_version = trapi_version
+        
         super().__init__(None)
 
-    def get_curies(self):
-        
+    def get_curies(self):        
         curies_dbs = []
         for app in APPS:
             get_app_curies_fn = getattr(app, 'get_curies')
             curies_dbs.append(get_app_curies_fn())
-        return merge_curies_databases(curies_db)
+        return merge_curies_databases(curies_dbs)
 
     def get_meta_knowledge_graph(self):
         meta_kgs = []
@@ -70,7 +75,6 @@ class Dispatcher(BaseQueryProcessor):
         """ Helper function that extracts the query from the message.
         """
         logger.info('Starting query.')
-        
         query = Query.load(
                 self.trapi_version,
                 biolink_version=None,
@@ -100,7 +104,7 @@ class Dispatcher(BaseQueryProcessor):
             raise ValueError('You should be loading base configs (if any) so at this point there should be one config per app (or just the app).')
         base_interfaces = []
         for app, app_config in zip(APPS, app_configs):
-            get_app_interface_fn = getattr(app, 'get_trapi_interface')
+            get_trapi_interface_fn = getattr(app, 'get_trapi_interface')
             base_interfaces.append(get_trapi_interface_fn(app_config))
         return base_interfaces
 
@@ -118,7 +122,7 @@ class Dispatcher(BaseQueryProcessor):
         start_time = time.time()
         logger.info('Running query.')
 
-        base_app_configs = self.get_app_configs()
+        base_app_configs = self.get_app_configs(query_copy)
         base_interfaces = self.get_trapi_interfaces(base_app_configs)
 
         # Expand
@@ -127,7 +131,7 @@ class Dispatcher(BaseQueryProcessor):
         # For each app run the normalization and semops pipline
 
         # Make a copy of the expanded queries for each app
-        app_queries = [deepcopy(expand_queries) for _ in range(len(base_interfaces))]
+        app_queries = [expand_queries for _ in range(len(base_interfaces))]
         consistent_app_queries = []
         inconsistent_app_queries = []
         app_normalization_maps = []
@@ -175,7 +179,6 @@ class Dispatcher(BaseQueryProcessor):
             logger.info('Number of consistent queries derived from passed query: {}.'.format(len(consistent_queries)))
             consistent_app_queries.append(consistent_queries)
             inconsistent_app_queries.append(inconsistent_queries)
-
         # Ensure that there are actually consistent queries that have been extracted
         if sum([len(_qs) for _qs in consistent_app_queries]) == 0:
             # Add all logs from inconsistent queries of all apps
@@ -185,7 +188,6 @@ class Dispatcher(BaseQueryProcessor):
             query_copy.set_description('Could not extract any supported queries from query graph.')
             self.add_transaction(query_copy)
             return JsonResponse(query_copy.to_dict())
-
         # Collect responses from each CHP app
         app_responses = []
         app_logs = []
