@@ -27,13 +27,14 @@ class query(APIView):
             # Initialize Dispatcher
             dispatcher = Dispatcher(request, self.trapi_version)
             # Process Query
+            query = None
             try:
-                query = dispatcher.process_request(request)
+                query = dispatcher.process_request(request, trapi_version=self.trapi_version)
             except Exception as e:
                 if 'Workflow Error' in str(e):
                     return dispatcher.process_invalid_workflow(request, str(e))
                 else:
-                    return dispatcher.add_logs_from_query_listrocess_invalid_trapi(request)
+                    return dispatcher.process_invalid_trapi(request)
             # Return responses
             return dispatcher.get_response(query)
 
@@ -45,16 +46,13 @@ class curies(APIView):
     
     def get(self, request):
         if request.method == 'GET':
-            print("curies view")
-            return JsonResponse({"foo":"goo"})
-    #     if request.method == 'GET':
-    #         # Initialize dispatcher
-    #         dispatcher = Dispatcher(request, self.trapi_version)
+            # Initialize dispatcher
+            dispatcher = Dispatcher(request, self.trapi_version)
 
-    #         # Get all chp app curies
-    #         curies_db = dispatcher.get_curies()
+            # Get all chp app curies
+            curies_db = dispatcher.get_curies()
 
-    #         return JsonResponse(curies_db.to_dict())
+            return JsonResponse(curies_db.to_dict())
 
 class meta_knowledge_graph(APIView):
     trapi_version = '1.2'
@@ -69,7 +67,6 @@ class meta_knowledge_graph(APIView):
            
             # Get merged meta KG
             meta_knowledge_graph = dispatcher.get_meta_knowledge_graph()
-            print(meta_knowledge_graph.to_dict())
             return JsonResponse(meta_knowledge_graph.to_dict())
 
 class versions(APIView):
