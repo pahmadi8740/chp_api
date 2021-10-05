@@ -10,7 +10,7 @@ from chp_utils.trapi_query_processor import BaseQueryProcessor
 from chp_utils.curie_database import merge_curies_databases
 from trapi_model.meta_knowledge_graph import merge_meta_knowledge_graphs
 from trapi_model.query import Query
-
+from django.apps import apps
 
 # Setup logging
 logging.addLevelName(25, "NOTE")
