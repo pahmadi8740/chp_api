@@ -5,12 +5,12 @@ from django.http import JsonResponse
 from importlib import import_module
 from collections import defaultdict
 import time
-import json
 from chp_utils.trapi_query_processor import BaseQueryProcessor
 from chp_utils.curie_database import merge_curies_databases
 from trapi_model.meta_knowledge_graph import merge_meta_knowledge_graphs
 from trapi_model.query import Query
 from django.apps import apps
+from trapi_model.biolink import TOOLKIT
 
 # Setup logging
 logging.addLevelName(25, "NOTE")
@@ -22,7 +22,7 @@ logger = logging.getLogger(__name__)
 
 # Installed CHP Apps
 CHP_APPS = [
-        #"chp.app",
+        "chp.app",
         "chp_look_up.app",
         ]
 
@@ -44,7 +44,6 @@ class Dispatcher(BaseQueryProcessor):
 
         #self.chp_config, self.passed_subdomain = self.get_app_config(request)
         self.trapi_version = trapi_version
-        
         super().__init__(None)
 
     def get_curies(self):        
@@ -110,7 +109,7 @@ class Dispatcher(BaseQueryProcessor):
 
     def collect_app_queries(self, queries_list_of_lists):
         all_queries = []
-        for queries in querues_list_of_lists:
+        for queries in queries_list_of_lists:
             all_queries.extend(queries)
         return all_queries
 
@@ -200,9 +199,8 @@ class Dispatcher(BaseQueryProcessor):
             app_logs.extend(logs)
             app_status.append(status)
             app_descriptions.append(description)
-
         # Check if any responses came back from any apps
-        if sum([len(resp) for resp in app_responses]) == 0:
+        if  len(app_responses) == 0:
             # Add logs from consistent queries of all apps
             all_consistent_queries = self.collect_app_queries(consistent_app_queries)
             query_copy = self.add_logs_from_query_list(query_copy, all_consistent_queries)
@@ -213,10 +211,10 @@ class Dispatcher(BaseQueryProcessor):
             return JsonResponse(query_copy.to_dict())
 
         # Add responses into database
-        self.add_transactions(responses)
+        self.add_transactions(app_responses)
 
         # Construct merged response
-        response = self.merge_responses(query_copy, responses)
+        response = self.merge_responses(query_copy, app_responses)
 
         # Now merge all app level log messages from each app
         response.logger.add_logs(app_logs)
@@ -229,7 +227,7 @@ class Dispatcher(BaseQueryProcessor):
                     )
 
         # Unnormalize with each apps normalization map
-        unnormalized_response = deepcopy(response)
+        unnormalized_response = response
         for normalization_map in app_normalization_maps:
             unnormalized_response = self.undo_normalization(unnormalized_response, normalization_map)
         
