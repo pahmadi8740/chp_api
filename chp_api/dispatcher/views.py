@@ -52,11 +52,6 @@ class curies(APIView):
             # Get all chp app curies
             curies_db = dispatcher.get_curies()
 
-            return JsonResponse(curies_db)
-
-class meta_knowledge_graph(APIView):
-    trapi_version = '1.2'
-    def __init__(self, trapi_version='1.2', **kwargs):
         self.trapi_version = trapi_version
         super(meta_knowledge_graph, self).__init__(**kwargs)
 
