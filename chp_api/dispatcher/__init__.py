@@ -22,14 +22,12 @@ logger = logging.getLogger(__name__)
 
 # Installed CHP Apps
 CHP_APPS = [
-        "chp.app",
+        #"chp.app",
         "chp_look_up.app",
         ]
 
 # Import CHP Apps
 APPS = [import_module(app) for app in CHP_APPS]
-
-
 
 class Dispatcher(BaseQueryProcessor):
     def __init__(self, request, trapi_version):
@@ -135,6 +133,7 @@ class Dispatcher(BaseQueryProcessor):
         inconsistent_app_queries = []
         app_normalization_maps = []
         for interface, _expand_queries in zip(base_interfaces, app_queries):
+            _ex_copy = []                
             # Normalize to Preferred Curies
             normalization_time = time.time()
             normalize_queries, normalization_map = self.normalize_to_preferred(
@@ -143,10 +142,10 @@ class Dispatcher(BaseQueryProcessor):
                     with_normalization_map=True,
                     )
             app_normalization_maps.append(normalization_map)
-
             logger.info('Normalizaion time: {} seconds.'.format(time.time() - normalization_time))
             # Conflate
             conflation_time = time.time()
+            
             conflate_queries = self.conflate_categories(
                     normalize_queries,
                     conflation_map=interface.get_conflation_map(),
