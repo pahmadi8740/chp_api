@@ -34,7 +34,7 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     'django.contrib.staticfiles',
     'rest_framework',
-    'chp_look_up',
+    #'chp_look_up',
     #'chp.app.apps.ChpApiConfig',
     #'utils',
     #'django_hosts',
