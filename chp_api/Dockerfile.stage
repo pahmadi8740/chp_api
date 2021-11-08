@@ -99,6 +99,7 @@ COPY ./chp_api $APP_HOME/chp_api
 COPY ./apis $APP_HOME/apis
 COPY ./utils $APP_HOME/utils
 COPY ./manage.py $APP_HOME
+COPY ./dispatcher $APP_HOME/dispatcher
 COPY ./gunicorn.config-stage.py $APP_HOME 
 
 # chown all the files to the app user

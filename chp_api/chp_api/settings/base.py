@@ -53,7 +53,7 @@ MIDDLEWARE = [
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
 ]
 
-ROOT_URLCONF = 'chp_api.urls'
+ROOT_URLCONF = 'dispatcher.urls'
 
 TEMPLATES = [
     {
