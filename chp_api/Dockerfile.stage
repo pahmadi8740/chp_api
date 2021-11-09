@@ -105,8 +105,6 @@ COPY ./gunicorn.config-stage.py $APP_HOME
 # chown all the files to the app user
 RUN chown -R chp_api:chp_api $APP_HOME
 
-RUN apt-get install -y vi
-
 # change to the app user
 USER chp_api
 
