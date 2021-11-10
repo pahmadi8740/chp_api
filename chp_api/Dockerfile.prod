@@ -50,6 +50,9 @@ RUN cd reasoner-validator && python3 setup.py bdist_wheel && cd dist && cp reaso
 # gather chp-utils wheel
 RUN cd chp_utils && python3 setup.py bdist_wheel && cd dist && cp chp_utils-*-py3-none-any.whl /usr/src/chp_api/wheels
 
+#gather chp_look_up wheel
+RUN cd chp_look_up && python3 setup.py bdist_wheel && cd dist && cp chp_look_up-*-py3-none-any.whl /usr/src/chp_api/wheels
+
 #########
 # FINAL #
 #########
