@@ -17,7 +17,6 @@ docker-compose -f docker-compose.prod.yml exec web python3 manage.py migrate --n
 docker-compose -f docker-compose.prod.yml exec web python3 manage.py collectstatic --no-input
 
 docker-compose -f docker-compose.stage.yml exec web python3 manage.py loaddata /usr/local/lib/python3.8/dist-packages/data/chp_look_up_data/geneToPathway.json
-docker-compose -f docker-compose.stage.yaml exec web python3 manage.py loaddata FIXTURE_LOCATION
 
 echo "Server should now be up."
 
