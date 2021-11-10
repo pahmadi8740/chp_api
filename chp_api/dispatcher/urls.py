@@ -24,6 +24,7 @@ urlpatterns = [
     path('query', views.query.as_view()),
     path('meta_knowledge_graph/', views.meta_knowledge_graph.as_view()),
     path('curies/', views.curies.as_view()),
+    path('curies', views.curies.as_view()),
     path('versions/', views.versions.as_view()),
     path('v1.1/query/', views.query.as_view(trapi_version='1.1')),
     path('v1.1/meta_knowledge_graph/', views.meta_knowledge_graph.as_view()),

@@ -167,8 +167,8 @@
                 "value": [
                   "EFO:0000714"
                 ],
-                "unit_id": null,
-                "unit_name": null,
+                "unit_id": "UO:0000033",
+                "unit_name": "UO:0000033",
                 "not": false
               },
               {
@@ -176,8 +176,8 @@
                 "id": "EFO:0000714",
                 "operator": ">",
                 "value": 687,
-                "unit_id": null,
-                "unit_name": null,
+                "unit_id": "UO:0000033",
+                "unit_name": "UO:0000033",
                 "not": false
               }
             ]
@@ -229,8 +229,8 @@
                 "value": [
                   "EFO:0000714"
                 ],
-                "unit_id": null,
-                "unit_name": null,
+                "unit_id": "UO:0000033",
+                "unit_name": "UO:0000033",
                 "not": false
               },
               {
@@ -238,8 +238,8 @@
                 "id": "EFO:0000714",
                 "operator": ">",
                 "value": 687,
-                "unit_id": null,
-                "unit_name": null,
+                "unit_id": "UO:0000033",
+                "unit_name": "UO:0000033",
                 "not": false
               }
             ]
@@ -293,8 +293,8 @@
                 "value": [
                   "EFO:0000714"
                 ],
-                "unit_id": null,
-                "unit_name": null,
+                "unit_id": "UO:0000033",
+                "unit_name": "UO:0000033",
                 "not": false
               },
               {
@@ -302,8 +302,8 @@
                 "id": "EFO:0000714",
                 "operator": ">",
                 "value": 1186,
-                "unit_id": null,
-                "unit_name": null,
+                "unit_id": "UO:0000033",
+                "unit_name": "UO:0000033",
                 "not": false
               }
             ]
@@ -359,8 +359,8 @@
                 "value": [
                   "EFO:0000714"
                 ],
-                "unit_id": null,
-                "unit_name": null,
+                "unit_id": "UO:0000033",
+                "unit_name": "UO:0000033",
                 "not": false
               },
               {
@@ -368,8 +368,8 @@
                 "id": "EFO:0000714",
                 "operator": ">",
                 "value": 930,
-                "unit_id": null,
-                "unit_name": null,
+                "unit_id": "UO:0000033",
+                "unit_name": "UO:0000033",
                 "not": false
               }
             ]
@@ -427,8 +427,8 @@
                 "value": [
                   "EFO:0000714"
                 ],
-                "unit_id": null,
-                "unit_name": null,
+                "unit_id": "UO:0000033",
+                "unit_name": "UO:0000033",
                 "not": false
               },
               {
@@ -436,8 +436,8 @@
                 "id": "EFO:0000714",
                 "operator": ">",
                 "value": 1377,
-                "unit_id": null,
-                "unit_name": null,
+                "unit_id": "UO:0000033",
+                "unit_name": "UO:0000033",
                 "not": false
               }
             ]
@@ -494,8 +494,8 @@
                 "value": [
                   "EFO:0000714"
                 ],
-                "unit_id": null,
-                "unit_name": null,
+                "unit_id": "UO:0000033",
+                "unit_name": "UO:0000033",
                 "not": false
               },
               {
@@ -503,8 +503,8 @@
                 "id": "EFO:0000714",
                 "operator": ">",
                 "value": 1000,
-                "unit_id": null,
-                "unit_name": null,
+                "unit_id": "UO:0000033",
+                "unit_name": "UO:0000033",
                 "not": false
               }
             ]
@@ -566,8 +566,8 @@
                 "value": [
                   "EFO:0000714"
                 ],
-                "unit_id": null,
-                "unit_name": null,
+                "unit_id": "UO:0000033",
+                "unit_name": "UO:0000033",
                 "not": false
               },
               {
@@ -575,8 +575,8 @@
                 "id": "EFO:0000714",
                 "operator": ">",
                 "value": 898,
-                "unit_id": null,
-                "unit_name": null,
+                "unit_id": "UO:0000033",
+                "unit_name": "UO:0000033",
                 "not": false
               }
             ]
@@ -635,8 +635,8 @@
                 "value": [
                   "EFO:0000714"
                 ],
-                "unit_id": null,
-                "unit_name": null,
+                "unit_id": "UO:0000033",
+                "unit_name": "UO:0000033",
                 "not": false
               },
               {
@@ -644,8 +644,8 @@
                 "id": "EFO:0000714",
                 "operator": ">",
                 "value": 1276,
-                "unit_id": null,
-                "unit_name": null,
+                "unit_id": "UO:0000033",
+                "unit_name": "UO:0000033",
                 "not": false
               },
               {
@@ -655,8 +655,8 @@
                 "value": [
                   "drug"
                 ],
-                "unit_id": null,
-                "unit_name": null,
+                "unit_id": "metatype:Boolean",
+                "unit_name": "metatype:Boolean",
                 "not": false
               },
               {
@@ -667,8 +667,8 @@
                   "CHEMBL.COMPOUND:CHEMBL3545252",
                   "CHEMBL.COMPOUND:CHEMBL1201568"
                 ],
-                "unit_id": null,
-                "unit_name": null,
+                "unit_id": "metatype:Boolean",
+                "unit_name": "metatype:Boolean",
                 "not": false
               }
             ]

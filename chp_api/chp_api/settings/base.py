@@ -34,15 +34,16 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     'django.contrib.staticfiles',
     'rest_framework',
-    'apis.chp_core.apps.ChpApiConfig',
-    'utils',
-    'django_hosts',
+    'chp_look_up',
+    #'chp.app.apps.ChpApiConfig',
+    #'utils',
+    #'django_hosts',
 
 ]
 
 MIDDLEWARE = [
-    'django_hosts.middleware.HostsRequestMiddleware',
-    'django_hosts.middleware.HostsResponseMiddleware',
+    #'django_hosts.middleware.HostsRequestMiddleware',
+    #'django_hosts.middleware.HostsResponseMiddleware',
     'django.middleware.security.SecurityMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
@@ -52,7 +53,7 @@ MIDDLEWARE = [
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
 ]
 
-ROOT_URLCONF = 'chp_api.urls'
+ROOT_URLCONF = 'dispatcher.urls'
 
 TEMPLATES = [
     {
@@ -128,4 +129,4 @@ STATIC_URL = '/staticfiles/'
 STATIC_ROOT = os.path.join(BASE_DIR, "staticfiles")
 
 # Hosts Configuration
-ROOT_HOSTCONF = 'chp_api.hosts'
+#ROOT_HOSTCONF = 'chp_api.hosts'

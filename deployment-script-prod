@@ -15,6 +15,11 @@ docker-compose -f docker-compose.prod.yml up -d
 docker-compose -f docker-compose.prod.yml exec web python3 manage.py makemigrations
 docker-compose -f docker-compose.prod.yml exec web python3 manage.py migrate --noinput
 docker-compose -f docker-compose.prod.yml exec web python3 manage.py collectstatic --no-input
+
+FIXTURE_LOCATION= docker-compose -f docker-compose.stage.yml exec web python3 -c 'from chp_data.LookUpDataHandler import DataHandler
+print(DataHandler.getGeneToPathwayFixture())'
+docker-compose -f docker-compose.stage.yaml exec web python3 manage.py loaddata FIXTURE_LOCATION
+
 echo "Server should now be up."
 
 echo "Check logs with: docker-compose -f docker-compose.prod.yml logs -f"
