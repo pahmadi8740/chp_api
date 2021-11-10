@@ -22,7 +22,7 @@ logger = logging.getLogger(__name__)
 
 # Installed CHP Apps
 CHP_APPS = [
-        #"chp.app",
+        "chp.app",
         "chp_look_up.app",
         ]
 
@@ -108,7 +108,10 @@ class Dispatcher(BaseQueryProcessor):
     def collect_app_queries(self, queries_list_of_lists):
         all_queries = []
         for queries in queries_list_of_lists:
-            all_queries.extend(queries)
+            if type(queries) == list:
+                all_queries.extend(queries)
+            else:
+                all_queries.append(queries)
         return all_queries
 
     def get_response(self, query):
