@@ -22,7 +22,7 @@ logger = logging.getLogger(__name__)
 
 # Installed CHP Apps
 CHP_APPS = [
-        "chp.app",
+        #"chp.app",
         "chp_look_up.app",
         ]
 
