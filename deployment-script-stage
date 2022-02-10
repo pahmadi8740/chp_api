@@ -8,7 +8,7 @@ docker-compose -f docker-compose.stage.yml down -v
 echo "Building back from scratch."
 docker system prune
 
-docker-compose -f docker-compose.stage.yml build
+docker-compose -f docker-compose.stage.yml build --progress=plain
 echo "Bringing up server."
 docker-compose -f docker-compose.stage.yml up -d
 docker-compose -f docker-compose.stage.yml exec web python3 manage.py makemigrations
