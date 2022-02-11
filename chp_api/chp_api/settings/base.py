@@ -35,6 +35,7 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
     'rest_framework',
     'chp_look_up',
+    'chp',
     #'chp.app.apps.ChpApiConfig',
     #'utils',
     #'django_hosts',
