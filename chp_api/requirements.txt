@@ -2,3 +2,4 @@ django
 djangorestframework
 gunicorn
 psycopg2-binary
+django-extensions
