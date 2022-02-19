@@ -21,6 +21,3 @@ DATABASES = {
         'NAME': os.path.join(BASE_DIR, 'db.sqlite3'),
     }
 }
-
-# Hosts Configuration
-DEFAULT_HOST = 'chp-core'
