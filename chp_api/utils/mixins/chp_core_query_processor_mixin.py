@@ -101,7 +101,8 @@ class ChpCoreQueryProcessorMixin:
         elif disease_node.ids[0] == 'MONDO:0007254':
             chp_config = ChpBreastApiConfig
         else:
-            chp_config = ChpApiConfig
+            raise ValueError('We do not support this disease curie.')
+            #chp_config = ChpApiConfig
         return chp_config
 
     def setup_queries_based_on_disease_interfaces(self, queries):
