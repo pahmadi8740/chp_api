@@ -106,6 +106,10 @@ class ChpCoreQueryProcessorMixin:
         return chp_config
 
     def setup_queries_based_on_disease_interfaces(self, queries):
+        print(queries)
+        for query in queries:
+            print(query)
+            print(type(query))
         config_dict = defaultdict(list)
         for query in queries:
             disease_nodes = self.get_disease_nodes(query)
@@ -201,15 +205,16 @@ class ChpCoreQueryProcessorMixin:
             
         logger.info('Number of consistent queries derived from passed query: {}.'.format(len(consistent_queries)))
         # Get disease specific interfaces if a subdomain was not used
-        try:
-            interface_dict = self.setup_queries_based_on_disease_interfaces(consistent_queries)
-        except ValueError as ex:
-            # Add logs from consistent queries
-            query_copy = self.add_logs_from_query_list(query_copy, consistent_queries)
-            query_copy.set_status('Bad request. See description.')
-            query_copy.set_description('Problem during setup. ' + str(ex))
-            self.add_transaction(query_copy)
-            return JsonResponse(query_copy.to_dict())
+        #try:
+        print("@@@@@@@@@@@@@@@@@@@@")
+        interface_dict = self.setup_queries_based_on_disease_interfaces(consistent_queries)
+        #except ValueError as ex:
+        #    # Add logs from consistent queries
+        #    query_copy = self.add_logs_from_query_list(query_copy, consistent_queries)
+        #    query_copy.set_status('Bad request. See description.')
+        #    query_copy.set_description('Problem during setup. ' + str(ex))
+        #    self.add_transaction(query_copy)
+        #    return JsonResponse(query_copy.to_dict())
 
         # Setup for CHP inferencing
         try:
