@@ -93,7 +93,8 @@ class ChpCoreQueryProcessorMixin:
 
     def get_disease_specific_config(self, disease_node):
         if disease_node.ids is None:
-            raise ValueError('Do not support Disease wildcards. Must specify a disease curie.')
+            #raise ValueError('Do not support Disease wildcards. Must specify a disease curie.')
+            return None
         if disease_node.ids[0] == 'MONDO:0005061':
             chp_config = ChpLungApiConfig
         elif disease_node.ids[0] == 'MONDO:0001657':
@@ -101,15 +102,13 @@ class ChpCoreQueryProcessorMixin:
         elif disease_node.ids[0] == 'MONDO:0007254':
             chp_config = ChpBreastApiConfig
         else:
-            raise ValueError('We do not support this disease curie.')
+            #raise ValueError('We do not support this disease curie.')
             #chp_config = ChpApiConfig
+            return None
         return chp_config
 
     def setup_queries_based_on_disease_interfaces(self, queries):
-        print(queries)
         for query in queries:
-            print(query)
-            print(type(query))
         config_dict = defaultdict(list)
         for query in queries:
             disease_nodes = self.get_disease_nodes(query)
@@ -119,8 +118,11 @@ class ChpCoreQueryProcessorMixin:
                     config_dict[ChpApiConfig].append(query)
                     continue
                 chp_config = self.get_disease_specific_config(disease_nodes[0])
-                query.info('Using {} config.'.format(chp_config.name))
-                config_dict[chp_config].append(query)
+                if chp_config is None:
+                    query.warning('We either do not support disease curie, or there is no disease curie.')
+                else:
+                    query.info('Using {} config.'.format(chp_config.name))
+                    config_dict[chp_config].append(query)
             else:
                 config_dict[ChpApiConfig].append(query)
                 continue
@@ -205,16 +207,23 @@ class ChpCoreQueryProcessorMixin:
             
         logger.info('Number of consistent queries derived from passed query: {}.'.format(len(consistent_queries)))
         # Get disease specific interfaces if a subdomain was not used
-        #try:
-        print("@@@@@@@@@@@@@@@@@@@@")
-        interface_dict = self.setup_queries_based_on_disease_interfaces(consistent_queries)
-        #except ValueError as ex:
-        #    # Add logs from consistent queries
-        #    query_copy = self.add_logs_from_query_list(query_copy, consistent_queries)
-        #    query_copy.set_status('Bad request. See description.')
-        #    query_copy.set_description('Problem during setup. ' + str(ex))
-        #    self.add_transaction(query_copy)
-        #    return JsonResponse(query_copy.to_dict())
+        try:
+            interface_dict = self.setup_queries_based_on_disease_interfaces(consistent_queries)
+        except ValueError as ex:
+            # Add logs from consistent queries
+            query_copy = self.add_logs_from_query_list(query_copy, consistent_queries)
+            query_copy.set_status('Bad request. See description.')
+            query_copy.set_description('Problem during setup. ' + str(ex))
+            self.add_transaction(query_copy)
+            return JsonResponse(query_copy.to_dict())
+
+        if len(interface_dict.keys()) == 0:
+            # Add all logs from inconsistent queries
+            query_copy = self.add_logs_from_query_list(query_copy, inconsistent_queries)
+            query_copy.set_status('Bad request. See description.')
+            query_copy.set_description('Could not extract any supported queries from query graph.')
+            self.add_transaction(query_copy)
+            return JsonResponse(query_copy.to_dict())
 
         # Setup for CHP inferencing
         try:
