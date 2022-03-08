@@ -13,7 +13,7 @@ https://docs.djangoproject.com/en/3.0/ref/settings/
 import os
 
 # Build paths inside the project like this: os.path.join(BASE_DIR, ...)
-BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+BASE_DIR = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
 DATA_UPLOAD_MAX_MEMORY_SIZE = None
 
@@ -26,7 +26,7 @@ REST_FRAMEWORK = {
 
 # Application definition
 
-INSTALLED_APPS = [
+INSTALLED_BASE_APPS = [
     'django.contrib.admin',
     'django.contrib.auth',
     'django.contrib.contenttypes',
@@ -34,13 +34,19 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     'django.contrib.staticfiles',
     'rest_framework',
-    'chp_look_up',
-    'chp',
+    'dispatcher',
+    'chp_utils',
     #'chp.app.apps.ChpApiConfig',
     #'utils',
-    #'django_hosts',
-
+    #'django_hosts'
 ]
+
+INSTALLED_CHP_APPS = [
+    'chp_look_up',
+    #'chp',
+    ]
+
+INSTALLED_APPS = INSTALLED_BASE_APPS + INSTALLED_CHP_APPS
 
 MIDDLEWARE = [
     #'django_hosts.middleware.HostsRequestMiddleware',

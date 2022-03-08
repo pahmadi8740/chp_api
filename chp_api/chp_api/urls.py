@@ -17,22 +17,8 @@ from django.contrib import admin
 from django.urls import path
 from rest_framework.urlpatterns import format_suffix_patterns
 
-from . import views
+from dispatcher import views
 
 urlpatterns = [
-    path('query/', views.query.as_view()),
-    path('query', views.query.as_view()),
-    path('meta_knowledge_graph/', views.meta_knowledge_graph.as_view()),
-    path('curies/', views.curies.as_view()),
-    path('versions/', views.versions.as_view()),
-    path('v1.1/query/', views.query.as_view(trapi_version='1.1')),
-    path('v1.1/meta_knowledge_graph/', views.meta_knowledge_graph.as_view()),
-    path('v1.1/curies/', views.curies.as_view(trapi_version='1.1')),
-    path('v1.1/versions/', views.versions.as_view(trapi_version='1.1')),
-    path('v1.2/query/', views.query.as_view(trapi_version='1.2')),
-    path('v1.2/meta_knowledge_graph/', views.meta_knowledge_graph.as_view(trapi_version='1.2')),
-    path('v1.2/curies/', views.curies.as_view(trapi_version='1.2')),
-    path('v1.2/versions/', views.versions.as_view(trapi_version='1.2')),
-    path('transactions/', views.TransactionList.as_view(), name='transaction-list'),
-    path('transactions/<str:pk>/', views.TransactionDetail.as_view(), name='transactions-detail')
-]
+        path('', include('dispatcher.urls')),
+        ]
