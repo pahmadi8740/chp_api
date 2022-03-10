@@ -38,9 +38,6 @@ INSTALLED_BASE_APPS = [
     'dispatcher.apps.DispatcherConfig',
     'chp_utils',
     'django_extensions',
-    #'chp.app.apps.ChpApiConfig',
-    #'utils',
-    #'django_hosts'
 ]
 
 INSTALLED_CHP_APPS = [
