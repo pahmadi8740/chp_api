@@ -1,5 +1,4 @@
 from django.db import models
-# Create your models here.
 
 class Transaction(models.Model):
     id = models.CharField(max_length=100, primary_key=True)
@@ -11,6 +10,3 @@ class Transaction(models.Model):
     pybkb_version = models.CharField(max_length=100, default="")
     chp_client_version = models.CharField(max_length=100, default="")
     chp_utils_version = models.CharField(max_length=100, default="")
-
-    class Meta:
-        app_label = 'dispatcher'

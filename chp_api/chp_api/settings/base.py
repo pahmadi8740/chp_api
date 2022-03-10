@@ -34,7 +34,7 @@ INSTALLED_BASE_APPS = [
     'django.contrib.messages',
     'django.contrib.staticfiles',
     'rest_framework',
-    'dispatcher',
+    'dispatcher.apps.DispatcherConfig',
     'chp_utils',
     'django_extensions',
     #'chp.app.apps.ChpApiConfig',
