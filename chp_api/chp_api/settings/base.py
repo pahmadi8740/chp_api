@@ -11,9 +11,10 @@ https://docs.djangoproject.com/en/3.0/ref/settings/
 """
 
 import os
+from importlib import import_module
 
 # Build paths inside the project like this: os.path.join(BASE_DIR, ...)
-BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+BASE_DIR = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
 DATA_UPLOAD_MAX_MEMORY_SIZE = None
 
@@ -26,7 +27,7 @@ REST_FRAMEWORK = {
 
 # Application definition
 
-INSTALLED_APPS = [
+INSTALLED_BASE_APPS = [
     'django.contrib.admin',
     'django.contrib.auth',
     'django.contrib.contenttypes',
@@ -34,13 +35,29 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     'django.contrib.staticfiles',
     'rest_framework',
-    'chp_look_up',
-    'chp',
-    #'chp.app.apps.ChpApiConfig',
-    #'utils',
-    #'django_hosts',
-
+    'dispatcher.apps.DispatcherConfig',
+    'chp_utils',
+    'django_extensions',
 ]
+
+INSTALLED_CHP_APPS = [
+    'chp_look_up',
+    'chp_learn',
+    #'chp',
+    ]
+
+OTHER_APPS = [
+        'pybkb',
+        'chp_utils',
+        'chp_data',
+        'chp_client',
+        ]
+
+# CHP Versions
+VERSIONS = {app_name: app.__version__ for app_name, app in [(app_name, import_module(app_name)) for app_name in INSTALLED_CHP_APPS + OTHER_APPS]}
+
+# Sets up installed apps relevent to django 
+INSTALLED_APPS = INSTALLED_BASE_APPS + INSTALLED_CHP_APPS
 
 MIDDLEWARE = [
     #'django_hosts.middleware.HostsRequestMiddleware',
