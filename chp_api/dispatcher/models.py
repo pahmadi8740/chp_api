@@ -5,8 +5,6 @@ class Transaction(models.Model):
     date_time = models.DateTimeField(auto_now=True)
     query = models.JSONField(default=dict)
     status = models.CharField(max_length=100, default="", null=True)
-    chp_version = models.CharField(max_length=100, default="")
-    chp_data_version = models.CharField(max_length=100, default="")
-    pybkb_version = models.CharField(max_length=100, default="")
-    chp_client_version = models.CharField(max_length=100, default="")
-    chp_utils_version = models.CharField(max_length=100, default="")
+    versions = models.JSONField(default=dict)
+    chp_app = models.CharField(max_length=128, null=True)
+

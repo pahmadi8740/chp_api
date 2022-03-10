@@ -14,6 +14,8 @@ from trapi_model.meta_knowledge_graph import merge_meta_knowledge_graphs
 from trapi_model.query import Query
 from trapi_model.biolink import TOOLKIT
 
+from .models import Transaction
+
 # Setup logging
 logging.addLevelName(25, "NOTE")
 # Add a special logging function
@@ -215,7 +217,7 @@ class Dispatcher(BaseQueryProcessor):
             return JsonResponse(query_copy.to_dict())
 
         # Add responses into database
-        self.add_transactions(app_responses)
+        self.add_transactions(app_responses, app_names=[interface.get_name() for interface in base_interfaces])
 
         # Construct merged response
         response = self.merge_responses(query_copy, app_responses)
@@ -256,24 +258,18 @@ class Dispatcher(BaseQueryProcessor):
             target_query.logger.add_logs(query.logger.to_dict())
         return target_query
 
-    def add_transaction(self, response):
+    def add_transaction(self, response, chp_app='dispatcher'):
+        print('Got here.')
         # Save the transaction
         transaction = Transaction(
             id = response.id,
             status = response.status,
             query = response.to_dict(),
-            chp_version = chp.__version__,
-            chp_data_version = chp_data.__version__,
-            pybkb_version = pybkb.__version__,
-            chp_client_version = chp_client.__version__,
-            chp_utils_version = chp_utils.__version__,
+            versions = settings.VERSIONS,
+            chp_app = chp_app,
         )
         transaction.save()
         
-    def add_transactions(self, responses):
-        for response in responses:
-            self.add_transaction(response)
-    
-    def add_transaction(self, response):
-        pass
-
+    def add_transactions(self, responses, app_names):
+        for response, chp_app in zip(responses, app_names):
+            self.add_transaction(response, chp_app)

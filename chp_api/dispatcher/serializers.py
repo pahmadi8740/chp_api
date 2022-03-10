@@ -8,6 +8,7 @@ class TransactionListSerializer(serializers.ModelSerializer):
                 'id',
                 'date_time',
                 'status',
+                'chp_app',
                 ]
 
 class TransactionDetailSerializer(serializers.ModelSerializer):
@@ -18,4 +19,6 @@ class TransactionDetailSerializer(serializers.ModelSerializer):
                 'date_time',
                 'query',
                 'status',
+                'versions',
+                'chp_app',
                 ]

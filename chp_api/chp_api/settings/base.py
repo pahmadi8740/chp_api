@@ -11,6 +11,7 @@ https://docs.djangoproject.com/en/3.0/ref/settings/
 """
 
 import os
+from importlib import import_module
 
 # Build paths inside the project like this: os.path.join(BASE_DIR, ...)
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
@@ -48,6 +49,17 @@ INSTALLED_CHP_APPS = [
     #'chp',
     ]
 
+OTHER_APPS = [
+        'pybkb',
+        'chp_utils',
+        'chp_data',
+        'chp_client',
+        ]
+
+# CHP Versions
+VERSIONS = {app_name: app.__version__ for app_name, app in [(app_name, import_module(app_name)) for app_name in INSTALLED_CHP_APPS + OTHER_APPS]}
+
+# Sets up installed apps relevent to django 
 INSTALLED_APPS = INSTALLED_BASE_APPS + INSTALLED_CHP_APPS
 
 MIDDLEWARE = [

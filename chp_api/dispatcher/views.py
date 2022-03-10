@@ -2,6 +2,7 @@
 """
 from jsonschema import ValidationError
 from copy import deepcopy
+from datetime import datetime, timedelta
 
 from .base import Dispatcher
 from .models import Transaction
@@ -82,6 +83,14 @@ class versions(APIView):
 
 class TransactionList(mixins.ListModelMixin, generics.GenericAPIView):
     queryset = Transaction.objects.all()
+    serializer_class = TransactionListSerializer
+
+    def get(self, request, *args, **kwargs):
+        return self.list(request, *args, **kwargs)
+
+class RecentTransactionList(mixins.ListModelMixin, generics.GenericAPIView):
+    date_from = datetime.now() - timedelta(days=1)
+    queryset = Transaction.objects.filter(date_time__gte=date_from).order_by('-date_time')
     serializer_class = TransactionListSerializer
 
     def get(self, request, *args, **kwargs):
