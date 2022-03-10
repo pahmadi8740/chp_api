@@ -259,7 +259,6 @@ class Dispatcher(BaseQueryProcessor):
         return target_query
 
     def add_transaction(self, response, chp_app='dispatcher'):
-        print('Got here.')
         # Save the transaction
         transaction = Transaction(
             id = response.id,
