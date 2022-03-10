@@ -5,7 +5,7 @@ import unittest
 import requests
 
 from trapi_model import *
-LOCAL_URL = 'http://breast.localhost:8000'
+LOCAL_URL = 'http://localhost:8000'
 #LOCAL_URL = 'http://localhost:80'
 #LOCAL_URL = 'http://chp-dev.thayer.dartmouth.edu'
 
@@ -20,6 +20,7 @@ class TestChpApi(unittest.TestCase):
     def _get(url, params=None):
         params = params or {}
         res = requests.get(url, json=params)
+        print(res.content)
         ret = res.json()
         return ret
 
