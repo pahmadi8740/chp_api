@@ -36,6 +36,7 @@ INSTALLED_BASE_APPS = [
     'rest_framework',
     'dispatcher',
     'chp_utils',
+    'django_extensions',
     #'chp.app.apps.ChpApiConfig',
     #'utils',
     #'django_hosts'
@@ -43,6 +44,7 @@ INSTALLED_BASE_APPS = [
 
 INSTALLED_CHP_APPS = [
     'chp_look_up',
+    'chp_learn',
     #'chp',
     ]
 

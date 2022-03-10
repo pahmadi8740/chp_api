@@ -29,7 +29,7 @@ logger = logging.getLogger(__name__)
 #        ]
 
 # Import CHP Apps
-APPS = [import_module(app+'.app') for app in settings.INSTALLED_CHP_APPS]
+APPS = [import_module(app+'.app_interface') for app in settings.INSTALLED_CHP_APPS]
 
 class Dispatcher(BaseQueryProcessor):
     def __init__(self, request, trapi_version):
@@ -133,7 +133,7 @@ class Dispatcher(BaseQueryProcessor):
         # For each app run the normalization and semops pipline
 
         # Make a copy of the expanded queries for each app
-        app_queries = [expand_queries for _ in range(len(base_interfaces))]
+        app_queries = [[q.get_copy() for q in expand_queries] for _ in range(len(base_interfaces))]
         consistent_app_queries = []
         inconsistent_app_queries = []
         app_normalization_maps = []
@@ -224,7 +224,7 @@ class Dispatcher(BaseQueryProcessor):
         response.logger.add_logs(app_logs)
 
         # Log any error messages for apps
-        for app_name, status, description in zip(CHP_APPS, app_status, app_descriptions):
+        for app_name, status, description in zip(APPS, app_status, app_descriptions):
             if status != 'Success':
                 response.warning('CHP App: {} reported a unsuccessful status: {} with description: {}'.format(
                     app_name, status, description)
