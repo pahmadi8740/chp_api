@@ -31,10 +31,10 @@ class ChpApiConfig(AppConfig):
 
     logger.info('Instantiating reasoners.')
     # Instantiate Reasoners
-    dynamic_reasoner = ChpDynamicReasoner(
-        bkb_handler=bkb_handler,
-        hosts_filename=hosts_filename,
-        num_processes_per_host=num_processes_per_host)
+    #dynamic_reasoner = ChpDynamicReasoner(
+    #    bkb_handler=bkb_handler,
+    #    hosts_filename=hosts_filename,
+    #    num_processes_per_host=num_processes_per_host)
     joint_reasoner = ChpJointReasoner(
         bkb_handler=bkb_handler,
         hosts_filename=hosts_filename,
@@ -62,10 +62,10 @@ class ChpBreastApiConfig(AppConfig):
 
     logger.info('Instantiating reasoners.')
     # Instantiate Reasoners
-    dynamic_reasoner = ChpDynamicReasoner(
-        bkb_handler=bkb_handler,
-        hosts_filename=hosts_filename,
-        num_processes_per_host=num_processes_per_host)
+    #dynamic_reasoner = ChpDynamicReasoner(
+    #    bkb_handler=bkb_handler,
+    #    hosts_filename=hosts_filename,
+    #    num_processes_per_host=num_processes_per_host)
     joint_reasoner = ChpJointReasoner(
         bkb_handler=bkb_handler,
         hosts_filename=hosts_filename,
@@ -93,10 +93,10 @@ class ChpBrainApiConfig(AppConfig):
 
     logger.info('Instantiating reasoners.')
     # Instantiate Reasoners
-    dynamic_reasoner = ChpDynamicReasoner(
-        bkb_handler=bkb_handler,
-        hosts_filename=hosts_filename,
-        num_processes_per_host=num_processes_per_host)
+    #dynamic_reasoner = ChpDynamicReasoner(
+    #    bkb_handler=bkb_handler,
+    #    hosts_filename=hosts_filename,
+    #    num_processes_per_host=num_processes_per_host)
     joint_reasoner = ChpJointReasoner(
         bkb_handler=bkb_handler,
         hosts_filename=hosts_filename,
@@ -124,10 +124,10 @@ class ChpLungApiConfig(AppConfig):
 
     logger.info('Instantiating reasoners.')
     # Instantiate Reasoners
-    dynamic_reasoner = ChpDynamicReasoner(
-        bkb_handler=bkb_handler,
-        hosts_filename=hosts_filename,
-        num_processes_per_host=num_processes_per_host)
+    #dynamic_reasoner = ChpDynamicReasoner(
+    #    bkb_handler=bkb_handler,
+    #    hosts_filename=hosts_filename,
+    #    num_processes_per_host=num_processes_per_host)
     joint_reasoner = ChpJointReasoner(
         bkb_handler=bkb_handler,
         hosts_filename=hosts_filename,
