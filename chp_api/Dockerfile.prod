@@ -20,6 +20,8 @@ RUN git clone --single-branch --branch production https://github.com/di2ag/trapi
 RUN git clone --single-branch --branch production https://github.com/di2ag/reasoner-validator.git
 RUN git clone --single-branch --branch production https://github.com/di2ag/chp_utils.git
 RUN git clone --single-branch --branch production https://github.com/di2ag/chp_look_up.git
+RUN git clone --single-branch --branch production https://github.com/di2ag/chp_learn.git
+
 # lint
 RUN pip3 install --upgrade pip
 RUN pip3 install flake8 wheel
@@ -52,6 +54,9 @@ RUN cd chp_utils && python3 setup.py bdist_wheel && cd dist && cp chp_utils-*-py
 
 #gather chp_look_up wheel
 RUN cd chp_look_up && python3 setup.py bdist_wheel && cd dist && cp chp_look_up-*-py3-none-any.whl /usr/src/chp_api/wheels
+
+#gather chp_learn wheel
+RUN cd chp_learn && python3 setup.py bdist_wheel && cd dist && cp chp_learn-*-py3-none-any.whl /usr/src/chp_api/wheels
 
 #########
 # FINAL #
@@ -97,11 +102,10 @@ COPY ./entrypoint.prod.sh $APP_HOME
 
 # copy project
 COPY ./chp_api $APP_HOME/chp_api
-COPY ./apis $APP_HOME/apis
-COPY ./utils $APP_HOME/utils
 COPY ./manage.py $APP_HOME
 COPY ./dispatcher $APP_HOME/dispatcher
-COPY ./gunicorn.config-prod.py $APP_HOME 
+COPY ./gunicorn.config-prod.py $APP_HOME
+COPY ./chp_db_fixture.json.gz $APP_HOME
 
 # chown all the files to the app user
 RUN chown -R chp_api:chp_api $APP_HOME

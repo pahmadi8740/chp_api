@@ -1,14 +1,21 @@
 #!/bin/bash
 
-intuition_user=$(whoami)
+INTUITION_USER=$1
+
+GET_FIXTURE=${2:-0}
 
 echo "Taking down the NCATS Server."
 docker-compose -f docker-compose.prod.yml down -v
 
+if [ $GET_FIXTURE -eq 1 ]
+then
+	echo "Copying over database fixtures from intuition. If on AWS will need to SFTP to their servers."
+	scp $INTUITION_USER@intuition.thayer.dartmouth.edu:/home/public/data/ncats/chp_db/databases/chp_db_fixture-03102022.json.gz chp_api/chp_db_fixture.json.gz
+fi
+
 echo "Building back from scratch."
 docker system prune
-
-docker-compose -f docker-compose.prod.yml build
+docker-compose -f docker-compose.prod.yml build --no-cache
 
 echo "Bringing up server."
 docker-compose -f docker-compose.prod.yml up -d
@@ -16,7 +23,8 @@ docker-compose -f docker-compose.prod.yml exec web python3 manage.py makemigrati
 docker-compose -f docker-compose.prod.yml exec web python3 manage.py migrate --noinput
 docker-compose -f docker-compose.prod.yml exec web python3 manage.py collectstatic --no-input
 
-docker-compose -f docker-compose.stage.yml exec web python3 manage.py loaddata /usr/local/lib/python3.8/dist-packages/data/chp_look_up_data/geneToPathway.json
+echo "Loading in CHP DB fixture."
+docker-compose -f docker-compose.prod.yml exec web python3 manage.py loaddata -v3 chp_db_fixture.json.gz
 
 echo "Server should now be up."
 
