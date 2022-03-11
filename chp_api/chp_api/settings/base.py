@@ -43,7 +43,7 @@ INSTALLED_BASE_APPS = [
 INSTALLED_CHP_APPS = [
     'chp_look_up',
     'chp_learn',
-    #'chp',
+    'chp',
     ]
 
 OTHER_APPS = [
