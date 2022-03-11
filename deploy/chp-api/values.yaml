@@ -46,7 +46,7 @@ securityContext:
 securityContextNginx:
   runAsUser: 0
   runAsGroup: 0
-  readOnlyRootFilesystem: true
+  #readOnlyRootFilesystem: true
 
 service:
   type: NodePort

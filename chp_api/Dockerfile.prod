@@ -75,6 +75,7 @@ RUN mkdir $APP_HOME
 RUN mkdir $APP_HOME/staticfiles
 WORKDIR $APP_HOME
 
+
 # set environment variables
 ENV PYTHONDONTWRITEBYTECODE 1
 ENV PYTHONUNBUFFERED 1
@@ -101,8 +102,6 @@ COPY ./entrypoint.prod.sh $APP_HOME
 
 # copy project
 COPY ./chp_api $APP_HOME/chp_api
-#COPY ./apis $APP_HOME/apis
-#COPY ./utils $APP_HOME/utils
 COPY ./manage.py $APP_HOME
 COPY ./dispatcher $APP_HOME/dispatcher
 COPY ./gunicorn.config-prod.py $APP_HOME
