@@ -60,7 +60,7 @@ RUN cd chp_look_up && python3 setup.py bdist_wheel && cd dist && cp chp_look_up-
 RUN cd chp_learn && python3 setup.py bdist_wheel && cd dist && cp chp_learn-*-py3-none-any.whl /usr/src/chp_api/wheels
 
 #grather gene-specificity wheel
-RUN cd gene-specificity && python3 setup.py bdist_wheel && cd dist && cp gene-specificity-*-py3-none-any.whl /usr/src/chp_api/wheels
+RUN cd gene-specificity && python3 setup.py bdist_wheel && cd dist && cp gene_specificity-*-py3-none-any.whl /usr/src/chp_api/wheels
 
 #########
 # FINAL #
