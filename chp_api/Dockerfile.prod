@@ -21,6 +21,7 @@ RUN git clone --single-branch --branch production https://github.com/di2ag/reaso
 RUN git clone --single-branch --branch production https://github.com/di2ag/chp_utils.git
 RUN git clone --single-branch --branch production https://github.com/di2ag/chp_look_up.git
 RUN git clone --single-branch --branch production https://github.com/di2ag/chp_learn.git
+run git clone --single-branch --branch production git@github.com:di2ag/gene-specificity.git
 
 # lint
 RUN pip3 install --upgrade pip
@@ -57,6 +58,9 @@ RUN cd chp_look_up && python3 setup.py bdist_wheel && cd dist && cp chp_look_up-
 
 #gather chp_learn wheel
 RUN cd chp_learn && python3 setup.py bdist_wheel && cd dist && cp chp_learn-*-py3-none-any.whl /usr/src/chp_api/wheels
+
+#gather gene specificity wheel
+RUN cd chp_learn && python3 setup.py bdist_wheel && cd dist && cp gene_specificity-*-py3-none-any.whl /usr/src/chp_api/wheels
 
 #########
 # FINAL #
@@ -95,6 +99,7 @@ RUN apt-get install -y netcat
 COPY --from=intermediate /usr/src/chp_api/wheels /wheels
 COPY --from=intermediate /usr/src/chp_api/requirements.txt .
 RUN pip3 install --upgrade pip
+RUN python3 -m pip install --upgrade pip
 RUN pip3 install --no-cache /wheels/*
 
 # copy entry point
