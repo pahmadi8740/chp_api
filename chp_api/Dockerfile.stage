@@ -3,7 +3,7 @@
 ###########
 
 # first stage of build to pull repos
-FROM ubuntu as intermediate
+FROM ubuntu:20.04 as intermediate
 
 # set work directory
 WORKDIR /usr/src/chp_api
