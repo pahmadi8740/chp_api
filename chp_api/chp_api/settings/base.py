@@ -44,14 +44,14 @@ INSTALLED_CHP_APPS = [
     'chp_look_up',
     'chp_learn',
     'gene_specificity',
-    'chp',
+    #'chp',
     ]
 
 OTHER_APPS = [
-        'pybkb',
+        #'pybkb',
         'chp_utils',
-        'chp_data',
-        'chp_client',
+        #'chp_data',
+        #'chp_client',
         ]
 
 # CHP Versions
