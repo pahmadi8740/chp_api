@@ -4,3 +4,9 @@
 [submodule "submodules/trapi_model"]
 	path = submodules/trapi_model
 	url = git@github.com:di2ag/trapi_model.git
+[submodule "chp_client"]
+	path = chp_client
+	url = https://github.com/di2ag/chp_client.git
+[submodule "chp_web"]
+	path = chp_web
+	url = https://github.com/di2ag/chp_web.git
