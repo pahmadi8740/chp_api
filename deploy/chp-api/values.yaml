@@ -19,7 +19,7 @@ app:
   debug: "0"
   secret_key: ""
   djangoAllowedHosts: ""
-  djangoSettingsModule: "chp_api.settings.production"
+  djangoSettingsModule: "chp_api.settings"
 
 # database connection information
 db: 
