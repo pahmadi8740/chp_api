@@ -9,21 +9,26 @@ https://docs.djangoproject.com/en/3.0/topics/settings/
 For the full list of settings and their values, see
 https://docs.djangoproject.com/en/3.0/ref/settings/
 """
-
 import os
 from importlib import import_module
+import environ as environ # type: ignore
+
+# Initialise environment variables
+env = environ.Env()
+environ.Env.read_env()
+
+# SECURITY WARNING: don't run with debug turned on in production!
+DEBUG = int(env("DEBUG", default=0))
 
 # Build paths inside the project like this: os.path.join(BASE_DIR, ...)
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
 DATA_UPLOAD_MAX_MEMORY_SIZE = None
-
 REST_FRAMEWORK = {
     'DEFAULT_PARSER_CLASSES': [
         'rest_framework.parsers.JSONParser',
     ]
 }
-
 
 # Application definition
 INSTALLED_BASE_APPS = [
@@ -56,8 +61,6 @@ VERSIONS = {app_name: app.__version__ for app_name, app in [(app_name, import_mo
 INSTALLED_APPS = INSTALLED_BASE_APPS + INSTALLED_CHP_APPS
 
 MIDDLEWARE = [
-    #'django_hosts.middleware.HostsRequestMiddleware',
-    #'django_hosts.middleware.HostsResponseMiddleware',
     'django.middleware.security.SecurityMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
@@ -102,7 +105,6 @@ LOGGING = {
 
 WSGI_APPLICATION = 'chp_api.wsgi.application'
 
-
 # Password validation
 # https://docs.djangoproject.com/en/3.0/ref/settings/#auth-password-validators
 
@@ -121,7 +123,6 @@ AUTH_PASSWORD_VALIDATORS = [
     },
 ]
 
-
 # Internationalization
 # https://docs.djangoproject.com/en/3.0/topics/i18n/
 LANGUAGE_CODE = 'en-us'
@@ -134,7 +135,6 @@ USE_L10N = True
 
 USE_TZ = True
 
-
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/3.0/howto/static-files/
 
@@ -143,3 +143,20 @@ STATIC_ROOT = os.path.join(BASE_DIR, "staticfiles")
 
 # Hosts Configuration
 #ROOT_HOSTCONF = 'chp_api.hosts'
+
+# Database
+# https://docs.djangoproject.com/en/3.0/ref/settings/#databases
+DATABASES = {
+    'default': {
+        "ENGINE": "django.db.backends.postgresql_psycopg2",
+        "NAME": env("SQL_DATABASE"),
+        "USER": env("SQL_USER"),
+        "PASSWORD": env("SQL_PASSWORD"),
+        "HOST": env("SQL_HOST"),
+        "PORT": env("SQL_PORT"),
+    }
+}
+
+ALLOWED_HOSTS = env("DJANGO_ALLOWED_HOSTS").split(" ")
+# SECURITY WARNING: keep the secret key used in production secret!
+SECRET_KEY = env("SECRET_KEY")

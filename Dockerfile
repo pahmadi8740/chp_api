@@ -12,12 +12,12 @@ WORKDIR /usr/src/chp_api
 RUN apt-get update \
 	&& apt-get install -y git python3-pip python3-dev dos2unix
 
-RUN git clone --single-branch --branch staging https://github.com/di2ag/trapi_model.git
-RUN git clone --single-branch --branch staging https://github.com/di2ag/reasoner-validator.git
-RUN git clone --single-branch --branch staging https://github.com/di2ag/chp_utils.git
-RUN git clone --single-branch --branch staging https://github.com/di2ag/chp_look_up.git
-RUN git clone --single-branch --branch staging https://github.com/di2ag/chp_learn.git
-RUN git clone --single-branch --branch staging https://github.com/di2ag/gene-specificity.git
+RUN git clone --single-branch --branch master https://github.com/di2ag/trapi_model.git
+RUN git clone --single-branch --branch master https://github.com/di2ag/reasoner-validator.git
+RUN git clone --single-branch --branch master https://github.com/di2ag/chp_utils.git
+RUN git clone --single-branch --branch master https://github.com/di2ag/chp_look_up.git
+RUN git clone --single-branch --branch master https://github.com/di2ag/chp_learn.git
+RUN git clone --single-branch --branch master https://github.com/di2ag/gene-specificity.git
 
 # lint
 RUN pip3 install --upgrade pip
@@ -34,7 +34,7 @@ RUN cd trapi_model && python3 setup.py bdist_wheel && cd dist && cp trapi_model-
 # gather reasoner-validator wheel
 RUN cd reasoner-validator && python3 setup.py bdist_wheel && cd dist && cp reasoner_validator-*-py3-none-any.whl /usr/src/chp_api/wheels
 
-# gather chp_utils wheel
+# gather chp-utils wheel
 RUN cd chp_utils && python3 setup.py bdist_wheel && cd dist && cp chp_utils-*-py3-none-any.whl /usr/src/chp_api/wheels
 
 #gather chp_look_up wheel
@@ -43,7 +43,7 @@ RUN cd chp_look_up && python3 setup.py bdist_wheel && cd dist && cp chp_look_up-
 #gather chp_learn wheel
 RUN cd chp_learn && python3 setup.py bdist_wheel && cd dist && cp chp_learn-*-py3-none-any.whl /usr/src/chp_api/wheels
 
-#grather gene-specificity wheel
+#gather gene specificity wheel
 RUN cd gene-specificity && python3 setup.py bdist_wheel && cd dist && cp gene_specificity-*-py3-none-any.whl /usr/src/chp_api/wheels
 
 #########
@@ -82,17 +82,17 @@ RUN apt-get install -y netcat
 COPY --from=intermediate /usr/src/chp_api/wheels /wheels
 COPY --from=intermediate /usr/src/chp_api/requirements.txt .
 RUN pip3 install --upgrade pip
+RUN python3 -m pip install --upgrade pip
 RUN pip3 install --no-cache /wheels/*
 
 # copy entry point
-COPY ./entrypoint.prod.sh $APP_HOME
+COPY ./entrypoint.sh $APP_HOME
 
 # copy project
 COPY ./chp_api $APP_HOME/chp_api
 COPY ./manage.py $APP_HOME
 COPY ./dispatcher $APP_HOME/dispatcher
-COPY ./gunicorn.config-stage.py $APP_HOME 
-COPY ./chp_db_fixture.json.gz $APP_HOME
+COPY ./gunicorn.config.py $APP_HOME
 
 # chown all the files to the app user
 RUN chown -R chp_api:chp_api $APP_HOME
@@ -101,4 +101,4 @@ RUN chown -R chp_api:chp_api $APP_HOME
 USER chp_api
 
 # run entrypoint.sh
-ENTRYPOINT ["/home/chp_api/web/entrypoint.stage.sh"]
+ENTRYPOINT ["/home/chp_api/web/entrypoint.sh"]
