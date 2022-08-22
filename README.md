@@ -10,7 +10,7 @@ However, as we incorporate pathway knowledge from domain-standard resources like
 Queries are governed by the Translator Reasoner API (TRAPI) which support the Biolink Model ontology. We’ve constructed a TRAPI compliant schema that represents our probabilistic queries and is digestible by our service. Upon receiving TRAPI compliant queries we return a conditional probability pertaining to the query as well as the auditable features our system captured and their overall sensitivity to the conditional probability. These features can be used to guide future exploration of the dataset and be used to lead to novel conclusions over the data. 
 
 ## Terms and Definitions
-The greater NCATS consortium uses a series of terms (that we have adopted) to convey meaning quickly. A link to those terms and their definitions are available here: https://docs.google.com/spreadsheets/d/1C8hKXacxtQC5UzXI4opQs1r4pBJ_5hqgXrZH_raYQ4w/edit#gid=1581951609
+The greater NCATS consortium uses a series of terms (that we have adopted) to convey meaning quickly. A link to those terms and their definitions are available here: https://docs.google.com/spreadsheets/d/1C8hKXacxtQC5UzXI4opQs1r4pBJ_5hqgXrZH_raYQ4w/edit#gid=1581951609  
 We extend this list local to our KP (Look, here is an NCATS term right here!) with the following terms: 
 •	Connections Hypothesis Provider – CHP
 •	The Cancer Genome Atlas – TCGA

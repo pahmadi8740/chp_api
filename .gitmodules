@@ -1,6 +1,0 @@
-[submodule "submodules/chp_client"]
-	path = submodules/chp_client
-	url = git@github.com:di2ag/chp_client.git
-[submodule "submodules/trapi_model"]
-	path = submodules/trapi_model
-	url = git@github.com:di2ag/trapi_model.git
