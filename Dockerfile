@@ -89,10 +89,10 @@ RUN pip3 install --no-cache /wheels/*
 COPY ./entrypoint.sh $APP_HOME
 
 # copy project
-COPY ./chp_api $APP_HOME/chp_api
-COPY ./manage.py $APP_HOME
-COPY ./dispatcher $APP_HOME/dispatcher
-COPY ./gunicorn.config.py $APP_HOME
+COPY ./chp_api/chp_api $APP_HOME/chp_api
+COPY ./chp_api/manage.py $APP_HOME
+COPY ./chp_api/dispatcher $APP_HOME/dispatcher
+COPY ./chp_api/gunicorn.config.py $APP_HOME
 
 # chown all the files to the app user
 RUN chown -R chp_api:chp_api $APP_HOME
