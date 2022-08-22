@@ -26,7 +26,6 @@ REST_FRAMEWORK = {
 
 
 # Application definition
-
 INSTALLED_BASE_APPS = [
     'django.contrib.admin',
     'django.contrib.auth',
@@ -44,14 +43,10 @@ INSTALLED_CHP_APPS = [
     'chp_look_up',
     'chp_learn',
     'gene_specificity',
-    #'chp',
     ]
 
 OTHER_APPS = [
-        #'pybkb',
-        'chp_utils',
-        #'chp_data',
-        #'chp_client',
+        'chp_utils'
         ]
 
 # CHP Versions
@@ -129,7 +124,6 @@ AUTH_PASSWORD_VALIDATORS = [
 
 # Internationalization
 # https://docs.djangoproject.com/en/3.0/topics/i18n/
-
 LANGUAGE_CODE = 'en-us'
 
 TIME_ZONE = 'UTC'

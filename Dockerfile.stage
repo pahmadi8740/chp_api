@@ -12,10 +12,6 @@ WORKDIR /usr/src/chp_api
 RUN apt-get update \
 	&& apt-get install -y git python3-pip python3-dev dos2unix
 
-#RUN git clone --single-branch --branch staging git://git.chp-dev.thayer.dartmouth.edu/PyBKB.git
-#RUN git clone --depth 1 --single-branch --branch staging git://git.chp-dev.thayer.dartmouth.edu/ChpData.git
-#RUN git clone --single-branch --branch staging https://github.com/di2ag/chp.git
-#RUN git clone --single-branch --branch staging https://github.com/di2ag/chp_client.git
 RUN git clone --single-branch --branch staging https://github.com/di2ag/trapi_model.git
 RUN git clone --single-branch --branch staging https://github.com/di2ag/reasoner-validator.git
 RUN git clone --single-branch --branch staging https://github.com/di2ag/chp_utils.git
@@ -31,18 +27,6 @@ COPY . .
 # install dependencies
 COPY ./requirements.txt .
 RUN pip3 wheel --no-cache-dir --no-deps --wheel-dir /usr/src/chp_api/wheels -r requirements.txt
-
-# gather pybkb wheel
-#RUN cd PyBKB && python3 setup.py bdist_wheel && cd dist && cp pybkb-*-py3-none-any.whl /usr/src/chp_api/wheels
-
-# gather chp wheel
-#RUN cd chp && python3 setup.py bdist_wheel && cd dist && cp chp-*-py3-none-any.whl /usr/src/chp_api/wheels
-
-# gather client wheel
-#RUN cd chp_client && python3 setup.py bdist_wheel && cd dist && cp chp_client-*-py3-none-any.whl /usr/src/chp_api/wheels
-
-# gather chp-data wheel
-#RUN cd ChpData && python3 setup.py bdist_wheel && cd dist && cp chp_data-*-py3-none-any.whl /usr/src/chp_api/wheels
 
 # gather trapi model wheel
 RUN cd trapi_model && python3 setup.py bdist_wheel && cd dist && cp trapi_model-*-py3-none-any.whl /usr/src/chp_api/wheels
@@ -113,9 +97,8 @@ COPY ./chp_db_fixture.json.gz $APP_HOME
 # chown all the files to the app user
 RUN chown -R chp_api:chp_api $APP_HOME
 
-
 # change to the app user
 USER chp_api
 
 # run entrypoint.sh
-ENTRYPOINT ["/home/chp_api/web/entrypoint.prod.sh"]
+ENTRYPOINT ["/home/chp_api/web/entrypoint.stage.sh"]
