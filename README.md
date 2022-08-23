@@ -46,3 +46,8 @@ Dr. Eugene Santos (PI): Eugene.Santos.Jr@dartmouth.edu
 
 Joseph Gormley (Co-PI): jgormley@tuftsmedicalcenter.org
 
+# Development
+Adding a test query subdirectory from a chp app to the test_queries directory.
+```
+git submodule add -b <branch> <url> <relative_path_4m_root>
+```
