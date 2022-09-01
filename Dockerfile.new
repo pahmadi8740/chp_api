@@ -1,0 +1,38 @@
+################
+# venv builder #
+################
+FROM python:3.8.3 as venv_builder
+
+COPY requirements.txt .
+RUN python3 -m venv /opt/venv
+RUN /opt/venv/bin/pip install -r requirements.txt
+
+###########
+# CHP API #
+###########
+FROM python:3.8.3-slim as chp-api
+
+# set environment variables
+ENV PYTHONDONTWRITEBYTECODE 1
+ENV PYTHONUNBUFFERED 1
+ENV TZ=America/New_York
+ENV SERVER_DIR=/chp_api/
+ENV VIRTUAL_ENV_PATH=/opt/venv
+
+# copy venv from venv builder image
+COPY --from=venv_builder ${VIRTUAL_ENV_PATH} ${VIRTUAL_ENV_PATH}
+
+# copy project
+COPY ./chp_api $SERVER_DIR
+
+# copy entry point
+COPY ./entrypoint.sh ${SERVER_DIR}
+
+# enter app directory
+WORKDIR $SERVER_DIR
+
+# Enable venv
+ENV PATH="/opt/venv/bin:$PATH"
+# run server
+# ENTRYPOINT ["./entrypoint.sh"]
+CMD ["python", "manage.py", "runserver"]

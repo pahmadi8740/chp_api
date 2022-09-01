@@ -1,0 +1,25 @@
+version: '3.8'
+
+services:
+  api:
+    build: 
+      context: .
+      dockerfile: Dockerfile
+    container_name: chp-api
+    command: python manage.py runserver 0.0.0.0:8000
+    volumes:
+      - static_volume:/chp_api/staticfiles
+    expose:
+      - 80
+    env_file:
+      - ./.dev.env
+  db:
+    image: postgres:latest
+    restart: unless-stopped
+    volumes:
+      - ../chp.sql:/var/lib/postgresql/data
+    env_file:
+      - .dev-db.env
+
+volumes:
+  static_volume:
