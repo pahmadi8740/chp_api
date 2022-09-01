@@ -199,6 +199,8 @@ class Dispatcher(BaseQueryProcessor):
         app_status = []
         app_descriptions = []
         for app, consistent_queries in zip(APPS, consistent_app_queries):
+            print(app)
+            print(consistent_queries)
             get_app_response_fn = getattr(app, 'get_response')
             responses, logs, status, description = get_app_response_fn(consistent_queries)
             app_responses.extend(responses)
