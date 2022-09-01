@@ -6,7 +6,6 @@ services:
       context: .
       dockerfile: Dockerfile
     container_name: chp-api
-    command: python manage.py runserver 0.0.0.0:8000
     volumes:
       - static_volume:/chp_api/staticfiles
     expose:
