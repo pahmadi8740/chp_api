@@ -36,8 +36,6 @@ Our roadmap outlining or KP’s milestones and the progression of those mileston
 
 Our NCATS Wiki Page: https://github.com/NCATSTranslator/Translator-All/wiki/Connections-Hypothesis-Provider
 
-Our CHP Client repository: https://github.com/di2ag/chp_client
-
 A repository for our reasoning code: https://github.com/di2ag/chp
 
 
