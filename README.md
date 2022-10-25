@@ -24,7 +24,7 @@ We encourage anyone looking for tooling/instructions, to interface with our API,
 
 Our API is in active developement and is currently following [Translator Reasoner API standards 1.2.0](https://github.com/NCATSTranslator/ReasonerAPI)
 
-Our API is currently live at: [chp.thayer.dartmouth.edu](http://chp.thayer.dartmouth.edu/)
+Our API is currently live at: [https://chp-api.transltr.io](https://chp-api.transltr.io)
 
 ## Open Endpoints
 * [query](query.md) : `POST /query/`
