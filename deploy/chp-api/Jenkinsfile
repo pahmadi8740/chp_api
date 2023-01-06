@@ -43,33 +43,38 @@ pipeline {
            when { expression { return env.BUILD == 'true' }}
             steps {
                 script {
-                    docker.build(env.DOCKER_REPO_NAME, "--no-cache -f ./Dockerfile .")
-                    docker.withRegistry('https://853771734544.dkr.ecr.us-east-1.amazonaws.com', 'ecr:us-east-1:aws-ifx-deploy') {
-                        docker.image(env.DOCKER_REPO_NAME).push("${BUILD_VERSION}")
-                    }
+                    docker.build(env.DOCKER_REPO_NAME, "--no-cache -f ./chp_api/Dockerfile ./")
+                    sh '''
+                    docker login -u AWS -p $(aws ecr get-login-password --region us-east-1) 853771734544.dkr.ecr.us-east-1.amazonaws.com
+                    '''
+                    docker.image(env.DOCKER_REPO_NAME).push("${BUILD_VERSION}")
                     sh '''
                     cp deploy/chp-api/configs/nginx.conf deploy/chp-api/nginx/
                     '''
-                    docker.build(env.DOCKER_REPO_NAME, "--no-cache ./deploy/chp-api/nginx")
-                    docker.withRegistry('https://853771734544.dkr.ecr.us-east-1.amazonaws.com', 'ecr:us-east-1:aws-ifx-deploy') {
-                        docker.image(env.DOCKER_REPO_NAME).push("${BUILD_VERSION}-nginx")
-                    }
+                    docker.build(env.DOCKER_REPO_NAME, "--no-cache -f ./deploy/chp-api/nginx")
+                    sh '''
+                    docker login -u AWS -p $(aws ecr get-login-password --region us-east-1) 853771734544.dkr.ecr.us-east-1.amazonaws.com
+                    '''
+                    docker.image(env.DOCKER_REPO_NAME).push("${BUILD_VERSION}-nginx")
                 }
             }
         }
         stage('Deploy to AWS EKS') {
+            agent { label 'translator && ci && deploy'}
             steps {
-              configFileProvider([
-                  configFile(fileId: 'values-ci.yaml', targetLocation: 'deploy/chp-api/values.ncats.yaml')
-              ]){
-                  withAWS(credentials:'aws-ifx-deploy') 
-                  {
+                checkout scm
+                configFileProvider([
+                    configFile(fileId: 'values-ci.yaml', targetLocation: 'deploy/chp-api/values.ncats.yaml'),
+                    configFile(fileId: 'chp-secrets.sh', targetLocation: 'deploy/chp-api/chp-secrets.sh')
+                ]){
+                    script {
                       sh '''
                       aws --region ${AWS_REGION} eks update-kubeconfig --name ${KUBERNETES_CLUSTER_NAME}
-                      cd deploy/chp-api && /bin/bash deploy.sh
+                      cd deploy/chp-api && /bin/bash chp-secrets.sh && /bin/bash deploy.sh
                       '''
-                  }
+                    }
                 }
+                cleanWs()
             }
         }
     }
