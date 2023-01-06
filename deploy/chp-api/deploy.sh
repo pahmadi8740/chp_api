@@ -33,4 +33,4 @@ rm configs/settings.py.bak
 kubectl apply -f namespace.yaml
 
 # deploy helm chart
-helm -n ${namespace} upgrade --install ${projectName} -f values.ncats.yaml ./
+helm -n ${namespace} upgrade --install ${projectName} -f values-ncats.yaml ./

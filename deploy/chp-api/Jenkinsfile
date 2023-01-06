@@ -65,7 +65,7 @@ pipeline {
             steps {
                 checkout scm
                 configFileProvider([
-                    configFile(fileId: 'values-ci.yaml', targetLocation: 'deploy/chp-api/values.ncats.yaml'),
+                    configFile(fileId: 'values-ci.yaml', targetLocation: 'deploy/chp-api/values-ncats.yaml'),
                     configFile(fileId: 'chp-secrets.sh', targetLocation: 'deploy/chp-api/chp-secrets.sh')
                 ]){
                     script {
