@@ -50,6 +50,7 @@ pipeline {
                     docker.image(env.DOCKER_REPO_NAME).push("${BUILD_VERSION}")
                     sh '''
                     cp deploy/chp-api/configs/nginx.conf deploy/chp-api/nginx/
+                    pwd
                     cd deploy/chp-api/nginx
                     '''
                     docker.build(env.DOCKER_REPO_NAME, "--no-cache -f ./Dockerfile .")
