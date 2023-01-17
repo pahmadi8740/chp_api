@@ -61,7 +61,11 @@ ingress:
     nginx.ingress.kubernetes.io/proxy-connect-timeout: "360"
     nginx.ingress.kubernetes.io/proxy-read-timeout: "360"
     nginx.ingress.kubernetes.io/proxy-send-timeout: "360"
-  hosts: chp-api.ci.transltr.io
+  hosts:
+    - host: chp-api.ci.transltr.io
+      paths:
+        - path: /
+          pathType: ImplementationSpecific
      
 tolerations: 
   - key: "transltr"
