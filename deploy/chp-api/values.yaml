@@ -3,6 +3,7 @@
 # Declare variables to be passed into your templates.
 
 replicaCount: 1
+appname: chp-api
 
 image:
   repository: 853771734544.dkr.ecr.us-east-1.amazonaws.com/translator-ea-chp-api
@@ -60,12 +61,8 @@ ingress:
     nginx.ingress.kubernetes.io/proxy-connect-timeout: "360"
     nginx.ingress.kubernetes.io/proxy-read-timeout: "360"
     nginx.ingress.kubernetes.io/proxy-send-timeout: "360"
-  hosts:
-    - host: chp-api.ci.transltr.io
-      paths:
-        - path: /
-          pathType: ImplementationSpecific
-
+  hosts: chp-api.ci.transltr.io
+     
 tolerations: 
   - key: "transltr"
     value: "chp-api"
