@@ -48,9 +48,6 @@ pipeline {
                     docker.image(env.DOCKER_REPO_NAME).push("${BUILD_VERSION}")
                     sh 'cp deploy/chp-api/configs/nginx.conf deploy/chp-api/nginx/'
                     docker.build(env.DOCKER_REPO_NAME, "--no-cache ./deploy/chp-api/nginx")
-                    sh '''
-                    docker login -u AWS -p $(aws ecr get-login-password --region us-east-1) 853771734544.dkr.ecr.us-east-1.amazonaws.com
-                    '''
                     docker.image(env.DOCKER_REPO_NAME).push("${BUILD_VERSION}-nginx")
                 }
             }
