@@ -5,7 +5,7 @@ pipeline {
         disableConcurrentBuilds()
     }
     agent {
-        node { label 'translator && aws && build' }
+        node { label 'translator && aws && build && chp' }
     }
     parameters {
         string(name: 'BUILD_VERSION', defaultValue: '', description: 'The build version to deploy (optional)')
@@ -16,7 +16,7 @@ pipeline {
         pollSCM('H/5 * * * *')
     }
     environment {
-        DOCKER_REPO_NAME = "translator-ea-chp-api"
+        DOCKER_REPO_NAME = "853771734544.dkr.ecr.us-east-1.amazonaws.com/translator-ea-chp-api"
     }
     stages {
         stage('Build Version'){
@@ -43,32 +43,35 @@ pipeline {
            when { expression { return env.BUILD == 'true' }}
             steps {
                 script {
-                    docker.build(env.DOCKER_REPO_NAME, "--no-cache -f ./Dockerfile .")
-                    docker.withRegistry('https://853771734544.dkr.ecr.us-east-1.amazonaws.com', 'ecr:us-east-1:aws-ifx-deploy') {
-                        docker.image(env.DOCKER_REPO_NAME).push("${BUILD_VERSION}")
-                    }
-                    sh '''
-                    cp deploy/chp-api/configs/nginx.conf deploy/chp-api/nginx/
-                    '''
+                    docker.build(env.DOCKER_REPO_NAME, "--no-cache -f ./Dockerfile ./")
+                    sh 'docker login -u AWS -p $(aws ecr get-login-password --region us-east-1) 853771734544.dkr.ecr.us-east-1.amazonaws.com'
+                    docker.image(env.DOCKER_REPO_NAME).push("${BUILD_VERSION}")
+                    sh 'cp deploy/chp-api/configs/nginx.conf deploy/chp-api/nginx/'
                     docker.build(env.DOCKER_REPO_NAME, "--no-cache ./deploy/chp-api/nginx")
-                    docker.withRegistry('https://853771734544.dkr.ecr.us-east-1.amazonaws.com', 'ecr:us-east-1:aws-ifx-deploy') {
-                        docker.image(env.DOCKER_REPO_NAME).push("${BUILD_VERSION}-nginx")
-                    }
+                    docker.image(env.DOCKER_REPO_NAME).push("${BUILD_VERSION}-nginx")
                 }
             }
         }
         stage('Deploy to AWS EKS') {
+            agent { label 'translator && ci && deploy'}
             steps {
-              configFileProvider([
-                  configFile(fileId: 'values-ci.yaml', targetLocation: 'deploy/chp-api/values.ncats.yaml')
-              ]){
-                  withAWS(credentials:'aws-ifx-deploy') 
-                  {
+                checkout scm
+                configFileProvider([
+                    configFile(fileId: 'values-ci.yaml', targetLocation: 'deploy/chp-api/values-ncats.yaml'),
+                    configFile(fileId: 'prepare.sh', targetLocation: 'deploy/chp-api/prepare.sh')
+                ]){
+                    script {
                       sh '''
                       aws --region ${AWS_REGION} eks update-kubeconfig --name ${KUBERNETES_CLUSTER_NAME}
-                      cd deploy/chp-api && /bin/bash deploy.sh
+                      cd deploy/chp-api && /bin/bash prepare.sh && /bin/bash deploy.sh
                       '''
-                  }
+                    }
+                }
+            }
+            post {
+                always {
+                    echo " Clean up the workspace in deploy node!"
+                    cleanWs()
                 }
             }
         }
