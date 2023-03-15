@@ -4,7 +4,7 @@ services:
   api:
     build: 
       context: .
-      dockerfile: Dockerfile
+      dockerfile: Dockerfile.new
     container_name: chp-api
     command: python manage.py runserver 0.0.0.0:8000
     volumes:

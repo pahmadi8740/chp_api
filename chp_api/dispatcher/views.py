@@ -18,8 +18,8 @@ from rest_framework import generics
 
 
 class query(APIView):
-    trapi_version = '1.2'
-    def __init__(self, trapi_version='1.2', **kwargs):
+    trapi_version = '1.3'
+    def __init__(self, trapi_version='1.3', **kwargs):
         self.trapi_version = trapi_version
         super(query, self).__init__(**kwargs)
 
@@ -40,8 +40,8 @@ class query(APIView):
             return dispatcher.get_response(query)
 
 class curies(APIView):
-    trapi_version = '1.2'
-    def __init__(self, trapi_version='1.2', **kwargs):
+    trapi_version = '1.3'
+    def __init__(self, trapi_version='1.3', **kwargs):
         self.trapi_version = trapi_version
         super(curies, self).__init__(**kwargs)
     
@@ -55,8 +55,8 @@ class curies(APIView):
             return JsonResponse(curies_db)
 
 class meta_knowledge_graph(APIView):
-    trapi_version = '1.2'
-    def __init__(self, trapi_version='1.2', **kwargs):
+    trapi_version = '1.3'
+    def __init__(self, trapi_version='1.3', **kwargs):
         self.trapi_version = trapi_version
         super(meta_knowledge_graph, self).__init__(**kwargs)
 
@@ -70,8 +70,8 @@ class meta_knowledge_graph(APIView):
             return JsonResponse(meta_knowledge_graph.to_dict())
 
 class versions(APIView):
-    trapi_version = '1.2'
-    def __init__(self, trapi_version='1.2', **kwargs):
+    trapi_version = '1.3'
+    def __init__(self, trapi_version='1.3', **kwargs):
         self.trapi_version = trapi_version
         super(version, self).__init__(**kwargs)
 
