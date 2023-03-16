@@ -4,7 +4,9 @@
 FROM python:3.8.3 as venv_builder
 
 COPY requirements.txt .
+COPY requirements-dev.txt .
 RUN python3 -m venv /opt/venv
+RUN /opt/venv/bin/pip install --upgrade pip
 RUN /opt/venv/bin/pip install -r requirements.txt
 RUN /opt/venv/bin/pip install -r requirements-dev.txt
 ###########
@@ -27,12 +29,11 @@ COPY ./chp_api $SERVER_DIR
 
 # copy entry point
 COPY ./entrypoint.sh ${SERVER_DIR}
+COPY ./gunicorn.config.py ${SERVER_DIR}
+COPY ./chp_db_fixture.json.gz ${SERVER_DIR}
 
 # enter app directory
 WORKDIR $SERVER_DIR
 
 # Enable venv
 ENV PATH="/opt/venv/bin:$PATH"
-# run server
-# ENTRYPOINT ["./entrypoint.sh"]
-CMD ["python", "manage.py", "runserver"]

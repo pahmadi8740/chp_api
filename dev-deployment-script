@@ -1,0 +1,12 @@
+#!/bin/bash
+# Only to be run when building on dev machine
+echo "Taking down the NCATS Server."
+docker-compose -f dev-docker-compose.yml stop
+
+docker-compose -f dev-docker-compose.yml build --no-cache api
+
+echo "Bringing up server."
+docker-compose -f dev-docker-compose.yml up -d
+
+echo "Server should now be up."
+echo "Check logs with: docker-compose -f dev-docker-compose.yml logs -f"
