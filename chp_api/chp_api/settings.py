@@ -55,7 +55,7 @@ OTHER_APPS = [
         ]
 
 # CHP Versions
-VERSIONS = {app_name: app.__version__ for app_name, app in [(app_name, import_module(app_name)) for app_name in INSTALLED_CHP_APPS + OTHER_APPS]}
+#VERSIONS = {app_name: app.__version__ for app_name, app in [(app_name, import_module(app_name)) for app_name in INSTALLED_CHP_APPS + OTHER_APPS]}
 
 # Sets up installed apps relevent to django 
 INSTALLED_APPS = INSTALLED_BASE_APPS + INSTALLED_CHP_APPS
@@ -70,7 +70,7 @@ MIDDLEWARE = [
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
 ]
 
-ROOT_URLCONF = 'dispatcher.urls'
+ROOT_URLCONF = 'chp_api.urls'
 
 TEMPLATES = [
     {
@@ -138,25 +138,35 @@ USE_TZ = True
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/3.0/howto/static-files/
 
-STATIC_URL = '/staticfiles/'
+STATIC_URL = '/static/'
 STATIC_ROOT = os.path.join(BASE_DIR, "staticfiles")
+
+STATIC_URL = '/media/'
+STATIC_ROOT = os.path.join(BASE_DIR, "mediafiles")
 
 # Hosts Configuration
 #ROOT_HOSTCONF = 'chp_api.hosts'
+
+with open(env("POSTGRES_PASSWORD_FILE"), 'r') as db_pwd:
+    DB_PASSWORD = db_pwd.readline().strip()
 
 # Database
 # https://docs.djangoproject.com/en/3.0/ref/settings/#databases
 DATABASES = {
     'default': {
         "ENGINE": "django.db.backends.postgresql_psycopg2",
-        "NAME": env("SQL_DATABASE"),
-        "USER": env("SQL_USER"),
-        "PASSWORD": env("SQL_PASSWORD"),
-        "HOST": env("SQL_HOST"),
-        "PORT": env("SQL_PORT"),
+        "NAME": env("POSTGRES_DB"),
+        "USER": env("POSTGRES_USER"),
+        "PASSWORD": DB_PASSWORD,
+        "HOST": env("POSTGRES_HOST"),
+        "PORT": env("POSTGRES_PORT"),
     }
 }
 
-ALLOWED_HOSTS = env("DJANGO_ALLOWED_HOSTS").split(" ")
+with open(env("DJANGO_ALLOWED_HOSTS_FILE"), 'r') as ah_file:
+    ALLOWED_HOSTS = ah_file.readline().strip().split(" ")
+
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = env("SECRET_KEY")
+ # Read the secret key from file
+with open(env("SECRET_KEY_FILE"), 'r') as sk_file:
+    SECRET_KEY = sk_file.readline().strip()

@@ -6,5 +6,14 @@ class Transaction(models.Model):
     query = models.JSONField(default=dict)
     status = models.CharField(max_length=100, default="", null=True)
     versions = models.JSONField(default=dict)
-    chp_app = models.CharField(max_length=128, null=True)
+    chp_app = models.ForeignKey(App, on_delete=models.CASCADE)
+
+class App(models.Model):
+    name = models.CharField(max_length=128)
+    curies_file = models.FileField(upload_to='curies_files/', null=True, blank=True)
+    meta_knowledge_graph_file = models.FileField(upload_to='meta_knowledge_graph_files', null=True, blank=True)
+
+    def __str__(self):
+        return self.name
+
 
