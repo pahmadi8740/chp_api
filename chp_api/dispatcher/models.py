@@ -1,4 +1,36 @@
+import os
+import json
+import requests
 from django.db import models
+
+
+class ZenodoFile(models.Model):
+    zenodo_id = models.CharField(max_length=128)
+    file_key = models.CharField(max_length=128)
+
+    def __str__(self):
+        return f'{self.zenodo_id}/{self.file_key}'
+
+    def get_record(self):
+        return requests.get(f"https://zenodo.org/api/records/{self.zenodo_id}").json()
+
+    def load_file(self, base_url="https://zenodo.org/api/records"):
+        r = requests.get(f"{base_url}/{self.zenodo_id}").json()
+        files = {f["key"]: f for f in r["files"]}
+        f = files[self.file_key]
+        download_link = f["links"]["self"]
+        file_type = f["type"]
+        if file_type == 'json':
+            return requests.get(download_link).json()
+        raise NotImplementedError(f'File type of: {ext} is not implemented.')
+
+class App(models.Model):
+    name = models.CharField(max_length=128)
+    curies_zenodo_file = models.OneToOneField(ZenodoFile, on_delete=models.CASCADE, null=True, blank=True, related_name='curies_zenodo_file')
+    meta_knowledge_graph_zenodo_file = models.OneToOneField(ZenodoFile, on_delete=models.CASCADE, null=True, blank=True, related_name='meta_knowledge_graph_zenodo_file')
+
+    def __str__(self):
+        return self.name
 
 class Transaction(models.Model):
     id = models.CharField(max_length=100, primary_key=True)
@@ -6,14 +38,5 @@ class Transaction(models.Model):
     query = models.JSONField(default=dict)
     status = models.CharField(max_length=100, default="", null=True)
     versions = models.JSONField(default=dict)
-    chp_app = models.ForeignKey(App, on_delete=models.CASCADE)
-
-class App(models.Model):
-    name = models.CharField(max_length=128)
-    curies_file = models.FileField(upload_to='curies_files/', null=True, blank=True)
-    meta_knowledge_graph_file = models.FileField(upload_to='meta_knowledge_graph_files', null=True, blank=True)
-
-    def __str__(self):
-        return self.name
-
+    chp_app = models.ForeignKey(App, on_delete=models.CASCADE, null=True, blank=True)
 

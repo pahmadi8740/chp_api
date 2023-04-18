@@ -1,12 +1,12 @@
 #!/bin/bash
 # Only to be run when building on dev machine
-echo "Taking down the NCATS Server."
-docker-compose -f dev-docker-compose.yml stop
+docker compose build
 
-docker-compose -f dev-docker-compose.yml build --no-cache api
+docker compose up -d
 
-echo "Bringing up server."
-docker-compose -f dev-docker-compose.yml up -d
+docker compose run chp-api python3 manage.py migrate
 
-echo "Server should now be up."
-echo "Check logs with: docker-compose -f dev-docker-compose.yml logs -f"
+docker compose run --user root chp-api python3 manage.py collectstatic --noinput
+
+
+echo "Check logs with: docker compose logs -f"

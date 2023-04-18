@@ -26,6 +26,7 @@ services:
       context: .
       dockerfile: Dockerfile
     restart: always
+    user: chp_api
     ports: 
       - '8000:8000'
     secrets:
@@ -56,7 +57,7 @@ services:
       timeout: 10s
       retries: 3
     volumes:
-      - ./static-files:/home/chp_api/staticfiles
+      - static-files:/home/chp_api/staticfiles
       #command: gunicorn -c gunicorn.config.py -b 0.0.0.0:8000 chp_api.wsgi:application
     command: python3 manage.py runserver 0.0.0.0:8000
   
@@ -87,11 +88,11 @@ services:
       expose:
         - 8080
       volumes:
-          - ./static-files:/var/www/static
-          - ./media-files:/var/www/media
+          - static-files:/var/www/static
 
 volumes:
   db-data:
+  static-files:
 
 secrets:
   allowed-hosts:

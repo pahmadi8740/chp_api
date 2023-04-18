@@ -54,7 +54,6 @@ ENV HOME=/home/chp_api
 ENV APP_HOME=/home/chp_api/web
 RUN mkdir $APP_HOME
 RUN mkdir $APP_HOME/staticfiles
-RUN mkdir $APP_HOME/mediafiles
 WORKDIR $APP_HOME
 
 # set environment variables
@@ -80,7 +79,7 @@ COPY --from=intermediate /usr/src/chp_api/requirements.txt .
 RUN pip3 install --no-cache /wheels/*
 
 # copy entry point
-COPY ./entrypoint.sh $APP_HOME
+#COPY ./entrypoint.sh $APP_HOME
 
 # copy project
 COPY ./chp_api/chp_api $APP_HOME/chp_api
@@ -89,7 +88,8 @@ COPY ./chp_api/dispatcher $APP_HOME/dispatcher
 COPY ./gunicorn.config.py $APP_HOME
 
 # chown all the files to the app user
-RUN chown -R chp_api:chp_api $APP_HOME
+RUN chown -R chp_api:chp_api $APP_HOME \
+    && chmod 700 $APP_HOME/staticfiles
 
 # change to the app user
 USER chp_api

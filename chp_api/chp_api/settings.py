@@ -141,9 +141,6 @@ USE_TZ = True
 STATIC_URL = '/static/'
 STATIC_ROOT = os.path.join(BASE_DIR, "staticfiles")
 
-STATIC_URL = '/media/'
-STATIC_ROOT = os.path.join(BASE_DIR, "mediafiles")
-
 # Hosts Configuration
 #ROOT_HOSTCONF = 'chp_api.hosts'
 
