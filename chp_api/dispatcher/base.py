@@ -9,7 +9,7 @@ from importlib import import_module
 from collections import defaultdict
 
 from .curie_database import merge_curies_databases, CurieDatabase
-from .models import Transaction, App
+from .models import Transaction, App, DispatcherSettings
 
 from chp_utils.trapi_query_processor import BaseQueryProcessor
 from trapi_model.meta_knowledge_graph import MetaKnowledgeGraph, merge_meta_knowledge_graphs
@@ -65,13 +65,15 @@ class Dispatcher(BaseQueryProcessor):
         return merge_curies_databases(curies_dbs)
 
     def get_meta_knowledge_graph(self):
+        # Get current trapi and biolink versions
+        dispatcher_settings = DispatcherSettings.load()
         meta_kgs = []
         for app, app_name in zip(APPS, settings.INSTALLED_CHP_APPS):
             app_db_obj = App.objects.get(name=app_name)
             # Load location from uploaded Zenodo files
             if app_db_obj.meta_knowledge_graph_zenodo_file:
                 meta_kg = app_db_obj.meta_knowledge_graph_zenodo_file.load_file(base_url="https://sandbox.zenodo.org/api/records")
-                meta_kg = MetaKnowledgeGraph.load('1.3', None, meta_knowledge_graph=meta_kg)
+                meta_kg = MetaKnowledgeGraph.load(dispatcher_settings.trapi_version, None, meta_knowledge_graph=meta_kg)
             # Load default location    
             else:
                 get_app_meta_kg_fn = getattr(app, 'get_meta_knowledge_graph')
@@ -275,14 +277,15 @@ class Dispatcher(BaseQueryProcessor):
             target_query.logger.add_logs(query.logger.to_dict())
         return target_query
 
-    def add_transaction(self, response, chp_app='dispatcher'):
+    def add_transaction(self, response, app_name='dispatcher'):
+        app_db_obj = App.objects.get(name=app_name)
         # Save the transaction
         transaction = Transaction(
             id = response.id,
             status = response.status,
             query = response.to_dict(),
             versions = settings.VERSIONS,
-            chp_app = chp_app,
+            chp_app = app_db_obj,
         )
         transaction.save()
         

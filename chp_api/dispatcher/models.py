@@ -40,3 +40,26 @@ class Transaction(models.Model):
     versions = models.JSONField(default=dict)
     chp_app = models.ForeignKey(App, on_delete=models.CASCADE, null=True, blank=True)
 
+
+class Singleton(models.Model):
+
+    class Meta:
+        abstract = True
+
+    def save(self, *args, **kwargs):
+        self.pk = 1
+        super(Singleton, self).save(*args, **kwargs)
+
+    def delete(self, *args, **kwargs):
+        pass
+
+    @classmethod
+    def load(cls):
+        obj, _ = cls.objects.get_or_create(pk=1)
+        return obj
+
+class DispatcherSettings(Singleton):
+    trapi_version = models.CharField(max_length=28, default='1.4')
+
+    def __str__(self):
+        return 'settings'

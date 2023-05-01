@@ -6,6 +6,9 @@ docker compose up -d
 
 docker compose run chp-api python3 manage.py migrate
 
+# Load apps
+docker compose run chp-api python3 manage.py runscript load_db_apps
+
 docker compose run --user root chp-api python3 manage.py collectstatic --noinput
 
 

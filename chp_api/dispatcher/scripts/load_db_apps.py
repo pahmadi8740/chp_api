@@ -8,3 +8,8 @@ def run():
         app_db_obj, created = App.objects.get_or_create(name=app_name)
         if created:
             app_db_obj.save()
+
+    # Create a dummy app for the dispatcher
+    app_db_obj, created = App.objects.get_or_create(name='dispatcher')
+    if created:
+        app_db_obj.save()

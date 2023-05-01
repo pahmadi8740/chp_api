@@ -45,8 +45,6 @@ INSTALLED_BASE_APPS = [
 ]
 
 INSTALLED_CHP_APPS = [
-    'chp_look_up',
-#    'chp_learn',
     'gene_specificity',
     ]
 
@@ -55,7 +53,7 @@ OTHER_APPS = [
         ]
 
 # CHP Versions
-#VERSIONS = {app_name: app.__version__ for app_name, app in [(app_name, import_module(app_name)) for app_name in INSTALLED_CHP_APPS + OTHER_APPS]}
+VERSIONS = {app_name: app.__version__ for app_name, app in [(app_name, import_module(app_name)) for app_name in INSTALLED_CHP_APPS + OTHER_APPS]}
 
 # Sets up installed apps relevent to django 
 INSTALLED_APPS = INSTALLED_BASE_APPS + INSTALLED_CHP_APPS
