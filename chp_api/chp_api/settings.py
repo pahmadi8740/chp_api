@@ -165,3 +165,11 @@ with open(env("DJANGO_ALLOWED_HOSTS_FILE"), 'r') as ah_file:
  # Read the secret key from file
 with open(env("SECRET_KEY_FILE"), 'r') as sk_file:
     SECRET_KEY = sk_file.readline().strip()
+
+# Set UN, Email and Password for superuser
+with open(env("DJANGO_SUPERUSER_USERNAME_FILE"), 'r') as dsu_file:
+    os.environ["DJANGO_SUPERUSER_USERNAME"] = dsu_file.readline().strip()
+with open(env("DJANGO_SUPERUSER_EMAIL_FILE"), 'r') as dse_file:
+    os.environ["DJANGO_SUPERUSER_EMAIL"] = dse_file.readline().strip()
+with open(env("DJANGO_SUPERUSER_PASSWORD_FILE"), 'r') as dsp_file:
+    os.environ["DJANGO_SUPERUSER_PASSWORD"] = dsp_file.readline().strip()

@@ -33,6 +33,9 @@ services:
       - db-password
       - django-key
       - allowed-hosts
+      - django-superuser-username
+      - django-superuser-email
+      - django-superuser-password
     environment:
       - POSTGRES_DB=chp_db
       - POSTGRES_USER=postgres
@@ -42,6 +45,9 @@ services:
       - SECRET_KEY_FILE=/run/secrets/django-key
       - DEBUG=1
       - DJANGO_ALLOWED_HOSTS_FILE=/run/secrets/allowed-hosts
+      - DJANGO_SUPERUSER_USERNAME_FILE=/run/secrets/django-superuser-username
+      - DJANGO_SUPERUSER_EMAIL_FILE=/run/secrets/django-superuser-email
+      - DJANGO_SUPERUSER_PASSWORD_FILE=/run/secrets/django-superuser-password
         # Uncomment this for production
         #- DJANGO_SETTINGS_MODULE=mysite.settings.production
         # Comment this for development
@@ -58,8 +64,8 @@ services:
       retries: 3
     volumes:
       - static-files:/home/chp_api/staticfiles
-      #command: gunicorn -c gunicorn.config.py -b 0.0.0.0:8000 chp_api.wsgi:application
-    command: python3 manage.py runserver 0.0.0.0:8000
+    command: gunicorn -c gunicorn.config.py -b 0.0.0.0:8000 chp_api.wsgi:application
+      #command: python3 manage.py runserver 0.0.0.0:8000
   
   db:
     image: postgres
@@ -101,3 +107,9 @@ secrets:
     file: secrets/db/password.txt
   django-key:
     file: secrets/chp_api/secret_key.txt
+  django-superuser-username:
+    file: secrets/chp_api/django_superuser_username.txt
+  django-superuser-email:
+    file: secrets/chp_api/django_superuser_email.txt
+  django-superuser-password:
+    file: secrets/chp_api/django_superuser_password.txt
