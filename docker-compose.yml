@@ -65,7 +65,7 @@ services:
     volumes:
       - static-files:/home/chp_api/staticfiles
     command: gunicorn -c gunicorn.config.py -b 0.0.0.0:8000 chp_api.wsgi:application
-      #command: python3 manage.py runserver 0.0.0.0:8000
+    #command: python3 manage.py runserver 0.0.0.0:8000
   
   db:
     image: postgres

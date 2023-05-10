@@ -13,7 +13,7 @@ WORKDIR /usr/src/chp_api
 #	&& apt-get install -y git python3-pip python3-dev
 #dos2unix
 
-RUN git clone --single-branch --branch pydantic-integration-yakaboskic https://github.com/di2ag/trapi_model.git
+RUN git clone --single-branch --branch master https://github.com/di2ag/trapi_model.git
 RUN git clone --single-branch --branch master https://github.com/di2ag/chp_utils.git
 RUN git clone --single-branch --branch master https://github.com/di2ag/chp_look_up.git
 RUN git clone --single-branch --branch master https://github.com/di2ag/gene-specificity.git

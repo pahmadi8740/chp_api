@@ -5,7 +5,7 @@ django_superuser_username='cat secrets/chp_api/django_superuser_username.txt'
 django_superuser_email='cat secrets/chp_api/django_superuser_email.txt'
 
 # Only to be run when building on dev machine
-docker compose build
+docker compose build --no-cache
 
 docker compose up -d
 
