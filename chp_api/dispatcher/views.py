@@ -5,7 +5,7 @@ from copy import deepcopy
 from datetime import datetime, timedelta
 
 from .base import Dispatcher
-from .models import Transaction
+from .models import Transaction, DispatcherSettings
 from .serializers import TransactionListSerializer, TransactionDetailSerializer
 
 from django.http import HttpResponse, JsonResponse
@@ -18,19 +18,24 @@ from rest_framework import generics
 
 
 class query(APIView):
-    trapi_version = '1.3'
-    def __init__(self, trapi_version='1.3', **kwargs):
-        self.trapi_version = trapi_version
-        super(query, self).__init__(**kwargs)
-
+    
     def post(self, request):
+        # Get current trapi and biolink versions
+        dispatcher_settings = DispatcherSettings.load()
+        
         if request.method == 'POST':
             # Initialize Dispatcher
-            dispatcher = Dispatcher(request, self.trapi_version)
+            dispatcher = Dispatcher(
+                    request,
+                    dispatcher_settings.trapi_version,
+                    )
             # Process Query
             query = None
             try:
-                query = dispatcher.process_request(request, trapi_version=self.trapi_version)
+                query = dispatcher.process_request(
+                        request,
+                        trapi_version=dispatcher_settings.trapi_version,
+                        )
             except Exception as e:
                 if 'Workflow Error' in str(e):
                     return dispatcher.process_invalid_workflow(request, str(e))
@@ -40,45 +45,51 @@ class query(APIView):
             return dispatcher.get_response(query)
 
 class curies(APIView):
-    trapi_version = '1.3'
-    def __init__(self, trapi_version='1.3', **kwargs):
-        self.trapi_version = trapi_version
-        super(curies, self).__init__(**kwargs)
     
     def get(self, request):
+        # Get current trapi and biolink versions
+        dispatcher_settings = DispatcherSettings.load()
+        
         if request.method == 'GET':
             # Initialize dispatcher
-            dispatcher = Dispatcher(request, self.trapi_version)
+            dispatcher = Dispatcher(
+                    request,
+                    dispatcher_settings.trapi_version,
+                    )
 
             # Get all chp app curies
             curies_db = dispatcher.get_curies()
             return JsonResponse(curies_db)
 
 class meta_knowledge_graph(APIView):
-    trapi_version = '1.3'
-    def __init__(self, trapi_version='1.3', **kwargs):
-        self.trapi_version = trapi_version
-        super(meta_knowledge_graph, self).__init__(**kwargs)
-
+    
     def get(self, request):
+        # Get current trapi and biolink versions
+        dispatcher_settings = DispatcherSettings.load()
+        
         if request.method == 'GET':
             # Initialize Dispatcher
-            dispatcher = Dispatcher(request, self.trapi_version)
+            dispatcher = Dispatcher(
+                    request,
+                    dispatcher_settings.trapi_version,
+                    )
             
             # Get merged meta KG
             meta_knowledge_graph = dispatcher.get_meta_knowledge_graph()
             return JsonResponse(meta_knowledge_graph.to_dict())
 
 class versions(APIView):
-    trapi_version = '1.3'
-    def __init__(self, trapi_version='1.3', **kwargs):
-        self.trapi_version = trapi_version
-        super(version, self).__init__(**kwargs)
 
     def get(self, request):
+        # Get current trapi and biolink versions
+        dispatcher_settings = DispatcherSettings.load()
+        
         if request.method == 'GET':
             # Initialize Dispatcher
-            dispatcher = Dispatcher(request, self.trapi_version)
+            dispatcher = Dispatcher(
+                    request,
+                    dispatcher_settings.trapi_version,
+                    )
         return JsonResponse(dispatcher.get_versions())
 
 class TransactionList(mixins.ListModelMixin, generics.GenericAPIView):

@@ -1,12 +1,23 @@
 #!/bin/bash
+
+# Variables
+django_superuser_username='cat secrets/chp_api/django_superuser_username.txt'
+django_superuser_email='cat secrets/chp_api/django_superuser_email.txt'
+
 # Only to be run when building on dev machine
-echo "Taking down the NCATS Server."
-docker-compose -f dev-docker-compose.yml stop
+docker compose build --no-cache
 
-docker-compose -f dev-docker-compose.yml build --no-cache api
+docker compose up -d
 
-echo "Bringing up server."
-docker-compose -f dev-docker-compose.yml up -d
+docker compose run chp-api python3 manage.py migrate
 
-echo "Server should now be up."
-echo "Check logs with: docker-compose -f dev-docker-compose.yml logs -f"
+# Create a database superuser
+docker compose run --user root chp-api python3 manage.py createsuperuser --no-input #--username $django_superuser_username --email $django_superuser_email
+
+# Load apps
+docker compose run chp-api python3 manage.py runscript load_db_apps
+
+docker compose run --user root chp-api python3 manage.py collectstatic --noinput
+
+
+echo "Check logs with: docker compose logs -f"

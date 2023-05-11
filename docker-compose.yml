@@ -1,25 +1,115 @@
 version: '3.8'
 
 services:
-  api:
+
+  nginx-proxy:
+    build: nginx
+    restart: always
+    volumes:
+      - ./nginx/default.conf:/tmp/default.conf
+    environment: 
+      - DJANGO_SERVER_ADDR=chp-api:8000
+      - STATIC_SERVER_ADDR=static-fs:8080
+    ports:
+      - "80:80"
+    depends_on:
+      - chp-api
+    healthcheck:
+      test: ["CMD-SHELL", "curl --silent --fail localhost:80/health-check || exit 1"]
+      interval: 10s
+      timeout: 10s
+      retries: 3
+    command: /app/start.sh
+
+  chp-api:
     build: 
       context: .
       dockerfile: Dockerfile
-    container_name: chp-api
-    command: python manage.py runserver 0.0.0.0:8000
+    restart: always
+    user: chp_api
+    ports: 
+      - '8000:8000'
+    secrets:
+      - db-password
+      - django-key
+      - allowed-hosts
+      - django-superuser-username
+      - django-superuser-email
+      - django-superuser-password
+    environment:
+      - POSTGRES_DB=chp_db
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD_FILE=/run/secrets/db-password
+      - POSTGRES_HOST=db
+      - POSTGRES_PORT=5432
+      - SECRET_KEY_FILE=/run/secrets/django-key
+      - DEBUG=1
+      - DJANGO_ALLOWED_HOSTS_FILE=/run/secrets/allowed-hosts
+      - DJANGO_SUPERUSER_USERNAME_FILE=/run/secrets/django-superuser-username
+      - DJANGO_SUPERUSER_EMAIL_FILE=/run/secrets/django-superuser-email
+      - DJANGO_SUPERUSER_PASSWORD_FILE=/run/secrets/django-superuser-password
+        # Uncomment this for production
+        #- DJANGO_SETTINGS_MODULE=mysite.settings.production
+        # Comment this for development
+        #- DJANGO_SETTINGS_MODULE=mysite.settings.base
+    depends_on:
+      db:
+        condition: service_healthy
+    depends_on:
+        - static-fs
+    healthcheck:
+        #test: ["CMD-SHELL", "curl --silent --fail localhost:8000/flask-health-check || exit 1"]
+      interval: 10s
+      timeout: 10s
+      retries: 3
     volumes:
-      - static_volume:/chp_api/staticfiles
-    expose:
-      - 80
-    env_file:
-      - ./.dev.env
+      - static-files:/home/chp_api/staticfiles
+    command: gunicorn -c gunicorn.config.py -b 0.0.0.0:8000 chp_api.wsgi:application
+    #command: python3 manage.py runserver 0.0.0.0:8000
+  
   db:
-    image: postgres:latest
-    restart: unless-stopped
+    image: postgres
+    restart: always
+    user: postgres
+    secrets:
+      - db-password
     volumes:
-      - ../chp.sql:/var/lib/postgresql/data
-    env_file:
-      - .dev-db.env
+      - db-data:/var/lib/postgresql/data
+    environment:
+      - POSTGRES_DB=chp_db
+      - POSTGRES_PASSWORD_FILE=/run/secrets/db-password
+    expose:
+      - 5432
+    healthcheck:
+      test: [ "CMD", "pg_isready" ]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  static-fs:
+      image: halverneus/static-file-server:latest
+      environment:
+          - FOLDER=/var/www
+          - DEBUG=true
+      expose:
+        - 8080
+      volumes:
+          - static-files:/var/www/static
 
 volumes:
-  static_volume:
+  db-data:
+  static-files:
+
+secrets:
+  allowed-hosts:
+    file: secrets/chp_api/allowed_hosts.txt
+  db-password:
+    file: secrets/db/password.txt
+  django-key:
+    file: secrets/chp_api/secret_key.txt
+  django-superuser-username:
+    file: secrets/chp_api/django_superuser_username.txt
+  django-superuser-email:
+    file: secrets/chp_api/django_superuser_email.txt
+  django-superuser-password:
+    file: secrets/chp_api/django_superuser_password.txt
