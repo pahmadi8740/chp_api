@@ -23,7 +23,7 @@ services:
 
   chp-api:
     build: 
-      context: .
+      context: ./chp_api
       dockerfile: Dockerfile
     restart: always
     user: chp_api
@@ -64,8 +64,8 @@ services:
       retries: 3
     volumes:
       - static-files:/home/chp_api/staticfiles
-    command: gunicorn -c gunicorn.config.py -b 0.0.0.0:8000 chp_api.wsgi:application
-    #command: python3 manage.py runserver 0.0.0.0:8000
+        #command: gunicorn -c gunicorn.config.py -b 0.0.0.0:8000 chp_api.wsgi:application
+    command: python3 manage.py runserver 0.0.0.0:8000
   
   db:
     image: postgres
@@ -95,6 +95,21 @@ services:
         - 8080
       volumes:
           - static-files:/var/www/static
+  
+  gennifer-pidc:
+    build: 
+        context: ./gennifer/pidc
+        dockerfile: Dockerfile
+    restart: always
+    user: gennifer_user
+    expose: 
+        - 5000
+    secrets:
+        - gennifer_key
+    environment:
+        - SECRET_KEY_FILE=/run/secrets/gennifer_key
+          #command: gunicorn -c gunicorn.config.py -b 0.0.0.0:5000 'pidc:create_app()'
+    command: flask --app pidc run --debug
 
 volumes:
   db-data:
@@ -113,3 +128,5 @@ secrets:
     file: secrets/chp_api/django_superuser_email.txt
   django-superuser-password:
     file: secrets/chp_api/django_superuser_password.txt
+  gennifer_key:
+    file: secrets/gennifer/secret_key.txt

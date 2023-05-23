@@ -1,0 +1,3 @@
+[submodule "gennifer/pidc"]
+	path = gennifer/pidc
+	url = git@github.com:di2ag/gennifer-pidc.git
