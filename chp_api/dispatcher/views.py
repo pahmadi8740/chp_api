@@ -31,35 +31,18 @@ class query(APIView):
                     )
             # Process Query
             query = None
-            try:
-                query = dispatcher.process_request(
-                        request,
-                        trapi_version=dispatcher_settings.trapi_version,
-                        )
-            except Exception as e:
-                if 'Workflow Error' in str(e):
-                    return dispatcher.process_invalid_workflow(request, str(e))
-                else:
-                    return dispatcher.process_invalid_trapi(request)
+            #try:
+            query = dispatcher.process_request(
+                    request,
+                    trapi_version=dispatcher_settings.trapi_version,
+                    )
+            #except Exception as e:
+            #    if 'Workflow Error' in str(e):
+            #        return dispatcher.process_invalid_workflow(request, str(e))
+            #    else:
+            #        return dispatcher.process_invalid_trapi(request)
             # Return responses
             return dispatcher.get_response(query)
-
-class curies(APIView):
-    
-    def get(self, request):
-        # Get current trapi and biolink versions
-        dispatcher_settings = DispatcherSettings.load()
-        
-        if request.method == 'GET':
-            # Initialize dispatcher
-            dispatcher = Dispatcher(
-                    request,
-                    dispatcher_settings.trapi_version,
-                    )
-
-            # Get all chp app curies
-            curies_db = dispatcher.get_curies()
-            return JsonResponse(curies_db)
 
 class meta_knowledge_graph(APIView):
     

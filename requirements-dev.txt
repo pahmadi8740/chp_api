@@ -1,4 +1,0 @@
-chp_utils @ git+https://github.com/di2ag/chp_utils.git@master
-trapi_model @ git+https://github.com/di2ag/trapi_model.git@master
-chp_look_up @ git+https://github.com/di2ag/chp_look_up.git@master
-gene-specificity @ git+https://github.com/di2ag/gene-specificity.git@master

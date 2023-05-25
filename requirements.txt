@@ -1,5 +1,6 @@
 djangorestframework
 psycopg2-binary
+reasoner_pydantic
 django-environ
 django-hosts
 gunicorn

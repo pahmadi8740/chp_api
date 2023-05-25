@@ -8,13 +8,14 @@ from django.conf import settings
 from importlib import import_module
 from collections import defaultdict
 
-from .curie_database import merge_curies_databases, CurieDatabase
+#from .curie_database import merge_curies_databases, CurieDatabase   ## NEED TO REMOVE
 from .models import Transaction, App, DispatcherSettings
+from reasoner_pydantic import MetaKnowledgeGraph
 
-from chp_utils.trapi_query_processor import BaseQueryProcessor
-from trapi_model.meta_knowledge_graph import MetaKnowledgeGraph, merge_meta_knowledge_graphs
-from trapi_model.query import Query
-from trapi_model.biolink import TOOLKIT
+from chp_utils.trapi_query_processor import BaseQueryProcessor   ## NEED TO REMOVE
+#from trapi_model.meta_knowledge_graph import MetaKnowledgeGraph, merge_meta_knowledge_graphs   ## NEED TO REMOVE
+from trapi_model.query import Query   ## NEED TO REMOVE
+from trapi_model.biolink import TOOLKIT  ## NEED TO REMOVE
 
 
 # Setup logging
@@ -24,12 +25,6 @@ def note(self, message, *args, **kwargs):
     self._log(25, message, args, kwargs)
 logging.Logger.note = note
 logger = logging.getLogger(__name__)
-
-# Installed CHP Apps
-#CHP_APPS = [
-#        "chp.app",
-#        "chp_look_up.app",
-#        ]
 
 # Import CHP Apps
 APPS = [import_module(app+'.app_interface') for app in settings.INSTALLED_CHP_APPS]
@@ -49,37 +44,27 @@ class Dispatcher(BaseQueryProcessor):
         self.trapi_version = trapi_version
         super().__init__(None)
 
-    def get_curies(self):        
-        curies_dbs = []
-        for app, app_name in zip(APPS, settings.INSTALLED_CHP_APPS):
-            app_db_obj = App.objects.get(name=app_name)
-            # Load location from uploaded Zenodo files
-            if app_db_obj.curies_zenodo_file:
-                curies = app_db_obj.curies_zenodo_file.load_file(base_url="https://sandbox.zenodo.org/api/records")
-                curies_db = CurieDatabase(curies=curies)
-            # Load default location    
-            else:
-                get_app_curies_fn = getattr(app, 'get_curies')
-                curies_db = get_app_curies_fn()
-            curies_dbs.append(curies_db)
-        return merge_curies_databases(curies_dbs)
-
     def get_meta_knowledge_graph(self):
         # Get current trapi and biolink versions
         dispatcher_settings = DispatcherSettings.load()
-        meta_kgs = []
+        merged_meta_kg = None
         for app, app_name in zip(APPS, settings.INSTALLED_CHP_APPS):
             app_db_obj = App.objects.get(name=app_name)
             # Load location from uploaded Zenodo files
             if app_db_obj.meta_knowledge_graph_zenodo_file:
                 meta_kg = app_db_obj.meta_knowledge_graph_zenodo_file.load_file(base_url="https://sandbox.zenodo.org/api/records")
-                meta_kg = MetaKnowledgeGraph.load(dispatcher_settings.trapi_version, None, meta_knowledge_graph=meta_kg)
-            # Load default location    
+            # Load default location
             else:
                 get_app_meta_kg_fn = getattr(app, 'get_meta_knowledge_graph')
-                meta_kg = get_app_meta_kg_fn()
-            meta_kgs.append(meta_kg)
-        return merge_meta_knowledge_graphs(meta_kgs)
+                #TODO, when apps are set up correctly, they should return a pydantic_reasoner metakg. So I will have to remove .to_dict()
+                # from deprecated trapi_model
+                meta_kg = get_app_meta_kg_fn().to_dict()
+            meta_kg = MetaKnowledgeGraph.parse_obj(meta_kg)
+            if merged_meta_kg is None:
+                merged_meta_kg = meta_kg
+            else:
+                merged_meta_kg.update(meta_kg)
+        return merged_meta_kg
 
     def process_invalid_trapi(self, request):
         invalid_query_json = request.data

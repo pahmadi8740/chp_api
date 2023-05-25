@@ -13,9 +13,6 @@ WORKDIR /usr/src/chp_api
 #	&& apt-get install -y git python3-pip python3-dev
 #dos2unix
 
-RUN git clone --single-branch --branch master https://github.com/di2ag/trapi_model.git
-RUN git clone --single-branch --branch master https://github.com/di2ag/chp_utils.git
-RUN git clone --single-branch --branch master https://github.com/di2ag/chp_look_up.git
 RUN git clone --single-branch --branch master https://github.com/di2ag/gene-specificity.git
 
 # lint
@@ -26,15 +23,6 @@ RUN git clone --single-branch --branch master https://github.com/di2ag/gene-spec
 # install dependencies
 COPY ./requirements.txt .
 RUN pip3 wheel --no-cache-dir --no-deps --wheel-dir /usr/src/chp_api/wheels -r requirements.txt
-
-# gather trapi model wheel
-RUN cd trapi_model && python3 setup.py bdist_wheel && cd dist && cp trapi_model-*-py3-none-any.whl /usr/src/chp_api/wheels
-
-# gather chp-utils wheel
-RUN cd chp_utils && python3 setup.py bdist_wheel && cd dist && cp chp_utils-*-py3-none-any.whl /usr/src/chp_api/wheels
-
-#gather chp_look_up wheel
-RUN cd chp_look_up && python3 setup.py bdist_wheel && cd dist && cp chp_look_up-*-py3-none-any.whl /usr/src/chp_api/wheels
 
 #gather gene specificity wheel
 RUN cd gene-specificity && python3 setup.py bdist_wheel && cd dist && cp gene_specificity-*-py3-none-any.whl /usr/src/chp_api/wheels
@@ -85,6 +73,7 @@ RUN pip3 install --no-cache /wheels/*
 COPY ./chp_api/chp_api $APP_HOME/chp_api
 COPY ./chp_api/manage.py $APP_HOME
 COPY ./chp_api/dispatcher $APP_HOME/dispatcher
+COPY ./chp_db_fixture.json.gz $APP_HOME
 COPY ./gunicorn.config.py $APP_HOME
 
 # chown all the files to the app user
