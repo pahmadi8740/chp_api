@@ -1,5 +1,6 @@
 import logging
 import time
+import itertools
 from copy import deepcopy
 from re import A
 from django.http import JsonResponse
@@ -9,13 +10,14 @@ from importlib import import_module
 from collections import defaultdict
 
 #from .curie_database import merge_curies_databases, CurieDatabase   ## NEED TO REMOVE
-from .models import Transaction, App, DispatcherSettings
-from reasoner_pydantic import MetaKnowledgeGraph
+from .models import Transaction, App, DispatcherSettings, Template, TemplateMatch
+from reasoner_pydantic import MetaKnowledgeGraph, Message, MetaEdge
+from reasoner_pydantic.qgraph import QNode, QEdge
 
-from chp_utils.trapi_query_processor import BaseQueryProcessor   ## NEED TO REMOVE
+#from chp_utils.trapi_query_processor import BaseQueryProcessor   ## NEED TO REMOVE
 #from trapi_model.meta_knowledge_graph import MetaKnowledgeGraph, merge_meta_knowledge_graphs   ## NEED TO REMOVE
-from trapi_model.query import Query   ## NEED TO REMOVE
-from trapi_model.biolink import TOOLKIT  ## NEED TO REMOVE
+#from trapi_model.query import Query   ## NEED TO REMOVE
+#from trapi_model.biolink import TOOLKIT  ## NEED TO REMOVE
 
 
 # Setup logging
@@ -29,7 +31,7 @@ logger = logging.getLogger(__name__)
 # Import CHP Apps
 APPS = [import_module(app+'.app_interface') for app in settings.INSTALLED_CHP_APPS]
 
-class Dispatcher(BaseQueryProcessor):
+class Dispatcher():
     def __init__(self, request, trapi_version):
         """ Base API Query Processor class used to abstract the processing infrastructure from
             the views. Inherits from the CHP Utilities Trapi Query Processor which handles
@@ -40,9 +42,7 @@ class Dispatcher(BaseQueryProcessor):
         """
         self.request_data = deepcopy(request.data)
 
-        #self.chp_config, self.passed_subdomain = self.get_app_config(request)
         self.trapi_version = trapi_version
-        super().__init__(None)
 
     def get_meta_knowledge_graph(self):
         # Get current trapi and biolink versions
@@ -77,21 +77,12 @@ class Dispatcher(BaseQueryProcessor):
         return JsonResponse(invalid_query_json, status=400)
 
     def process_request(self, request, trapi_version):
-        """ Helper function that extracts the query from the message.
+        """ Helper function that extracts the message from the request data.
         """
-        logger.info('Starting query.')
-        query = Query.load(
-                self.trapi_version,
-                biolink_version=None,
-                query=request.data
-                )
-
-        # Setup query in Base Processor
-        self.setup_query(query)
-
-        logger.info('Query loaded')
-        
-        return query
+        logger.info('Starting query')
+        message = Message.parse_obj(request.data['message'])
+        logger.info('Message loaded')
+        return message
 
     def get_app_configs(self, query):
         """ Should get a base app configuration for your app or nothing.
@@ -113,102 +104,85 @@ class Dispatcher(BaseQueryProcessor):
             base_interfaces.append(get_trapi_interface_fn(app_config))
         return base_interfaces
 
-    def collect_app_queries(self, queries_list_of_lists):
-        all_queries = []
-        for queries in queries_list_of_lists:
-            if type(queries) == list:
-                all_queries.extend(queries)
-            else:
-                all_queries.append(queries)
-        return all_queries
+    def extract_message_templates(self, Message):
+        assert len(Message.query_graph.edges) == 1, 'CHP apps do not support multihop queries'
+        subject = None
+        predicates = []
+        for edge_id, q_edge in Message.query_graph.edges.items():
+            subject = q_edge.subject
+            if q_edge.predicates is None:
+                q_edge = QEdge(subject = q_edge.subject, predicates=['biolink:related_to'], object = q_edge.object)
+            for predicate in q_edge.predicates:
+                predicates.append(predicate)
+        subject_categories = []
+        object_categories = []
+        for node_id, q_node in Message.query_graph.nodes.items():
+            if q_node.categories is None:
+                q_node = QNode(categories=['biolink:Entity'])
+            for category in q_node.categories:
+                if node_id == subject:
+                    subject_categories.append(category)
+                else:
+                    object_categories.append(category)
+        templates = []
+        for edge in itertools.product(*[subject_categories, predicates, object_categories]):
+            meta_edge = MetaEdge(subject=edge[0], predicate=edge[1], object=edge[2])
+            templates.append(meta_edge)
+        return templates
 
-    def get_response(self, query):
+    def get_app_template_matches(self, app_name, templates):
+        template_matches = []
+        for template in templates:
+            matches = TemplateMatch.objects.filter(template__app_name=app_name,
+                                                   template__subject = template.subject,
+                                                   template__object = template.object,
+                                                   template__predicate = template.predicate)
+            template_matches.extend(matches)
+        return template_matches
+
+    def apply_templates_to_message(self, message, matching_templates):
+        consistent_queries = []
+        for template in matching_templates:
+            consistent_query = message.copy(deep=True)
+            for edge_id, edge in consistent_query.query_graph.edges.items():
+                edge.predicate = template.predicate
+                subject_id = edge.subject
+                object_id = edge.object
+            consistent_query.query_graph.nodes[subject_id].categories = template.subject
+            consistent_query.query_graph.nodes[object_id].categories = template.object
+            consistent_queries.append(consistent_query)
+        return consistent_queries
+
+    def get_response(self, message):
         """ Main function of the processor that handles primary logic for obtaining
             a cached or calculated query response.
         """
-        query_copy = query.get_copy()
+
+        logger.info('Running message.')
         start_time = time.time()
-        logger.info('Running query.')
+        logger.info('Getting message templates.')
+        message_templates = self.extract_message_templates(message)
 
-        base_app_configs = self.get_app_configs(query_copy)
-        base_interfaces = self.get_trapi_interfaces(base_app_configs)
-
-        # Expand
-        expand_queries = self.expand_batch_query(query)
-       
-        # For each app run the normalization and semops pipline
-
-        # Make a copy of the expanded queries for each app
-        app_queries = [[q.get_copy() for q in expand_queries] for _ in range(len(base_interfaces))]
-        consistent_app_queries = []
-        inconsistent_app_queries = []
-        app_normalization_maps = []
-        for interface, _expand_queries in zip(base_interfaces, app_queries):
-            _ex_copy = []                
-            # Normalize to Preferred Curies
-            normalization_time = time.time()
-            normalize_queries, normalization_map = self.normalize_to_preferred(
-                    _expand_queries,
-                    meta_knowledge_graph=interface.get_meta_knowledge_graph(),
-                    with_normalization_map=True,
-                    )
-            app_normalization_maps.append(normalization_map)
-            logger.info('Normalizaion time: {} seconds.'.format(time.time() - normalization_time))
-            # Conflate
-            conflation_time = time.time()
-            
-            conflate_queries = self.conflate_categories(
-                    normalize_queries,
-                    conflation_map=interface.get_conflation_map(),
-                    )
-            logger.info('Conflation time: {} seconds.'.format(time.time() - conflation_time))
-            # Onto Expand
-            onto_time = time.time()
-            onto_queries = self.expand_supported_ontological_descendants(
-                    conflate_queries,
-                    curies_database=interface.get_curies(),
-                    )
-            logger.info('Ontological expansion time: {} seconds.'.format(time.time() - onto_time))
-            # Semantic Ops Expand
-            semops_time = time.time()
-            semops_queries = self.expand_with_semantic_ops(
-                    onto_queries,
-                    meta_knowledge_graph=interface.get_meta_knowledge_graph(),
-                    )
-            logger.info('Sem ops time: {} seconds.'.format(time.time() - semops_time))
-            # Filter out inconsistent queries
-            filter_time = time.time()
-            consistent_queries, inconsistent_queries = self.filter_queries_inconsistent_with_meta_knowledge_graph(
-                    semops_queries,
-                    meta_knowledge_graph=interface.get_meta_knowledge_graph(),
-                    with_inconsistent_queries=True
-                    )
-            logger.info('Consistency filter time: {} seconds.'.format(time.time() - filter_time))
-
-            logger.info('Number of consistent queries derived from passed query: {}.'.format(len(consistent_queries)))
-            consistent_app_queries.append(consistent_queries)
-            inconsistent_app_queries.append(inconsistent_queries)
-        # Ensure that there are actually consistent queries that have been extracted
-        if sum([len(_qs) for _qs in consistent_app_queries]) == 0:
-            # Add all logs from inconsistent queries of all apps
-            all_inconsistent_queries = self.collect_app_queries(inconsistent_queries)
-            query_copy = self.add_logs_from_query_list(query_copy, all_inconsistent_queries)
-            query_copy.set_status('Bad request. See description.')
-            query_copy.set_description('Could not extract any supported queries from query graph.')
-            self.add_transaction(query_copy)
-            return JsonResponse(query_copy.to_dict())
-        # Collect responses from each CHP app
         app_responses = []
         app_logs = []
-        app_status = []
+        app_statuses = []
         app_descriptions = []
-        for app, consistent_queries in zip(APPS, consistent_app_queries):
-            get_app_response_fn = getattr(app, 'get_response')
-            responses, logs, status, description = get_app_response_fn(consistent_queries)
-            app_responses.extend(responses)
-            app_logs.extend(logs)
-            app_status.append(status)
-            app_descriptions.append(description)
+        for app, app_name in zip(APPS, settings.INSTALLED_CHP_APPS):
+            logger.info('Checking template matches for {}'.format(app_name))
+            matching_templates = self.get_app_template_matches(app_name, message_templates)
+            logger.info('Detected {} matches for {}'.format(len(matching_templates), app_name))
+            if len(matching_templates) > 0:
+                logger.info('Constructing queries on matching templates')
+                consistent_app_queries = self.apply_templates_to_message(message, matching_templates)
+                logger.info('Sending {} consistent queries')
+                get_app_response_fn = getattr(app, 'get_response')
+                responses, logs, status, description = get_app_response_fn(consistent_app_queries)
+                app_responses.extend(responses)
+                app_logs.extend(logs)
+                app_statuses.append(status)
+                app_descriptions.append(description)
+        print(app_responses)
+        '''
         # Check if any responses came back from any apps
         if  len(app_responses) == 0:
             # Add logs from consistent queries of all apps
@@ -256,6 +230,7 @@ class Dispatcher(BaseQueryProcessor):
         self.add_transaction(unnormalized_response)
         
         return JsonResponse(unnormalized_response.to_dict())
+        '''
 
     def add_logs_from_query_list(self, target_query, query_list):
         for query in query_list:

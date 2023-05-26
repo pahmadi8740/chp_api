@@ -1,6 +1,5 @@
 """ CHP Core API Views
 """
-from jsonschema import ValidationError
 from copy import deepcopy
 from datetime import datetime, timedelta
 
@@ -30,9 +29,8 @@ class query(APIView):
                     dispatcher_settings.trapi_version,
                     )
             # Process Query
-            query = None
             #try:
-            query = dispatcher.process_request(
+            Message = dispatcher.process_request(
                     request,
                     trapi_version=dispatcher_settings.trapi_version,
                     )
@@ -42,7 +40,7 @@ class query(APIView):
             #    else:
             #        return dispatcher.process_invalid_trapi(request)
             # Return responses
-            return dispatcher.get_response(query)
+            return dispatcher.get_response(Message)
 
 class meta_knowledge_graph(APIView):
     

@@ -40,14 +40,12 @@ INSTALLED_BASE_APPS = [
     'django.contrib.staticfiles',
     'rest_framework',
     'dispatcher.apps.DispatcherConfig',
-    'chp_utils',
     'django_extensions',
 ]
 
 INSTALLED_CHP_APPS = [
     'gene_specificity',
     ]
-
 
 # CHP Versions
 VERSIONS = {app_name: app.__version__ for app_name, app in [(app_name, import_module(app_name)) for app_name in INSTALLED_CHP_APPS]}
