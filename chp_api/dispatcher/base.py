@@ -1,24 +1,20 @@
-import logging
+import uuid
 import time
+import logging
+from .logger import Logger
 import itertools
 from copy import deepcopy
 from re import A
+#from reasoner_validator import TRAPISchemaValidator
 from django.http import JsonResponse
 from django.apps import apps
 from django.conf import settings
 from importlib import import_module
 from collections import defaultdict
 
-#from .curie_database import merge_curies_databases, CurieDatabase   ## NEED TO REMOVE
 from .models import Transaction, App, DispatcherSettings, Template, TemplateMatch
 from reasoner_pydantic import MetaKnowledgeGraph, Message, MetaEdge
 from reasoner_pydantic.qgraph import QNode, QEdge
-
-#from chp_utils.trapi_query_processor import BaseQueryProcessor   ## NEED TO REMOVE
-#from trapi_model.meta_knowledge_graph import MetaKnowledgeGraph, merge_meta_knowledge_graphs   ## NEED TO REMOVE
-#from trapi_model.query import Query   ## NEED TO REMOVE
-#from trapi_model.biolink import TOOLKIT  ## NEED TO REMOVE
-
 
 # Setup logging
 logging.addLevelName(25, "NOTE")
@@ -32,7 +28,7 @@ logger = logging.getLogger(__name__)
 APPS = [import_module(app+'.app_interface') for app in settings.INSTALLED_CHP_APPS]
 
 class Dispatcher():
-    def __init__(self, request, trapi_version):
+    def __init__(self, request, trapi_version, biolink_version):
         """ Base API Query Processor class used to abstract the processing infrastructure from
             the views. Inherits from the CHP Utilities Trapi Query Processor which handles
             node normalization, curie ontology expansion, and semantic operations.
@@ -41,8 +37,10 @@ class Dispatcher():
             :type request: requests.request
         """
         self.request_data = deepcopy(request.data)
-
+        self.biolink_version = biolink_version
         self.trapi_version = trapi_version
+        #self.validator = TRAPISchemaValidator(self.trapi_version)
+        self.logger = Logger()
 
     def get_meta_knowledge_graph(self):
         # Get current trapi and biolink versions
@@ -56,8 +54,6 @@ class Dispatcher():
             # Load default location
             else:
                 get_app_meta_kg_fn = getattr(app, 'get_meta_knowledge_graph')
-                #TODO, when apps are set up correctly, they should return a pydantic_reasoner metakg. So I will have to remove .to_dict()
-                # from deprecated trapi_model
                 meta_kg = get_app_meta_kg_fn().to_dict()
             meta_kg = MetaKnowledgeGraph.parse_obj(meta_kg)
             if merged_meta_kg is None:
@@ -68,12 +64,7 @@ class Dispatcher():
 
     def process_invalid_trapi(self, request):
         invalid_query_json = request.data
-        invalid_query_json['status'] = 'Bad TRAPI.'
-        return JsonResponse(invalid_query_json, status=400)
-
-    def process_invalid_workflow(self, request, status_msg):
-        invalid_query_json = request.data
-        invalid_query_json['status'] = status_msg
+        invalid_query_json['status'] = 'Malformed Query'
         return JsonResponse(invalid_query_json, status=400)
 
     def process_request(self, request, trapi_version):
@@ -81,16 +72,18 @@ class Dispatcher():
         """
         logger.info('Starting query')
         message = Message.parse_obj(request.data['message'])
+        #logger.info('Validating query')
+        #self.validator.validate(message.to_dict(), 'Message')
         logger.info('Message loaded')
         return message
 
-    def get_app_configs(self, query):
+    def get_app_configs(self, message):
         """ Should get a base app configuration for your app or nothing.
         """
         app_configs = []
         for app in APPS:
             get_app_config_fn = getattr(app, 'get_app_config')
-            app_configs.append(get_app_config_fn(query))
+            app_configs.append(get_app_config_fn(message))
         return app_configs
     
     def get_trapi_interfaces(self, app_configs):
@@ -104,11 +97,11 @@ class Dispatcher():
             base_interfaces.append(get_trapi_interface_fn(app_config))
         return base_interfaces
 
-    def extract_message_templates(self, Message):
-        assert len(Message.query_graph.edges) == 1, 'CHP apps do not support multihop queries'
+    def extract_message_templates(self, message):
+        assert len(message.query_graph.edges) == 1, 'CHP apps do not support multihop queries'
         subject = None
         predicates = []
-        for edge_id, q_edge in Message.query_graph.edges.items():
+        for edge_id, q_edge in message.query_graph.edges.items():
             subject = q_edge.subject
             if q_edge.predicates is None:
                 q_edge = QEdge(subject = q_edge.subject, predicates=['biolink:related_to'], object = q_edge.object)
@@ -116,7 +109,7 @@ class Dispatcher():
                 predicates.append(predicate)
         subject_categories = []
         object_categories = []
-        for node_id, q_node in Message.query_graph.nodes.items():
+        for node_id, q_node in message.query_graph.nodes.items():
             if q_node.categories is None:
                 q_node = QNode(categories=['biolink:Entity'])
             for category in q_node.categories:
@@ -157,98 +150,47 @@ class Dispatcher():
         """ Main function of the processor that handles primary logic for obtaining
             a cached or calculated query response.
         """
-
-        logger.info('Running message.')
+        self.logger.info('Running message.')
         start_time = time.time()
-        logger.info('Getting message templates.')
+        self.logger.info('Getting message templates.')
         message_templates = self.extract_message_templates(message)
 
-        app_responses = []
-        app_logs = []
-        app_statuses = []
-        app_descriptions = []
         for app, app_name in zip(APPS, settings.INSTALLED_CHP_APPS):
-            logger.info('Checking template matches for {}'.format(app_name))
+            self.logger.info('Checking template matches for {}'.format(app_name))
             matching_templates = self.get_app_template_matches(app_name, message_templates)
-            logger.info('Detected {} matches for {}'.format(len(matching_templates), app_name))
+            self.logger.info('Detected {} matches for {}'.format(len(matching_templates), app_name))
             if len(matching_templates) > 0:
-                logger.info('Constructing queries on matching templates')
+                self.logger.info('Constructing queries on matching templates')
                 consistent_app_queries = self.apply_templates_to_message(message, matching_templates)
-                logger.info('Sending {} consistent queries')
+                self.logger.info('Sending {} consistent queries'.format(len(consistent_app_queries)))
                 get_app_response_fn = getattr(app, 'get_response')
-                responses, logs, status, description = get_app_response_fn(consistent_app_queries)
-                app_responses.extend(responses)
-                app_logs.extend(logs)
-                app_statuses.append(status)
-                app_descriptions.append(description)
-        print(app_responses)
-        '''
-        # Check if any responses came back from any apps
-        if  len(app_responses) == 0:
-            # Add logs from consistent queries of all apps
-            all_consistent_queries = self.collect_app_queries(consistent_app_queries)
-            query_copy = self.add_logs_from_query_list(query_copy, all_consistent_queries)
-            # Add app level logs
-            query_copy.logger.add_logs(app_logs)
-            query_copy.set_status('No results.')
-            self.add_transaction(query_copy)
-            return JsonResponse(query_copy.to_dict())
+                responses = get_app_response_fn(consistent_app_queries, self.logger)
+                self.logger.info('Received responses from {}'.format(app_name))
+                for response in responses:
+                    response.query_graph = message.query_graph
+                    self.add_transaction(response.to_dict(), str(uuid.uuid4()), 'Success', app_name)
+                    message.update(response)
 
-        # Add responses into database
-        self.add_transactions(app_responses, app_names=[interface.get_name() for interface in base_interfaces])
+        message = message.to_dict()
+        message['logs'] = self.logger.to_dict()
+        message['trapi_version'] = self.trapi_version
+        message['biolink_version'] = self.biolink_version
+        message['status'] = 'Success'
+        message['id'] = str(uuid.uuid4())
+        message['workflow'] = [{"id": "lookup"}]
 
-        # Construct merged response
-        response = self.merge_responses(query_copy, app_responses)
+        self.add_transaction(message, message['id'], 'Success', 'dispatcher')
 
-        # Now merge all app level log messages from each app
-        response.logger.add_logs(app_logs)
+        return JsonResponse(message)
 
-        # Log any error messages for apps
-        for app_name, status, description in zip(APPS, app_status, app_descriptions):
-            if status != 'Success':
-                response.warning('CHP App: {} reported a unsuccessful status: {} with description: {}'.format(
-                    app_name, status, description)
-                    )
-
-        # Unnormalize with each apps normalization map
-        unnormalized_response = response
-        for normalization_map in app_normalization_maps:
-            unnormalized_response = self.undo_normalization(unnormalized_response, normalization_map)
-        
-        logger.info('Constructed TRAPI response.')
-        
-        logger.info('Responded in {} seconds'.format(time.time() - start_time))
-        unnormalized_response.set_status('Success')
-       
-        # Add workflow
-        unnormalized_response.add_workflow("lookup")
-
-        # Set the used biolink version
-        unnormalized_response.biolink_version = TOOLKIT.get_model_version()
-
-        # Add response to database
-        self.add_transaction(unnormalized_response)
-        
-        return JsonResponse(unnormalized_response.to_dict())
-        '''
-
-    def add_logs_from_query_list(self, target_query, query_list):
-        for query in query_list:
-            target_query.logger.add_logs(query.logger.to_dict())
-        return target_query
-
-    def add_transaction(self, response, app_name='dispatcher'):
+    def add_transaction(self, response, _id, status, app_name):
         app_db_obj = App.objects.get(name=app_name)
         # Save the transaction
         transaction = Transaction(
-            id = response.id,
-            status = response.status,
-            query = response.to_dict(),
+            id = _id,
+            status = status,
+            query = response,
             versions = settings.VERSIONS,
             chp_app = app_db_obj,
         )
         transaction.save()
-        
-    def add_transactions(self, responses, app_names):
-        for response, chp_app in zip(responses, app_names):
-            self.add_transaction(response, chp_app)

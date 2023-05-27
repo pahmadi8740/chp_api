@@ -13,7 +13,7 @@ WORKDIR /usr/src/chp_api
 #	&& apt-get install -y git python3-pip python3-dev
 #dos2unix
 
-RUN git clone --single-branch --branch master https://github.com/di2ag/gene-specificity.git
+RUN git clone --single-branch --branch gene_spec_pydantic-ghyde https://github.com/di2ag/gene-specificity.git
 
 # lint
 #RUN pip install --upgrade pip

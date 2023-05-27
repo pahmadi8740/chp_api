@@ -3,6 +3,7 @@
 from copy import deepcopy
 from datetime import datetime, timedelta
 
+from bmt import Toolkit
 from .base import Dispatcher
 from .models import Transaction, DispatcherSettings
 from .serializers import TransactionListSerializer, TransactionDetailSerializer
@@ -15,6 +16,7 @@ from rest_framework import status
 from rest_framework import mixins
 from rest_framework import generics
 
+TOOLKIT = Toolkit()
 
 class query(APIView):
     
@@ -27,20 +29,20 @@ class query(APIView):
             dispatcher = Dispatcher(
                     request,
                     dispatcher_settings.trapi_version,
+                    TOOLKIT.get_model_version()
                     )
             # Process Query
-            #try:
-            Message = dispatcher.process_request(
-                    request,
-                    trapi_version=dispatcher_settings.trapi_version,
-                    )
-            #except Exception as e:
-            #    if 'Workflow Error' in str(e):
-            #        return dispatcher.process_invalid_workflow(request, str(e))
-            #    else:
-            #        return dispatcher.process_invalid_trapi(request)
-            # Return responses
-            return dispatcher.get_response(Message)
+            try:
+                message = dispatcher.process_request(
+                        request,
+                        trapi_version=dispatcher_settings.trapi_version,
+                        )
+            except Exception as e:
+                if 'Workflow Error' in str(e):
+                    return dispatcher.process_invalid_workflow(request, str(e))
+                else:
+                    return dispatcher.process_invalid_trapi(request)
+            return dispatcher.get_response(message)
 
 class meta_knowledge_graph(APIView):
     
@@ -53,6 +55,7 @@ class meta_knowledge_graph(APIView):
             dispatcher = Dispatcher(
                     request,
                     dispatcher_settings.trapi_version,
+                    TOOLKIT.get_model_version()
                     )
             
             # Get merged meta KG
@@ -70,6 +73,7 @@ class versions(APIView):
             dispatcher = Dispatcher(
                     request,
                     dispatcher_settings.trapi_version,
+                    TOOLKIT.get_model_version()
                     )
         return JsonResponse(dispatcher.get_versions())
 
