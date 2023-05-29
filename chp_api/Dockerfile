@@ -63,6 +63,7 @@ RUN pip3 install --no-cache /wheels/*
 COPY ./chp_api $APP_HOME/chp_api
 COPY ./manage.py $APP_HOME
 COPY ./dispatcher $APP_HOME/dispatcher
+COPY ./gennifer $APP_HOME/gennifer
 COPY ./gunicorn.config.py $APP_HOME
 
 # chown all the files to the app user

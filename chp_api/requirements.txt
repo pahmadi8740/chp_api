@@ -6,3 +6,8 @@ gunicorn
 django
 requests
 requests-cache
+django-filter
+celery
+flower
+redis
+pandas

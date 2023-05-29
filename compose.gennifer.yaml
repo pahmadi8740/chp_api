@@ -1,0 +1,53 @@
+version: '3.8'
+
+services:
+  
+  pidc:
+    build: 
+        context: ./gennifer/pidc
+        dockerfile: Dockerfile
+    restart: always
+    user: gennifer_user
+    ports:
+        - 5004:5000
+    secrets:
+        - gennifer_key
+    environment:
+        - SECRET_KEY_FILE=/run/secrets/gennifer_key
+        - CELERY_BROKER_URL=redis://redis:6379/0
+        - CELERY_RESULT_BACKEND=redis://redis:6379/0
+          #command: gunicorn -c gunicorn.config.py -b 0.0.0.0:5000 'pidc:create_app()'
+    command: flask --app pidc run --debug --host 0.0.0.0
+    depends_on:
+        - redis
+
+  worker-pidc:
+    build: 
+        context: ./gennifer/pidc
+        dockerfile: Dockerfile
+    command: celery --app pidc.tasks.celery worker --loglevel=info
+    environment:
+        - CELERY_BROKER_URL=redis://redis:6379/0
+        - CELERY_RESULT_BACKEND=redis://redis:6379/0
+    depends_on:
+        - pidc
+        - redis
+
+  dashboard-pidc:
+    build: 
+        context: ./gennifer/pidc
+        dockerfile: Dockerfile
+    command: celery --app pidc.tasks.celery flower --port=5555 --broker=redis://redis:6379/0
+    ports:
+        - 5557:5555
+    environment:
+        - CELERY_BROKER_URL=redis://redis:6379/0
+        - CELERY_RESULT_BACKEND=redis://redis:6379/0
+    depends_on:
+        - pidc
+        - redis
+        - worker-pidc
+
+secrets:
+  gennifer_key:
+    file: secrets/gennifer/secret_key.txt

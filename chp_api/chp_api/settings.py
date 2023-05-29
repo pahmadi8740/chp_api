@@ -39,6 +39,7 @@ INSTALLED_BASE_APPS = [
     'django.contrib.messages',
     'django.contrib.staticfiles',
     'rest_framework',
+    'django_filters',
     'dispatcher.apps.DispatcherConfig',
     'chp_utils',
     'django_extensions',
@@ -173,3 +174,7 @@ with open(env("DJANGO_SUPERUSER_EMAIL_FILE"), 'r') as dse_file:
     os.environ["DJANGO_SUPERUSER_EMAIL"] = dse_file.readline().strip()
 with open(env("DJANGO_SUPERUSER_PASSWORD_FILE"), 'r') as dsp_file:
     os.environ["DJANGO_SUPERUSER_PASSWORD"] = dsp_file.readline().strip()
+
+# Celery Settings
+CELERY_BROKER_URL = os.environ.get("CELERY_BROKER_URL", "redis://localhost:6379")
+CELERY_RESULT_BACKEND = os.environ.get("CELERY_RESULT_BACKEND", "redis://localhost:6379")

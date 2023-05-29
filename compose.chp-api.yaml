@@ -8,12 +8,13 @@ services:
     volumes:
       - ./nginx/default.conf:/tmp/default.conf
     environment: 
-      - DJANGO_SERVER_ADDR=chp-api:8000
+      - DJANGO_SERVER_ADDR=api:8000
       - STATIC_SERVER_ADDR=static-fs:8080
+      - FLOWER_DASHBOARD_ADDR=dashboard:5556
     ports:
       - "80:80"
     depends_on:
-      - chp-api
+      - api
     healthcheck:
       test: ["CMD-SHELL", "curl --silent --fail localhost:80/health-check || exit 1"]
       interval: 10s
@@ -21,7 +22,7 @@ services:
       retries: 3
     command: /app/start.sh
 
-  chp-api:
+  api:
     build: 
       context: ./chp_api
       dockerfile: Dockerfile
@@ -67,6 +68,74 @@ services:
         #command: gunicorn -c gunicorn.config.py -b 0.0.0.0:8000 chp_api.wsgi:application
     command: python3 manage.py runserver 0.0.0.0:8000
   
+  worker-api:
+    build: 
+        context: ./chp_api
+        dockerfile: Dockerfile
+    secrets:
+      - db-password
+      - django-key
+      - allowed-hosts
+      - django-superuser-username
+      - django-superuser-email
+      - django-superuser-password
+    environment:
+      - POSTGRES_DB=chp_db
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD_FILE=/run/secrets/db-password
+      - POSTGRES_HOST=db
+      - POSTGRES_PORT=5432
+      - SECRET_KEY_FILE=/run/secrets/django-key
+      - DEBUG=1
+      - DJANGO_ALLOWED_HOSTS_FILE=/run/secrets/allowed-hosts
+      - DJANGO_SUPERUSER_USERNAME_FILE=/run/secrets/django-superuser-username
+      - DJANGO_SUPERUSER_EMAIL_FILE=/run/secrets/django-superuser-email
+      - DJANGO_SUPERUSER_PASSWORD_FILE=/run/secrets/django-superuser-password
+    command: celery -A chp_api worker --loglevel=info
+    environment:
+        - CELERY_BROKER_URL=redis://redis:6379/0
+        - CELERY_RESULT_BACKEND=redis://redis:6379/0
+    depends_on:
+        - api
+        - redis
+
+  dashboard:
+    build: 
+        context: ./chp_api
+        dockerfile: Dockerfile
+    secrets:
+      - db-password
+      - django-key
+      - allowed-hosts
+      - django-superuser-username
+      - django-superuser-email
+      - django-superuser-password
+    environment:
+      - POSTGRES_DB=chp_db
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD_FILE=/run/secrets/db-password
+      - POSTGRES_HOST=db
+      - POSTGRES_PORT=5432
+      - SECRET_KEY_FILE=/run/secrets/django-key
+      - DEBUG=1
+      - DJANGO_ALLOWED_HOSTS_FILE=/run/secrets/allowed-hosts
+      - DJANGO_SUPERUSER_USERNAME_FILE=/run/secrets/django-superuser-username
+      - DJANGO_SUPERUSER_EMAIL_FILE=/run/secrets/django-superuser-email
+      - DJANGO_SUPERUSER_PASSWORD_FILE=/run/secrets/django-superuser-password
+    command: celery -A chp_api flower --port=5555 --broker=redis://redis:6379/0
+    ports:
+        - 5556:5555
+    environment:
+        - CELERY_BROKER_URL=redis://redis:6379/0
+        - CELERY_RESULT_BACKEND=redis://redis:6379/0
+    depends_on:
+        - api
+        - redis
+        - worker-api
+
+  redis:
+    image: redis:6-alpine
+  
   db:
     image: postgres
     restart: always
@@ -96,21 +165,6 @@ services:
       volumes:
           - static-files:/var/www/static
   
-  gennifer-pidc:
-    build: 
-        context: ./gennifer/pidc
-        dockerfile: Dockerfile
-    restart: always
-    user: gennifer_user
-    expose: 
-        - 5000
-    secrets:
-        - gennifer_key
-    environment:
-        - SECRET_KEY_FILE=/run/secrets/gennifer_key
-          #command: gunicorn -c gunicorn.config.py -b 0.0.0.0:5000 'pidc:create_app()'
-    command: flask --app pidc run --debug
-
 volumes:
   db-data:
   static-files:
@@ -128,5 +182,3 @@ secrets:
     file: secrets/chp_api/django_superuser_email.txt
   django-superuser-password:
     file: secrets/chp_api/django_superuser_password.txt
-  gennifer_key:
-    file: secrets/gennifer/secret_key.txt
