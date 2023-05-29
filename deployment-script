@@ -16,8 +16,9 @@ docker compose run --user root chp-api python3 manage.py createsuperuser --no-in
 
 # Load apps
 docker compose run chp-api python3 manage.py runscript load_db_apps
+docker compose run chp-api python3 manage.py runscript templater
+docker compose run chp_api Python3 manage.py runscript gene_spec_curie_templater
 
 docker compose run --user root chp-api python3 manage.py collectstatic --noinput
-
 
 echo "Check logs with: docker compose logs -f"

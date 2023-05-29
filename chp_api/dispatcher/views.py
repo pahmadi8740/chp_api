@@ -1,9 +1,9 @@
 """ CHP Core API Views
 """
-from jsonschema import ValidationError
 from copy import deepcopy
 from datetime import datetime, timedelta
 
+from bmt import Toolkit
 from .base import Dispatcher
 from .models import Transaction, DispatcherSettings
 from .serializers import TransactionListSerializer, TransactionDetailSerializer
@@ -16,6 +16,7 @@ from rest_framework import status
 from rest_framework import mixins
 from rest_framework import generics
 
+TOOLKIT = Toolkit()
 
 class query(APIView):
     
@@ -28,11 +29,11 @@ class query(APIView):
             dispatcher = Dispatcher(
                     request,
                     dispatcher_settings.trapi_version,
+                    TOOLKIT.get_model_version()
                     )
             # Process Query
-            query = None
             try:
-                query = dispatcher.process_request(
+                message = dispatcher.process_request(
                         request,
                         trapi_version=dispatcher_settings.trapi_version,
                         )
@@ -41,25 +42,7 @@ class query(APIView):
                     return dispatcher.process_invalid_workflow(request, str(e))
                 else:
                     return dispatcher.process_invalid_trapi(request)
-            # Return responses
-            return dispatcher.get_response(query)
-
-class curies(APIView):
-    
-    def get(self, request):
-        # Get current trapi and biolink versions
-        dispatcher_settings = DispatcherSettings.load()
-        
-        if request.method == 'GET':
-            # Initialize dispatcher
-            dispatcher = Dispatcher(
-                    request,
-                    dispatcher_settings.trapi_version,
-                    )
-
-            # Get all chp app curies
-            curies_db = dispatcher.get_curies()
-            return JsonResponse(curies_db)
+            return dispatcher.get_response(message)
 
 class meta_knowledge_graph(APIView):
     
@@ -72,6 +55,7 @@ class meta_knowledge_graph(APIView):
             dispatcher = Dispatcher(
                     request,
                     dispatcher_settings.trapi_version,
+                    TOOLKIT.get_model_version()
                     )
             
             # Get merged meta KG
@@ -89,6 +73,7 @@ class versions(APIView):
             dispatcher = Dispatcher(
                     request,
                     dispatcher_settings.trapi_version,
+                    TOOLKIT.get_model_version()
                     )
         return JsonResponse(dispatcher.get_versions())
 

@@ -32,6 +32,18 @@ class App(models.Model):
     def __str__(self):
         return self.name
 
+class Template(models.Model):
+    app_name = models.CharField(max_length=128)
+    subject = models.CharField(max_length=128)
+    object = models.CharField(max_length=128)
+    predicate = models.CharField(max_length=128)
+
+class TemplateMatch(models.Model):
+    template = models.ForeignKey(Template, on_delete=models.CASCADE)
+    subject = models.CharField(max_length=128)
+    object = models.CharField(max_length=128)
+    predicate = models.CharField(max_length=128)
+
 class Transaction(models.Model):
     id = models.CharField(max_length=100, primary_key=True)
     date_time = models.DateTimeField(auto_now=True)

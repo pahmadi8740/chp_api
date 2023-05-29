@@ -41,7 +41,6 @@ INSTALLED_BASE_APPS = [
     'rest_framework',
     'django_filters',
     'dispatcher.apps.DispatcherConfig',
-    'chp_utils',
     'django_extensions',
 ]
 
@@ -49,12 +48,8 @@ INSTALLED_CHP_APPS = [
     'gene_specificity',
     ]
 
-OTHER_APPS = [
-        'chp_utils'
-        ]
-
 # CHP Versions
-VERSIONS = {app_name: app.__version__ for app_name, app in [(app_name, import_module(app_name)) for app_name in INSTALLED_CHP_APPS + OTHER_APPS]}
+VERSIONS = {app_name: app.__version__ for app_name, app in [(app_name, import_module(app_name)) for app_name in INSTALLED_CHP_APPS]}
 
 # Sets up installed apps relevent to django 
 INSTALLED_APPS = INSTALLED_BASE_APPS + INSTALLED_CHP_APPS
