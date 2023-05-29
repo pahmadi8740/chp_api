@@ -6,7 +6,7 @@ django_superuser_email='cat secrets/chp_api/django_superuser_email.txt'
 
 # Only to be run when building on dev machine
 # use --no-cache if need to rebuild submodules
-docker compose build --no-cache
+docker compose build #--no-cache
 
 docker compose up -d
 
@@ -18,6 +18,7 @@ docker compose run --user root chp-api python3 manage.py createsuperuser --no-in
 # Load apps
 docker compose run chp-api python3 manage.py runscript load_db_apps
 docker compose run chp-api python3 manage.py runscript templater
+docker compose run chp_api Python3 manage.py runscript gene_spec_curie_templater
 
 docker compose run --user root chp-api python3 manage.py collectstatic --noinput
 

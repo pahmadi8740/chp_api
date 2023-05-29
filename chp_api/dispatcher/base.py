@@ -138,11 +138,11 @@ class Dispatcher():
         for template in matching_templates:
             consistent_query = message.copy(deep=True)
             for edge_id, edge in consistent_query.query_graph.edges.items():
-                edge.predicate = template.predicate
+                edge.predicates = [template.predicate]
                 subject_id = edge.subject
                 object_id = edge.object
-            consistent_query.query_graph.nodes[subject_id].categories = template.subject
-            consistent_query.query_graph.nodes[object_id].categories = template.object
+            consistent_query.query_graph.nodes[subject_id].categories = [template.subject]
+            consistent_query.query_graph.nodes[object_id].categories = [template.object]
             consistent_queries.append(consistent_query)
         return consistent_queries
 
@@ -168,17 +168,17 @@ class Dispatcher():
                 self.logger.info('Received responses from {}'.format(app_name))
                 for response in responses:
                     response.query_graph = message.query_graph
-                    self.add_transaction(response.to_dict(), str(uuid.uuid4()), 'Success', app_name)
+                    self.add_transaction({'message':response.to_dict()}, str(uuid.uuid4()), 'Success', app_name)
                     message.update(response)
 
         message = message.to_dict()
+        message = {'message':message}
         message['logs'] = self.logger.to_dict()
         message['trapi_version'] = self.trapi_version
         message['biolink_version'] = self.biolink_version
         message['status'] = 'Success'
         message['id'] = str(uuid.uuid4())
         message['workflow'] = [{"id": "lookup"}]
-
         self.add_transaction(message, message['id'], 'Success', 'dispatcher')
 
         return JsonResponse(message)

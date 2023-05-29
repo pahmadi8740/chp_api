@@ -1,3 +1,4 @@
+tqdm
 djangorestframework
 psycopg2-binary
 bmt
