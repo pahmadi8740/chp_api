@@ -10,8 +10,10 @@ For the full list of settings and their values, see
 https://docs.djangoproject.com/en/3.0/ref/settings/
 """
 import os
-from importlib import import_module
 import environ as environ # type: ignore
+
+from importlib import import_module
+
 
 # Initialise environment variables
 env = environ.Env()
@@ -42,6 +44,7 @@ INSTALLED_BASE_APPS = [
     'django_filters',
     'dispatcher.apps.DispatcherConfig',
     'django_extensions',
+    'gennifer', # Need to make into CHP app
 ]
 
 INSTALLED_CHP_APPS = [

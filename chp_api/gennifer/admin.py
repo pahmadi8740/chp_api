@@ -1,3 +1,7 @@
 from django.contrib import admin
 
-# Register your models here.
+from .models import Algorithm, Dataset, InferenceStudy
+
+admin.site.register(Algorithm)
+admin.site.register(Dataset)
+admin.site.register(InferenceStudy)

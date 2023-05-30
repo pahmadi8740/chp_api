@@ -12,7 +12,7 @@ from django.conf import settings
 from importlib import import_module
 from collections import defaultdict
 
-from .models import Transaction, App, DispatcherSettings, Template, TemplateMatch
+from .models import Transaction, App, DispatcherSetting, Template, TemplateMatch
 from reasoner_pydantic import MetaKnowledgeGraph, Message, MetaEdge
 from reasoner_pydantic.qgraph import QNode, QEdge
 
@@ -44,7 +44,7 @@ class Dispatcher():
 
     def get_meta_knowledge_graph(self):
         # Get current trapi and biolink versions
-        dispatcher_settings = DispatcherSettings.load()
+        dispatcher_settings = DispatcherSetting.load()
         merged_meta_kg = None
         for app, app_name in zip(APPS, settings.INSTALLED_CHP_APPS):
             app_db_obj = App.objects.get(name=app_name)

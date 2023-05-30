@@ -1,0 +1,9 @@
+{
+    "tasks": [
+        {
+            "algorithm_name": "pidc",
+            "zenodo_id":"7982629",
+            "hyperparameters": null
+        }
+    ]
+}

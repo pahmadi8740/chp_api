@@ -5,7 +5,7 @@ from .models import Dataset, InferenceStudy, InferenceResult
 class DatasetSerializer(serializers.ModelSerializer):
     class Meta:
         model = Dataset
-        fields = ['name', 'zenodo_id', 'doi', 'description']
+        fields = ['upload_user', 'title', 'zenodo_id', 'doi', 'description']
 
 
 class InferenceStudySerializer(serializers.ModelSerializer):
@@ -32,4 +32,5 @@ class InferenceResultSerializer(serializers.ModelSerializer):
             'edge_weight',
             'study',
             'is_public',
+            'user',
             ]

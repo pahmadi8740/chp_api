@@ -1,10 +1,12 @@
+import requests
+
 from django.db import models
 from django.contrib.auth.models import User
 
 
 class Algorithm(models.Model):
     name = models.CharField(max_length=128)
-    run_url = models.URLField(max_length=128)
+    url = models.CharField(max_length=128)
 
     def __str__(self):
         return self.name
@@ -24,8 +26,10 @@ class Dataset(models.Model):
 
         info = self.get_record()
         self.doi = info["doi"]
-        self.description = re.sub(CLEANR, '', infoi["metadata"]["description"])
-        self.title = re.sub(CLEANR, '', infoi["metadata"]["title"])
+        self.description = re.sub(CLEANR, '', info["metadata"]["description"])
+        self.title = re.sub(CLEANR, '', info["metadata"]["title"])
+
+        super(Dataset, self).save(*args, **kwargs)
 
     def get_record(self):
         return requests.get(f"https://zenodo.org/api/records/{self.zenodo_id}").json()
@@ -56,9 +60,10 @@ class InferenceStudy(models.Model):
 
 class InferenceResult(models.Model):
     # Stands for transcription factor
-    tf = models.ForeignKey(Gene, on_delete=models.CASCADE)
+    tf = models.ForeignKey(Gene, on_delete=models.CASCADE, related_name='inference_result_tf')
     # Target is the gene that is regulated by the transcription factor
-    target = models.ForeignKey(Gene, on_delete=models.CASCADE)
+    target = models.ForeignKey(Gene, on_delete=models.CASCADE, related_name='inference_result_target')
     edge_weight = models.FloatField()
     study = models.ForeignKey(InferenceStudy, on_delete=models.CASCADE, related_name='results')
     is_public = models.BooleanField(default=False)
+    user = models.ForeignKey(User, on_delete=models.CASCADE, null=True, blank=True, related_name='results')

@@ -5,7 +5,7 @@ from datetime import datetime, timedelta
 
 from bmt import Toolkit
 from .base import Dispatcher
-from .models import Transaction, DispatcherSettings
+from .models import Transaction, DispatcherSetting
 from .serializers import TransactionListSerializer, TransactionDetailSerializer
 
 from django.http import HttpResponse, JsonResponse
@@ -22,7 +22,7 @@ class query(APIView):
     
     def post(self, request):
         # Get current trapi and biolink versions
-        dispatcher_settings = DispatcherSettings.load()
+        dispatcher_settings = DispatcherSetting.load()
         
         if request.method == 'POST':
             # Initialize Dispatcher
@@ -48,7 +48,7 @@ class meta_knowledge_graph(APIView):
     
     def get(self, request):
         # Get current trapi and biolink versions
-        dispatcher_settings = DispatcherSettings.load()
+        dispatcher_settings = DispatcherSetting.load()
         
         if request.method == 'GET':
             # Initialize Dispatcher
@@ -66,7 +66,7 @@ class versions(APIView):
 
     def get(self, request):
         # Get current trapi and biolink versions
-        dispatcher_settings = DispatcherSettings.load()
+        dispatcher_settings = DispatcherSetting.load()
         
         if request.method == 'GET':
             # Initialize Dispatcher

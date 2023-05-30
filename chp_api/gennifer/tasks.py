@@ -3,18 +3,21 @@ import time
 import pandas as pd
 import requests 
 
+from django.db import transaction
+from django.contrib.auth.models import User
 from celery import shared_task
+from celery.utils.log import get_task_logger
 
-from .models import Dataset, Gene, InferenceStudy, InferenceResult
-from dispacter.models import DispatcherSettings
+from .models import Dataset, Gene, InferenceStudy, InferenceResult, Algorithm
+from dispatcher.models import DispatcherSetting
+
+logger = get_task_logger(__name__)
 
 def normalize_nodes(curies):
-    dispatcher_settings = DispatcherSettings.load()
+    dispatcher_settings = DispatcherSetting.load()
     base_url = dispatcher_settings.sri_node_normalizer_baseurl
-    return requests.post(
-            f'{base_url}/get_normalized_nodes',
-            json={"curies": curies}
-            )
+    res = requests.post(f'{base_url}/get_normalized_nodes', json={"curies": curies})
+    return res.json()
 
 def extract_variant_info(gene_id):
     split = gene_id.split('(')
@@ -56,15 +59,23 @@ def save_inference_study(study, status, failed=False):
             # Construct Gene Objects
             gene1, variant_info1 = extract_variant_info(row["Gene1"])
             gene2, variant_info2 = extract_variant_info(row["Gene2"])
+            try:
+                gene1_name = res[gene1]["id"]["label"]
+            except TypeError:
+                gene1_name = 'Not found in SRI Node Normalizer.'
+            try:
+                gene2_name = res[gene2]["id"]["label"]
+            except TypeError:
+                gene2_name = 'Not found in SRI Node Normalizer.'
             gene1_obj, created = Gene.objects.get_or_create(
-                    name=res[gene1]["id"]["label"],
+                    name=gene1_name,
                     curie=gene1,
                     variant=variant_info1,
                     )
             if created:
                 gene1_obj.save()
             gene2_obj, created = Gene.objects.get_or_create(
-                    name=res[gene2]["id"]["label"],
+                    name=gene2_name,
                     curie=gene2,
                     variant=variant_info2,
                     )
@@ -76,16 +87,22 @@ def save_inference_study(study, status, failed=False):
                     target=gene2_obj,
                     edge_weight=row["EdgeWeight"],
                     study=study,
+                    user=study.user,
                     )
             result.save()
     study.save()
     return True
 
 def get_status(algo, task_id):
-    return requests.get(f'{algo.url}/status/{task_id}').json()
+    return requests.get(f'{algo.url}/status/{task_id}', headers={'Cache-Control': 'no-cache'}).json()
 
 @shared_task(name="create_gennifer_task")
-def create_task(algorithm, zenodo_id, hyperparameters, user):
+def create_task(algorithm_name, zenodo_id, hyperparameters, user_pk):
+    # Get algorithm obj
+    algo = Algorithm.objects.get(name=algorithm_name)
+    # Get User obj
+    user = User.objects.get(pk=user_pk)
+
     # Initialize dataset instance
     dataset, created = Dataset.objects.get_or_create(
             zenodo_id=zenodo_id,
@@ -99,10 +116,12 @@ def create_task(algorithm, zenodo_id, hyperparameters, user):
             "zenodo_id": zenodo_id,
             "hyperparameters": hyperparameters,
             }
-    task["task_id"] = requests.post(f'{algo.url}/run', data=gennifer_request)
+    task_id = requests.post(f'{algo.url}/run', json=gennifer_request).json()["task_id"]
+
+    logger.info(f'TASK_ID: {task_id}')
 
     # Get initial status
-    status = get_status(algo, task["task_id"])
+    status = get_status(algo, task_id)
     
     # Create Inference Study
     study = InferenceStudy.objects.create(
@@ -118,8 +137,8 @@ def create_task(algorithm, zenodo_id, hyperparameters, user):
     #TODO: Not sure if this is best practice
     while True:
         # Check in every 2 seconds
-        time.sleep(2)
-        status = get_status(algo, task["task_id"])
+        time.sleep(5)
+        status = get_status(algo, task_id)
         if status["task_status"] == 'SUCCESS':
             return save_inference_study(study, status)
         if status["task_status"] == "FAILURE":
