@@ -12,7 +12,7 @@ class InferenceStudySerializer(serializers.ModelSerializer):
     class Meta:
         model = InferenceStudy
         fields = [
-            'algorithm',
+            'algorithm_instance',
             'user', 
             'dataset', 
             'timestamp', 

@@ -44,11 +44,12 @@ INSTALLED_BASE_APPS = [
     'django_filters',
     'dispatcher.apps.DispatcherConfig',
     'django_extensions',
-    'gennifer', # Need to make into CHP app
+    #'gennifer', # Need to make into CHP app
 ]
 
 INSTALLED_CHP_APPS = [
     'gene_specificity',
+    'gennifer',
     ]
 
 # CHP Versions
@@ -176,3 +177,8 @@ with open(env("DJANGO_SUPERUSER_PASSWORD_FILE"), 'r') as dsp_file:
 # Celery Settings
 CELERY_BROKER_URL = os.environ.get("CELERY_BROKER_URL", "redis://localhost:6379")
 CELERY_RESULT_BACKEND = os.environ.get("CELERY_RESULT_BACKEND", "redis://localhost:6379")
+
+# Gennifer settings
+GENNIFER_ALGORITHM_URLS = [
+        "http://pidc:5000"
+        ]

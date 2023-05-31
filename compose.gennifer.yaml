@@ -33,21 +33,6 @@ services:
         - pidc
         - redis
 
-  dashboard-pidc:
-    build: 
-        context: ./gennifer/pidc
-        dockerfile: Dockerfile
-    command: celery --app pidc.tasks.celery --broker=redis://redis:6379/0 flower --port=5555 
-    ports:
-        - 5557:5555
-    environment:
-        - CELERY_BROKER_URL=redis://redis:6379/0
-        - CELERY_RESULT_BACKEND=redis://redis:6379/0
-    depends_on:
-        - pidc
-        - redis
-        - worker-pidc
-
 secrets:
   gennifer_key:
     file: secrets/gennifer/secret_key.txt

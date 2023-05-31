@@ -13,7 +13,7 @@ from importlib import import_module
 from collections import defaultdict
 
 from .models import Transaction, App, DispatcherSetting, Template, TemplateMatch
-from reasoner_pydantic import MetaKnowledgeGraph, Message, MetaEdge
+from reasoner_pydantic import MetaKnowledgeGraph, Message, MetaEdge, MetaNode
 from reasoner_pydantic.qgraph import QNode, QEdge
 
 # Setup logging
@@ -42,6 +42,24 @@ class Dispatcher():
         #self.validator = TRAPISchemaValidator(self.trapi_version)
         self.logger = Logger()
 
+    def merge_meta_kg(self, metakg1, metakg2):
+        new_metakg = MetaKnowledgeGraph.parse_obj({"nodes": [], "edges": []})
+        # Merge nodes
+        new_metakg.nodes = metakg1.nodes
+        for n, v in metakg2.nodes.items():
+            if n in new_metakg.nodes:
+                id_prefixes = list(set.union(*[set(list(metakg1.nodes[n].id_prefixes)), set(list(metakg2.nodes[n].id_prefixes))]))
+                new_node = MetaNode.parse_obj({"id_prefixes": id_prefixes})
+                new_metakg.nodes[n] = new_node
+            else:
+                new_metakg.nodes[n] = MetaNode.parse_obj(v)
+        # Merge edges
+        for e in metakg1.edges:
+            new_metakg.edges.append(e)
+        for e in metakg2.edges:
+            new_metakg.edges.append(e)
+        return new_metakg
+
     def get_meta_knowledge_graph(self):
         # Get current trapi and biolink versions
         dispatcher_settings = DispatcherSetting.load()
@@ -59,7 +77,7 @@ class Dispatcher():
             if merged_meta_kg is None:
                 merged_meta_kg = meta_kg
             else:
-                merged_meta_kg.update(meta_kg)
+                merged_meta_kg = self.merge_meta_kg(merged_meta_kg, meta_kg)
         return merged_meta_kg
 
     def process_invalid_trapi(self, request):

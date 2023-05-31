@@ -7,8 +7,9 @@ from django.db import transaction
 from django.contrib.auth.models import User
 from celery import shared_task
 from celery.utils.log import get_task_logger
+from copy import deepcopy
 
-from .models import Dataset, Gene, InferenceStudy, InferenceResult, Algorithm
+from .models import Dataset, Gene, InferenceStudy, InferenceResult, Algorithm, AlgorithmInstance
 from dispatcher.models import DispatcherSetting
 
 logger = get_task_logger(__name__)
@@ -27,6 +28,12 @@ def extract_variant_info(gene_id):
     else:
         variant_info = None
     return gene_id, variant_info
+
+def get_chp_preferred_curie(info):
+    for _id in info['equivalent_identifiers']:
+        if 'ENSEMBL' in _id['identifier']:
+            return _id['identifier']
+    return None
 
 def save_inference_study(study, status, failed=False):
     study.status = status["task_status"]
@@ -61,16 +68,21 @@ def save_inference_study(study, status, failed=False):
             gene2, variant_info2 = extract_variant_info(row["Gene2"])
             try:
                 gene1_name = res[gene1]["id"]["label"]
+                gene1_chp_preferred_curie = get_chp_preferred_curie(res[gene1])
             except TypeError:
                 gene1_name = 'Not found in SRI Node Normalizer.'
+                gene1_chp_preferred_curie = None
             try:
                 gene2_name = res[gene2]["id"]["label"]
+                gene2_chp_preferred_curie = get_chp_preferred_curie(res[gene2])
             except TypeError:
                 gene2_name = 'Not found in SRI Node Normalizer.'
+                gene2_chp_preferred_curie = None
             gene1_obj, created = Gene.objects.get_or_create(
                     name=gene1_name,
                     curie=gene1,
                     variant=variant_info1,
+                    chp_preferred_curie=gene1_chp_preferred_curie,
                     )
             if created:
                 gene1_obj.save()
@@ -78,6 +90,7 @@ def save_inference_study(study, status, failed=False):
                     name=gene2_name,
                     curie=gene2,
                     variant=variant_info2,
+                    chp_preferred_curie=gene2_chp_preferred_curie,
                     )
             if created:
                 gene2_obj.save()
@@ -96,21 +109,65 @@ def save_inference_study(study, status, failed=False):
 def get_status(algo, task_id):
     return requests.get(f'{algo.url}/status/{task_id}', headers={'Cache-Control': 'no-cache'}).json()
 
+
+def return_saved_study(studies, user):
+    study = studies[0]
+    # Copy study results
+    results = deepcopy(study.results)
+    # Create a new study that is a duplicate but assign to this user.
+    study.pk = None
+    study.results = None
+    study.save()
+
+    # Now go through and assign all results to this study and user.
+    for result in results:
+        result.pk = None
+        result.study = study
+        result.user = user
+        result.save()
+    return True
+
+
 @shared_task(name="create_gennifer_task")
 def create_task(algorithm_name, zenodo_id, hyperparameters, user_pk):
     # Get algorithm obj
     algo = Algorithm.objects.get(name=algorithm_name)
+
+    # Get or create a new algorithm instance based on the hyperparameters
+    if not hyperparameters:
+        algo_instance, algo_instance_created = AlgorithmInstance.objects.get_or_create(
+                algorithm=algo,
+                hyperparameters__isnull=True,
+                )
+    else:
+        algo_instance, algo_instance_created = AlgorithmInstance.objects.get_or_create(
+                algorithm=algo,
+                hyperparameters=hyperparameters,
+                )
+
     # Get User obj
     user = User.objects.get(pk=user_pk)
 
     # Initialize dataset instance
-    dataset, created = Dataset.objects.get_or_create(
+    dataset, dataset_created = Dataset.objects.get_or_create(
             zenodo_id=zenodo_id,
             upload_user=user,
             )
-    if created:
+
+    if dataset_created:
         dataset.save()
 
+    if not algo_instance_created and not dataset_created:
+        # This means we've already run the study. So let's just return that and not bother our workers.
+        studies = InferenceStudy.objects.filter(
+                algorithm_instance=algo_instance,
+                dataset=dataset,
+                status='SUCCESS',
+                )
+        #TODO: Probably should add some timestamp handling here 
+        if len(studies) > 0:
+            return_saved_study(studies, user)
+            
     # Send to gennifer app
     gennifer_request = {
             "zenodo_id": zenodo_id,
@@ -125,7 +182,7 @@ def create_task(algorithm_name, zenodo_id, hyperparameters, user_pk):
     
     # Create Inference Study
     study = InferenceStudy.objects.create(
-            algorithm=algo,
+            algorithm_instance=algo_instance,
             user=user,
             dataset=dataset,
             status=status["task_status"],

@@ -16,6 +16,7 @@ docker compose -f compose.chp-api.yaml run --user root api python3 manage.py cre
 docker compose -f compose.chp-api.yaml run api python3 manage.py runscript load_db_apps
 docker compose -f compose.chp-api.yaml run api python3 manage.py runscript templater
 docker compose -f compose.chp-api.yaml run api python3 manage.py runscript gene_spec_curie_templater
+docker compose -f compose.chp-api.yaml run api python3 manage.py runscript algorithm_loader
 
 docker compose -f compose.chp-api.yaml run --user root api python3 manage.py collectstatic --noinput
 

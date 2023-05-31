@@ -25,7 +25,7 @@ class DatasetViewSet(viewsets.ModelViewSet):
 class InferenceStudyViewSet(viewsets.ModelViewSet):
     serializer_class = InferenceStudySerializer
     filter_backends = [DjangoFilterBackend]
-    filterset_fields = ['is_public', 'dataset', 'algorithm']
+    filterset_fields = ['is_public', 'dataset', 'algorithm_instance']
     permission_classes = [IsAuthenticated]
 
     def get_queryset(self):
@@ -56,6 +56,9 @@ class run(APIView):
             algorithm_name = task.get("algorithm_name", None)
             zenodo_id = task.get("zenodo_id", None)
             hyperparameters = task.get("hyperparameters", None)
+            if hyperparameters:
+                if len(hyperparameters) == 0:
+                    hyperparameters = None
             if not algorithm_name:
                 task["error"] = "No algorithm name provided."
                 response["tasks"].append(task)
