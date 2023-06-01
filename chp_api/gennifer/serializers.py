@@ -1,6 +1,6 @@
 from rest_framework import serializers
 
-from .models import Dataset, InferenceStudy, InferenceResult
+from .models import Dataset, InferenceStudy, InferenceResult, Algorithm
 
 class DatasetSerializer(serializers.ModelSerializer):
     class Meta:
@@ -34,3 +34,12 @@ class InferenceResultSerializer(serializers.ModelSerializer):
             'is_public',
             'user',
             ]
+
+class AlgorithmSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Algorithm
+        fields = [
+                'name',
+                'description',
+                'edge_weight_type',
+                ]

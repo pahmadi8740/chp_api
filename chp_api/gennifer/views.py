@@ -7,41 +7,49 @@ from django.core.exceptions import ObjectDoesNotExist
 from rest_framework import viewsets
 from rest_framework.views import APIView
 from rest_framework.response import Response
-from rest_framework.permissions import IsAuthenticated
+from rest_framework.permissions import IsAuthenticated, IsAuthenticatedOrReadOnly
 from django_filters.rest_framework import DjangoFilterBackend
 
 from .models import Dataset, InferenceStudy, InferenceResult, Algorithm
-from .serializers import DatasetSerializer, InferenceStudySerializer, InferenceResultSerializer
+from .serializers import DatasetSerializer, InferenceStudySerializer, InferenceResultSerializer, AlgorithmSerializer
 from .tasks import create_task
+from .permissions import IsOwnerOrReadOnly, IsAdminOrReadOnly
 
 class DatasetViewSet(viewsets.ModelViewSet):
     queryset = Dataset.objects.all()
     serializer_class = DatasetSerializer
     filter_backends = [DjangoFilterBackend]
     filterset_fields = ['upload_user', 'zenodo_id']
-    permission_classes = [IsAuthenticated]
+    permission_classes = [IsAuthenticatedOrReadOnly]
 
 
 class InferenceStudyViewSet(viewsets.ModelViewSet):
+    queryset = InferenceStudy.objects.all()
     serializer_class = InferenceStudySerializer
     filter_backends = [DjangoFilterBackend]
     filterset_fields = ['is_public', 'dataset', 'algorithm_instance']
-    permission_classes = [IsAuthenticated]
+    permission_classes = [IsOwnerOrReadOnly]
 
-    def get_queryset(self):
-        user = self.request.user
-        return InferenceStudy.objects.filter(user=user)
+    #def get_queryset(self):
+    #    user = self.request.user
+    #    return InferenceStudy.objects.filter(user=user)
 
 
 class InferenceResultViewSet(viewsets.ModelViewSet):
+    queryset = InferenceResult.objects.all()
     serializer_class = InferenceResultSerializer
     filter_backends = [DjangoFilterBackend]
     filterset_fields = ['is_public', 'study', 'tf', 'target']
-    permission_classes = [IsAuthenticated]
+    permission_classes = [IsOwnerOrReadOnly]
 
-    def get_queryset(self):
-        user = self.request.user
-        return InferenceResult.objects.filter(user=user)
+    #def get_queryset(self):
+    #    user = self.request.user
+    #    return InferenceResult.objects.filter(user=user)
+
+class AlgorithmViewSet(viewsets.ModelViewSet):
+    serializer_class = AlgorithmSerializer
+    queryset = Algorithm.objects.all()
+    permissions = [IsAdminOrReadOnly]
 
 
 class run(APIView):
