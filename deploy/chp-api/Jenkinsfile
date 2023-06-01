@@ -49,6 +49,8 @@ pipeline {
                     sh 'cp deploy/chp-api/configs/nginx.conf deploy/chp-api/nginx/'
                     docker.build(env.DOCKER_REPO_NAME, "--no-cache ./deploy/chp-api/nginx")
                     docker.image(env.DOCKER_REPO_NAME).push("${BUILD_VERSION}-nginx")
+                    docker.build(env.DOCKER_REPO_NAME, "--no-cache ./deploy/chp-api/static-file-server")
+                    docker.image(env.DOCKER_REPO_NAME).push("${BUILD_VERSION}-staticfs")
                 }
             }
         }
