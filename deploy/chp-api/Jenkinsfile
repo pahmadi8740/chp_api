@@ -49,10 +49,10 @@ pipeline {
                     sh 'cp deploy/chp-api/configs/nginx.conf deploy/chp-api/nginx/'
                     docker.build(env.DOCKER_REPO_NAME, "--no-cache ./deploy/chp-api/nginx")
                     docker.image(env.DOCKER_REPO_NAME).push("${BUILD_VERSION}-nginx")
-                    sh ```
+                    sh '''
                         docker pull halverneus/static-file-server:latest
                         docker tag halverneus/static-file-server:latest env.DOCKER_REPO_NAME
-                    ```
+                    '''
                     docker.image(env.DOCKER_REPO_NAME).push("${BUILD_VERSION}-staticfs")
                 }
             }
