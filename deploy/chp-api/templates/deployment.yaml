@@ -56,7 +56,8 @@ spec:
                   name: {{ include "chp-api.fullname" . }}-secret
                   key: sql_password
             - name: DJANGO_SUPERUSER_PASSWORD
-              secretKeyRef:
+              valueFrom:
+                secretKeyRef:
                   name: {{ include "chp-api.fullname" . }}-secret
                   key: django_superuser_password
             - name: SQL_ENGINE
