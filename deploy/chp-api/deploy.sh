@@ -32,6 +32,6 @@ rm values-ncats.yaml.bak
 
 kubectl apply -f namespace.yaml
 
-helm -n chp template ${projectName} -f values-ncats.yaml ./
+# helm -n chp template ${projectName} -f values-ncats.yaml ./
 # deploy helm chart
 helm -n ${namespace} upgrade --install ${projectName} -f values-ncats.yaml ./
