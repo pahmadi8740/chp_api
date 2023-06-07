@@ -36,15 +36,30 @@ spec:
               mountPath: /home/chp_api/web/chp_api/staticfiles
           env:
             - name: SECRET_KEY
-              value: "{{ .Values.app.secret_key }}"
+              valueFrom:
+                secretKeyRef:
+                  name: {{ include "chp-api.fullname" . }}-secret
+                  key: secret_key
             - name: POSTGRES_DB
-              value: "{{ .Values.db.database }}"
+              valueFrom:
+                secretKeyRef:
+                  name: {{ include "chp-api.fullname" . }}-secret
+                  key: sql_database
             - name: POSTGRES_USER
-              value: "{{ .Values.db.username }}"
+              valueFrom:
+                secretKeyRef:
+                  name: {{ include "chp-api.fullname" . }}-secret
+                  key: sql_username
             - name: POSTGRES_PASSWORD
-              value: "{{ .Values.db.password }}"
+              valueFrom:
+                secretKeyRef:
+                  name: {{ include "chp-api.fullname" . }}-secret
+                  key: sql_password
             - name: DJANGO_SUPERUSER_PASSWORD
-              value: "{{ .Values.app.djangoSuperuserPassword }}"
+              valueFrom:
+                secretKeyRef:
+                  name: {{ include "chp-api.fullname" . }}-secret
+                  key: django_superuser_password
             - name: SQL_ENGINE
               value: "{{ .Values.db.engine }}"
             - name: POSTGRES_HOST
