@@ -137,8 +137,11 @@ STATIC_ROOT = os.path.join(BASE_DIR, "staticfiles")
 # Hosts Configuration
 #ROOT_HOSTCONF = 'chp_api.hosts'
 
-with open(env("POSTGRES_PASSWORD_FILE"), 'r') as db_pwd:
-    DB_PASSWORD = db_pwd.readline().strip()
+DB_PASSWORD = env("POSTGRES_PASSWORD", default=None)
+
+if not DB_PASSWORD:
+    with open(env("POSTGRES_PASSWORD_FILE"), 'r') as db_pwd:
+        DB_PASSWORD = db_pwd.readline().strip()
 
 # Database
 # https://docs.djangoproject.com/en/3.0/ref/settings/#databases
@@ -153,18 +156,33 @@ DATABASES = {
     }
 }
 
-with open(env("DJANGO_ALLOWED_HOSTS_FILE"), 'r') as ah_file:
-    ALLOWED_HOSTS = ah_file.readline().strip().split(" ")
+
+ALLOWED_HOSTS = env("DJANGO_ALLOWED_HOSTS", default=None)
+if not ALLOWED_HOSTS:
+    with open(env("DJANGO_ALLOWED_HOSTS_FILE"), 'r') as ah_file:
+        ALLOWED_HOSTS = ah_file.readline().strip().split(" ")
+else:
+    ALLOWED_HOSTS = ALLOWED_HOSTS.split(',')
 
 # SECURITY WARNING: keep the secret key used in production secret!
  # Read the secret key from file
-with open(env("SECRET_KEY_FILE"), 'r') as sk_file:
-    SECRET_KEY = sk_file.readline().strip()
+SECRET_KEY = env("SECRET_KEY", default=None)
+if not SECRET_KEY:
+    with open(env("SECRET_KEY_FILE"), 'r') as sk_file:
+        SECRET_KEY = sk_file.readline().strip()
 
 # Set UN, Email and Password for superuser
-with open(env("DJANGO_SUPERUSER_USERNAME_FILE"), 'r') as dsu_file:
-    os.environ["DJANGO_SUPERUSER_USERNAME"] = dsu_file.readline().strip()
-with open(env("DJANGO_SUPERUSER_EMAIL_FILE"), 'r') as dse_file:
-    os.environ["DJANGO_SUPERUSER_EMAIL"] = dse_file.readline().strip()
-with open(env("DJANGO_SUPERUSER_PASSWORD_FILE"), 'r') as dsp_file:
-    os.environ["DJANGO_SUPERUSER_PASSWORD"] = dsp_file.readline().strip()
+DJANGO_SUPERUSER_USERNAME = env("DJANGO_SUPERUSER_USERNAME", default=None)
+if not DJANGO_SUPERUSER_USERNAME:
+    with open(env("DJANGO_SUPERUSER_USERNAME_FILE"), 'r') as dsu_file:
+        os.environ["DJANGO_SUPERUSER_USERNAME"] = dsu_file.readline().strip()
+
+DJANGO_SUPERUSER_EMAIL = env("DJANGO_SUPERUSER_EMAIL", default=None)
+if not DJANGO_SUPERUSER_EMAIL:
+    with open(env("DJANGO_SUPERUSER_EMAIL_FILE"), 'r') as dse_file:
+        os.environ["DJANGO_SUPERUSER_EMAIL"] = dse_file.readline().strip()
+
+DJANGO_SUPERUSER_PASSWORD = env("DJANGO_SUPERUSER_PASSWORD", default=None)
+if not DJANGO_SUPERUSER_PASSWORD:
+    with open(env("DJANGO_SUPERUSER_PASSWORD_FILE"), 'r') as dsp_file:
+        os.environ["DJANGO_SUPERUSER_PASSWORD"] = dsp_file.readline().strip()

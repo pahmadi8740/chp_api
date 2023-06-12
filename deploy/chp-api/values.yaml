@@ -11,6 +11,7 @@ image:
   # Overrides the image tag whose default is the chart appVersion.
   tag: "BUILD_VERSION"
   nginxTag: "BUILD_VERSION-nginx"
+  staticfsTag: "BUILD_VERSION-staticfs"
 
 nameOverride: ""
 fullnameOverride: ""
@@ -21,6 +22,11 @@ app:
   secret_key: ""
   djangoAllowedHosts: ""
   djangoSettingsModule: "chp_api.settings"
+  djangoSuperuserUsername: "chp_admin"
+  djangoSuperuserPassword: ""
+  djangoSuperuserEmail: "chp_admin@chp.com"
+  staticfsFolder: "/var/www"
+  staticfsDebug: "0"
 
 # database connection information
 db: 
