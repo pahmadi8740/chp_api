@@ -26,14 +26,14 @@ spec:
           image: "{{ .Values.image.repository }}:{{ .Values.image.tag | default .Chart.AppVersion }}"
           imagePullPolicy: {{ .Values.image.pullPolicy }}
           command: ["/bin/sh"]
-          args: ["-c", "gunicorn -c gunicorn.config.py --log-file=- --env DJANGO_SETTINGS_MODULE=chp_api.settings chp_api.wsgi:application --bind 0.0.0.0:8000"]
+          args: ["-c", "python3 manage.py collectstatic --no-input && gunicorn -c gunicorn.config.py --log-file=- --env DJANGO_SETTINGS_MODULE=chp_api.settings chp_api.wsgi:application --bind 0.0.0.0:8000"]
           ports:
             - name: http-app
               containerPort: 8000
               protocol: TCP
           volumeMounts:
-            - name: {{ include "chp-api.fullname" . }}-pvc
-              mountPath: /home/chp_api/web/chp_api/staticfiles
+            - name: {{ include "chp-api.fullname" . }}-static
+              mountPath: /home/chp_api/staticfiles
           env:
             - name: SECRET_KEY
               valueFrom:
@@ -102,7 +102,7 @@ spec:
               containerPort: 8080
               protocol: TCP
           volumeMounts:
-            - name: {{ include "chp-api.fullname" . }}-pvc
+            - name: {{ include "chp-api.fullname" . }}-static
               mountPath: /var/www/static
           env:
             - name: FOLDER
@@ -113,6 +113,8 @@ spec:
         - name: config-vol
           configMap:
             name: {{ include "chp-api.fullname" . }}-configs
+        - name: static-vol
+          configMap: {{ include "chp-api.fullname" . }}-static
       {{- with .Values.affinity }}
       affinity:
         {{- toYaml . | nindent 8 }}
