@@ -14,5 +14,6 @@ def run():
                 edge_weight_description=algo_info["edge_weight_description"],
                 edge_weight_type=algo_info["edge_weight_type"],
                 description=algo_info["description"],
+                directed=algo_info["directed"],
                 )
         algo.save()

@@ -29,7 +29,10 @@ DATA_UPLOAD_MAX_MEMORY_SIZE = None
 REST_FRAMEWORK = {
     'DEFAULT_PARSER_CLASSES': [
         'rest_framework.parsers.JSONParser',
-    ]
+    ],
+    'DEFAULT_AUTHENTICATION_CLASSES': (
+        'rest_framework_simplejwt.authentication.JWTAuthentication',
+        )
 }
 
 # Application definition
@@ -41,6 +44,7 @@ INSTALLED_BASE_APPS = [
     'django.contrib.messages',
     'django.contrib.staticfiles',
     'rest_framework',
+    'rest_framework_simplejwt',
     'django_filters',
     'dispatcher.apps.DispatcherConfig',
     'django_extensions',
@@ -173,6 +177,11 @@ with open(env("DJANGO_SUPERUSER_EMAIL_FILE"), 'r') as dse_file:
     os.environ["DJANGO_SUPERUSER_EMAIL"] = dse_file.readline().strip()
 with open(env("DJANGO_SUPERUSER_PASSWORD_FILE"), 'r') as dsp_file:
     os.environ["DJANGO_SUPERUSER_PASSWORD"] = dsp_file.readline().strip()
+
+# Simple JWT Settings
+SIMPLE_JWT = {
+        "TOKEN_OBTAIN_SERIALIZER": "chp_api.serializers.ChpTokenObtainPairSerializer",
+        }
 
 # Celery Settings
 CELERY_BROKER_URL = os.environ.get("CELERY_BROKER_URL", "redis://localhost:6379")

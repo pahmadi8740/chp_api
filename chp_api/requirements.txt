@@ -1,5 +1,6 @@
 tqdm
 djangorestframework
+djangorestframework-simplejwt
 psycopg2-binary
 bmt
 reasoner_pydantic

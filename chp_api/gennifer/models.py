@@ -1,8 +1,23 @@
 import requests
+import uuid
 
 from django.db import models
 from django.contrib.auth.models import User
 
+
+class UserAnalysisSession(models.Model):
+    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+    name = models.CharField(max_length=128)
+    user = models.ForeignKey(User, on_delete=models.CASCADE)
+    session_data = models.JSONField()
+    is_saved = models.BooleanField(default=False)
+
+    def update_session_data(self, new_data):
+        self.session_data.update(new_data)
+        self.save()
+
+    def __str__(self):
+        return self.name
 
 class Algorithm(models.Model):
     name = models.CharField(max_length=128)
@@ -10,6 +25,7 @@ class Algorithm(models.Model):
     edge_weight_description = models.TextField(null=True, blank=True)
     edge_weight_type = models.CharField(max_length=128, null=True, blank=True)
     description = models.TextField(null=True, blank=True)
+    directed = models.BooleanField()
 
     def __str__(self):
         return self.name
@@ -40,6 +56,9 @@ class Dataset(models.Model):
         CLEANR = re.compile('<.*?>')
 
         info = self.get_record()
+        if 'status' in info and 'message' in info and len(info) == 2:
+            # This means that retrieval failed
+            raise ValueError(f'Could not retrieve zenodo record {self.zenodo_id}. Failed with message: {info["message"]}')
         self.doi = info["doi"]
         self.description = re.sub(CLEANR, '', info["metadata"]["description"])
         self.title = re.sub(CLEANR, '', info["metadata"]["title"])
@@ -49,6 +68,8 @@ class Dataset(models.Model):
     def get_record(self):
         return requests.get(f"https://zenodo.org/api/records/{self.zenodo_id}").json()
 
+    def __str__(self):
+        return f'zenodo:{self.zenodo_id}'
 
 class Gene(models.Model):
     name = models.CharField(max_length=128)
