@@ -33,7 +33,7 @@ spec:
               protocol: TCP
           volumeMounts:
             - name: static-vol
-              mountPath: /home/chp_api/staticfiles
+              mountPath: /home/chp_api/web/staticfiles
           env:
             - name: SECRET_KEY
               valueFrom:
