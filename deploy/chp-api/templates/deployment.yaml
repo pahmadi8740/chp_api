@@ -32,7 +32,7 @@ spec:
               containerPort: 8000
               protocol: TCP
           volumeMounts:
-            - name: {{ include "chp-api.fullname" . }}-static
+            - name: static-vol
               mountPath: /home/chp_api/staticfiles
           env:
             - name: SECRET_KEY
@@ -87,8 +87,6 @@ spec:
               containerPort: 80
               protocol: TCP
           volumeMounts:
-            - name: {{ include "chp-api.fullname" . }}-pvc
-              mountPath: /home/chp_api/web/staticfiles
             - name: config-vol
               mountPath: /etc/nginx/conf.d/default.conf
               subPath: nginx.conf
@@ -102,7 +100,7 @@ spec:
               containerPort: 8080
               protocol: TCP
           volumeMounts:
-            - name: {{ include "chp-api.fullname" . }}-static
+            - name: static-vol
               mountPath: /var/www/static
           env:
             - name: FOLDER
