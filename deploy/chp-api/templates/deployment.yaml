@@ -26,7 +26,7 @@ spec:
           image: "{{ .Values.image.repository }}:{{ .Values.image.tag | default .Chart.AppVersion }}"
           imagePullPolicy: {{ .Values.image.pullPolicy }}
           command: ["/bin/sh"]
-          args: ["-c", "python3 manage.py collectstatic --no-input && gunicorn -c gunicorn.config.py --log-file=- --env DJANGO_SETTINGS_MODULE=chp_api.settings chp_api.wsgi:application --bind 0.0.0.0:8000"]
+          args: ["-c", "python3 manage.py collectstatic --noinput && gunicorn -c gunicorn.config.py --log-file=- --env DJANGO_SETTINGS_MODULE=chp_api.settings chp_api.wsgi:application --bind 0.0.0.0:8000"]
           ports:
             - name: http-app
               containerPort: 8000
@@ -56,7 +56,8 @@ spec:
                   name: {{ include "chp-api.fullname" . }}-secret
                   key: sql_password
             - name: DJANGO_SUPERUSER_PASSWORD
-              secretKeyRef:
+              valueFrom:
+                secretKeyRef:
                   name: {{ include "chp-api.fullname" . }}-secret
                   key: django_superuser_password
             - name: SQL_ENGINE
@@ -73,7 +74,7 @@ spec:
               value: "{{ .Values.app.djangoAllowedHosts }}"
             - name: DJANGO_SETTINGS_MODULE
               value: "{{ .Values.app.djangoSettingsModule }}"
-            - name: DJANGO_SUPERUSER_USERNAME=chp_admin
+            - name: DJANGO_SUPERUSER_USERNAME
               value: "{{ .Values.app.djangoSuperuserUsername }}"
             - name: DJANGO_SUPERUSER_EMAIL
               value: "{{ .Values.app.djangoSuperuserEmail }}"
