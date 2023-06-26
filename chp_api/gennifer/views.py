@@ -11,9 +11,26 @@ from rest_framework.response import Response
 from rest_framework.permissions import IsAuthenticated, IsAuthenticatedOrReadOnly
 from rest_framework.exceptions import ValidationError
 from django_filters.rest_framework import DjangoFilterBackend
+from oauth2_provider.contrib.rest_framework import TokenHasReadWriteScope
 
-from .models import Dataset, InferenceStudy, InferenceResult, Algorithm, Gene, UserAnalysisSession
-from .serializers import DatasetSerializer, InferenceStudySerializer, InferenceResultSerializer, AlgorithmSerializer, GeneSerializer, UserAnalysisSessionSerializer
+from .models import (
+        Dataset,
+        Study,
+        Task,
+        Result, 
+        Algorithm, 
+        Gene, 
+        UserAnalysisSession
+        )
+from .serializers import (
+        DatasetSerializer,
+        StudySerializer, 
+        TaskSerializer, 
+        ResultSerializer, 
+        AlgorithmSerializer, 
+        GeneSerializer,
+        UserAnalysisSessionSerializer
+        )
 from .tasks import create_task
 from .permissions import IsOwnerOrReadOnly, IsAdminOrReadOnly
 
@@ -34,20 +51,24 @@ class DatasetViewSet(viewsets.ModelViewSet):
     queryset = Dataset.objects.all()
     serializer_class = DatasetSerializer
     filter_backends = [DjangoFilterBackend]
-    filterset_fields = ['upload_user', 'zenodo_id']
-    permission_classes = [IsAuthenticatedOrReadOnly]
+    filterset_fields = ['user', 'zenodo_id']
+    permission_classes = [IsOwnerOrReadOnly]
 
 
     def perform_create(self, serializers):
         try:
-            serializers.save(upload_user=self.request.user)
+            serializers.save(user=self.request.user)
         except ValueError as e:
             raise ValidationError(str(e))
 
+class StudyViewSet(viewsets.ModelViewSet):
+    queryset = Study.objects.all()
+    serializer_class = StudySerializer
+    permission_classes = [IsOwnerOrReadOnly]
 
-class InferenceStudyViewSet(viewsets.ModelViewSet):
-    queryset = InferenceStudy.objects.all()
-    serializer_class = InferenceStudySerializer
+class TaskViewSet(viewsets.ModelViewSet):
+    queryset = Task.objects.all()
+    serializer_class = TaskSerializer
     filter_backends = [DjangoFilterBackend]
     filterset_fields = ['is_public', 'dataset', 'algorithm_instance']
     permission_classes = [IsOwnerOrReadOnly]
@@ -57,11 +78,11 @@ class InferenceStudyViewSet(viewsets.ModelViewSet):
     #    return InferenceStudy.objects.filter(user=user)
 
 
-class InferenceResultViewSet(viewsets.ModelViewSet):
-    queryset = InferenceResult.objects.all()
-    serializer_class = InferenceResultSerializer
+class ResultViewSet(viewsets.ModelViewSet):
+    queryset = Result.objects.all()
+    serializer_class = ResultSerializer
     filter_backends = [DjangoFilterBackend]
-    filterset_fields = ['is_public', 'study', 'tf', 'target']
+    filterset_fields = ['is_public', 'task', 'tf', 'target']
     permission_classes = [IsOwnerOrReadOnly]
 
     #def get_queryset(self):
@@ -103,17 +124,17 @@ class CytoscapeView(APIView):
     
     def construct_edge(self, res, source_id, target_id):
         # Normalize edge weight based on the study
-        normalized_weight = (res.edge_weight - res.study.min_study_edge_weight) / (res.study.max_study_edge_weight - res.study.min_study_edge_weight)
-        directed = res.study.algorithm_instance.algorithm.directed
+        normalized_weight = (res.edge_weight - res.task.min_study_edge_weight) / (res.task.max_study_edge_weight - res.task.min_study_edge_weight)
+        directed = res.task.algorithm_instance.algorithm.directed
         edge_tuple = tuple(sorted([source_id, target_id]))
         edge = {
                 "data": {
                     "id": str(res.pk),
                     "source": source_id,
                     "target": target_id,
-                    "dataset": str(res.study.dataset),
+                    "dataset": str(res.task.dataset),
                     "weight": normalized_weight,
-                    "algorithm": str(res.study.algorithm_instance),
+                    "algorithm": str(res.task.algorithm_instance),
                     "directed": directed,
                     }
                 }
@@ -163,14 +184,14 @@ class CytoscapeView(APIView):
                 }
 
     def get(self, request):
-        results = InferenceResult.objects.all()
+        results = Result.objects.all()
         cyto = self.construct_cytoscape_data(results)
         return JsonResponse(cyto)
 
     def post(self, request):
         elements = []
         gene_ids = request.data.get("gene_ids", None)
-        study_ids = request.data.get("study_ids", None)
+        task_ids = request.data.get("task_ids", None)
         algorithm_ids = request.data.get("algorithm_ids", None)
         dataset_ids = request.data.get("dataset_ids", None)
         cached_inference_result_ids = request.data.get("cached_results", None)
@@ -188,11 +209,11 @@ class CytoscapeView(APIView):
                         ]
                     )
         if study_ids:
-            filters.append({"field": 'study__pk', "operator": 'in', "value": study_ids})
+            filters.append({"field": 'task__pk', "operator": 'in', "value": study_ids})
         if algorithm_ids:
-            filters.append({"field": 'study__algorithm_instance__algorithm__pk', "operator": 'in', "value": study_ids})
+            filters.append({"field": 'task__algorithm_instance__algorithm__pk', "operator": 'in', "value": study_ids})
         if dataset_ids:
-            filters.append({"field": 'study__dataset__zenodo_id', "operator": 'in', "value": dataset_ids})
+            filters.append({"field": 'task__dataset__zenodo_id', "operator": 'in', "value": dataset_ids})
 
         # Construct Query
         query = Q()
@@ -203,7 +224,7 @@ class CytoscapeView(APIView):
             query &= Q(**{f'{field}__{operator}': value})
 
         # Get matching results
-        results = InferenceResult.objects.filter(query)
+        results = Result.objects.filter(query)
 
         if len(results) == 0:
             return JsonResponse({"elements": elements})
@@ -237,9 +258,17 @@ class run(APIView):
     def post(self, request):
         """ Request comes in as a list of algorithms to run.
         """
+        # Create study
+        study = Study.objects.create(
+                name = request.data['name'],
+                description = request.data.get('description', None),
+                status = 'RECIEVED',
+                user = request.user,
+                )
+        study.save()
         # Build gennifer requests
         tasks = request.data['tasks']
-        response = {"tasks": []}
+        response = {"study_id": study.pk, "tasks": []}
         for task in tasks:
             algorithm_name = task.get("algorithm_name", None)
             zenodo_id = task.get("zenodo_id", None)
@@ -262,6 +291,6 @@ class run(APIView):
                 response["tasks"].append(task)
                 continue
             # If all pass, now send to gennifer services
-            task["task_id"] = create_task.delay(algo.name, zenodo_id, hyperparameters, request.user.pk).id
+            task["task_id"] = create_task.delay(algo.name, zenodo_id, hyperparameters, request.user.pk, study.pk).id
             response["tasks"].append(task)
         return JsonResponse(response)

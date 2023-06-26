@@ -1,6 +1,7 @@
 import requests
 import uuid
 
+from django.conf import settings
 from django.db import models
 from django.contrib.auth.models import User
 
@@ -8,7 +9,7 @@ from django.contrib.auth.models import User
 class UserAnalysisSession(models.Model):
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     name = models.CharField(max_length=128)
-    user = models.ForeignKey(User, on_delete=models.CASCADE)
+    user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
     session_data = models.JSONField()
     is_saved = models.BooleanField(default=False)
 
@@ -48,7 +49,7 @@ class Dataset(models.Model):
     zenodo_id = models.CharField(max_length=128, primary_key=True)
     doi = models.CharField(max_length=128)
     description = models.TextField(null=True, blank=True)
-    upload_user = models.ForeignKey(User, on_delete=models.CASCADE, null=True, blank=True)
+    user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, null=True, blank=True)
 
     def save(self, *args, **kwargs):
         import re
@@ -80,11 +81,23 @@ class Gene(models.Model):
     def __str__(self):
         return self.name
 
+class Study(models.Model):
+    class Meta:
+        verbose_name_plural = "studies"
 
-class InferenceStudy(models.Model):
-    algorithm_instance = models.ForeignKey(AlgorithmInstance, on_delete=models.CASCADE, related_name='studies')
-    user = models.ForeignKey(User, on_delete=models.CASCADE, null=True, blank=True, related_name='studies')
-    dataset = models.ForeignKey(Dataset, on_delete=models.CASCADE, related_name='studies')
+    name = models.CharField(max_length=128)
+    description = models.TextField(null=True, blank=True)
+    status = models.CharField(max_length=10)
+    timestamp = models.DateTimeField(auto_now_add=True)
+    user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, null=True, blank=True, related_name='studies')
+
+    def __str__(self):
+        return self.name
+
+class Task(models.Model):
+    algorithm_instance = models.ForeignKey(AlgorithmInstance, on_delete=models.CASCADE, related_name='tasks')
+    user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, null=True, blank=True, related_name='tasks')
+    dataset = models.ForeignKey(Dataset, on_delete=models.CASCADE, related_name='tasks')
     timestamp = models.DateTimeField(auto_now_add=True)
     # Study characteristics for all edge weights in a given study over a dataset
     max_study_edge_weight = models.FloatField(null=True)
@@ -94,20 +107,21 @@ class InferenceStudy(models.Model):
     is_public = models.BooleanField(default=False)
     status = models.CharField(max_length=10)
     error_message = models.TextField(null=True, blank=True)
+    study = models.ForeignKey(Study, on_delete=models.CASCADE, related_name='tasks')
 
     def __str__(self):
         return f'{self.algorithm_instance} on {self.dataset.zenodo_id}'
 
 
-class InferenceResult(models.Model):
+class Result(models.Model):
     # Stands for transcription factor
     tf = models.ForeignKey(Gene, on_delete=models.CASCADE, related_name='inference_result_tf')
     # Target is the gene that is regulated by the transcription factor
     target = models.ForeignKey(Gene, on_delete=models.CASCADE, related_name='inference_result_target')
     edge_weight = models.FloatField()
-    study = models.ForeignKey(InferenceStudy, on_delete=models.CASCADE, related_name='results')
+    task = models.ForeignKey(Task, on_delete=models.CASCADE, related_name='results')
     is_public = models.BooleanField(default=False)
-    user = models.ForeignKey(User, on_delete=models.CASCADE, null=True, blank=True, related_name='results')
+    user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, null=True, blank=True, related_name='results')
 
     def __str__(self):
         return f'{self.tf}:{self.tf.curie} -> regulates -> {self.target}:{self.target.curie}'

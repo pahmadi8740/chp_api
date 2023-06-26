@@ -6,8 +6,9 @@ from . import views
 # Create router and register viewsets
 router = DefaultRouter()
 router.register(r'datasets', views.DatasetViewSet, basename='dataset')
-router.register(r'inference_studies', views.InferenceStudyViewSet, basename='inference_study')
-router.register(r'inference_results', views.InferenceResultViewSet, basename='inference_result')
+router.register(r'studies', views.StudyViewSet, basename='study')
+router.register(r'tasks', views.TaskViewSet, basename='task')
+router.register(r'results', views.ResultViewSet, basename='result')
 router.register(r'algorithms', views.AlgorithmViewSet, basename='algorithm')
 router.register(r'genes', views.GeneViewSet, basename='genes')
 router.register(r'analyses', views.UserAnalysisSessionViewSet, basename='analyses')

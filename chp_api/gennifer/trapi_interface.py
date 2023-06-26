@@ -12,7 +12,7 @@ from reasoner_pydantic import MetaKnowledgeGraph, Message, KnowledgeGraph
 from reasoner_pydantic.kgraph import RetrievalSource, Attribute
 from reasoner_pydantic.results import NodeBinding, EdgeBinding, Result, Results, Analysis
 
-from .models import InferenceResult, Gene
+from .models import Result, Gene
 
 # Setup logging
 logging.addLevelName(25, "NOTE")
@@ -144,12 +144,12 @@ class TrapiInterface:
                 if predicate == 'biolink:regulates':
                     results = []
                     for obj_gene in obj_genes:
-                        results.extend(InferenceResult.objects.filter(target=obj_gene, is_public=True))
+                        results.extend(Result.objects.filter(target=obj_gene, is_public=True))
                     subject_curies = [r.tf.chp_preferred_curie for r in results]
                 elif predicate == 'biolink:regulated_by':
                     results = []
                     for obj_gene in obj_genes:
-                        results.extend(InferenceResult.objects.filter(tf=obj_gene, is_public=True))
+                        results.extend(Result.objects.filter(tf=obj_gene, is_public=True))
                     subject_curies = [r.target.chp_preferred_curie for r in results]
                 else:
                     raise ValueError(f'Unknown predicate: {predicate}.')
@@ -182,12 +182,12 @@ class TrapiInterface:
                 if predicate == 'biolink:regulates':
                     results = []
                     for sub_gene in sub_genes:
-                        results.extend(InferenceResult.objects.filter(tf=sub_gene, is_public=True))
+                        results.extend(Result.objects.filter(tf=sub_gene, is_public=True))
                     object_curies = [r.target.chp_preferred_curie for r in results]
                 elif predicate == 'biolink:regulated_by':
                     results = []
                     for sub_gene in sub_genes:
-                        results.extend(InferenceResult.objects.filter(target=sub_gene, is_public=True))
+                        results.extend(Result.objects.filter(target=sub_gene, is_public=True))
                     object_curies = [r.tf.chp_preferred_curie for r in results]
                 else:
                     raise ValueError(f'Unknown predicate: {predicate}.')

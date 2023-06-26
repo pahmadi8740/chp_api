@@ -10,6 +10,9 @@ WORKDIR /usr/src/chp_api
 
 RUN git clone --single-branch --branch gene_spec_pydantic-ghyde https://github.com/di2ag/gene-specificity.git
 
+# Upgrade pip
+RUN pip3 install --upgrade pip
+
 # install dependencies
 COPY ./requirements.txt .
 RUN pip3 wheel --no-cache-dir --no-deps --wheel-dir /usr/src/chp_api/wheels -r requirements.txt
@@ -48,12 +51,13 @@ COPY --from=intermediate /usr/src/chp_api/requirements.txt .
 RUN pip3 install --no-cache /wheels/*
 
 # copy project
-COPY ./chp_api $APP_HOME/chp_api
-COPY ./manage.py $APP_HOME
-COPY ./dispatcher $APP_HOME/dispatcher
-COPY ./gennifer $APP_HOME/gennifer
+COPY . .
+#COPY ./chp_api $APP_HOME/chp_api
+#COPY ./manage.py $APP_HOME
+#COPY ./dispatcher $APP_HOME/dispatcher
+#COPY ./gennifer $APP_HOME/gennifer
 #COPY ./chp_db_fixture.json.gz $APP_HOME
-COPY ./gunicorn.config.py $APP_HOME
+#COPY ./gunicorn.config.py $APP_HOME
 
 # chown all the files to the app user
 RUN chown -R chp_api:chp_api $APP_HOME \

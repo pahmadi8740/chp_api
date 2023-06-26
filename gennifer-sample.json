@@ -1,4 +1,6 @@
 {
+    "name": "GSD Study",
+    "description": "This is a test study with one task.",
     "tasks": [
         {
             "algorithm_name": "pidc",

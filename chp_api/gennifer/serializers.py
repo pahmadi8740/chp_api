@@ -1,6 +1,6 @@
 from rest_framework import serializers
 
-from .models import Dataset, InferenceStudy, InferenceResult, Algorithm, Gene, UserAnalysisSession
+from .models import Dataset, Study, Task, Result, Algorithm, Gene, UserAnalysisSession
 
 
 class UserAnalysisSessionSerializer(serializers.ModelSerializer):
@@ -14,15 +14,20 @@ class DatasetSerializer(serializers.ModelSerializer):
         fields = ['title', 'zenodo_id', 'doi', 'description']
         read_only_fields = ['title', 'doi', 'description']
 
+class StudySerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Study
+        fields = ['name', 'status', 'description', 'timestamp', 'user']
 
-class InferenceStudySerializer(serializers.ModelSerializer):
+
+class TaskSerializer(serializers.ModelSerializer):
     name = serializers.SerializerMethodField('get_name')
 
     def get_name(self, study):
         return f'{study.algorithm_instance.algorithm.name} on {study.dataset.title}'
 
     class Meta:
-        model = InferenceStudy
+        model = Task
         fields = [
             'pk',
             'algorithm_instance',
@@ -33,18 +38,19 @@ class InferenceStudySerializer(serializers.ModelSerializer):
             'avg_study_edge_weight', 
             'std_study_edge_weight',
             'name',
+            'study',
             'status',
             ]
 
-class InferenceResultSerializer(serializers.ModelSerializer):
+class ResultSerializer(serializers.ModelSerializer):
     class Meta:
-        model = InferenceResult
+        model = Result
         fields = [
             'pk',
             'tf',
             'target',
             'edge_weight',
-            'study',
+            'task',
             ]
 
 class AlgorithmSerializer(serializers.ModelSerializer):

@@ -4,7 +4,6 @@ djangorestframework-simplejwt
 psycopg2-binary
 bmt
 reasoner_pydantic
-#reasoner-validator
 django-environ
 django-hosts
 gunicorn
@@ -16,3 +15,5 @@ celery
 flower
 redis
 pandas
+django-cors-headers
+django-oauth-toolkit

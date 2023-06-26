@@ -4,15 +4,16 @@ import pandas as pd
 import requests 
 
 from django.db import transaction
-from django.contrib.auth.models import User
+from django.contrib.auth import get_user_model
 from celery import shared_task
 from celery.utils.log import get_task_logger
 from copy import deepcopy
 
-from .models import Dataset, Gene, InferenceStudy, InferenceResult, Algorithm, AlgorithmInstance
+from .models import Dataset, Gene, Study, Task, Result, Algorithm, AlgorithmInstance
 from dispatcher.models import DispatcherSetting
 
 logger = get_task_logger(__name__)
+User = get_user_model()
 
 def normalize_nodes(curies):
     dispatcher_settings = DispatcherSetting.load()
@@ -35,20 +36,20 @@ def get_chp_preferred_curie(info):
             return _id['identifier']
     return None
 
-def save_inference_study(study, status, failed=False):
-    study.status = status["task_status"]
+def save_inference_task(task, status, failed=False):
+    task.status = status["task_status"]
     if failed:
-        study.message = status["task_result"]
+        task.message = status["task_result"]
     else:
         # Construct Dataframe from result
         df = pd.DataFrame.from_records(status["task_result"])
         
-        # Add study edge weight features
+        # Add task edge weight features
         stats = df["EdgeWeight"].astype(float).describe()
-        study.max_study_edge_weight = stats["max"]
-        study.min_study_edge_weight = stats["min"]
-        study.avg_study_edge_weight = stats["mean"]
-        study.std_study_edge_weight = stats["std"]
+        task.max_task_edge_weight = stats["max"]
+        task.min_task_edge_weight = stats["min"]
+        task.avg_task_edge_weight = stats["mean"]
+        task.std_task_edge_weight = stats["std"]
 
         # Collect all genes
         genes = set()
@@ -95,41 +96,41 @@ def save_inference_study(study, status, failed=False):
             if created:
                 gene2_obj.save()
             # Construct and save Result
-            result = InferenceResult.objects.create(
+            result = Result.objects.create(
                     tf=gene1_obj,
                     target=gene2_obj,
                     edge_weight=row["EdgeWeight"],
-                    study=study,
-                    user=study.user,
+                    task=task,
+                    user=task.user,
                     )
             result.save()
-    study.save()
+    task.save()
     return True
 
 def get_status(algo, task_id):
     return requests.get(f'{algo.url}/status/{task_id}', headers={'Cache-Control': 'no-cache'}).json()
 
 
-def return_saved_study(studies, user):
-    study = studies[0]
-    # Copy study results
-    results = deepcopy(study.results)
-    # Create a new study that is a duplicate but assign to this user.
-    study.pk = None
-    study.results = None
-    study.save()
+def return_saved_task(tasks, user):
+    task = studies[0]
+    # Copy task results
+    results = deepcopy(task.results)
+    # Create a new task that is a duplicate but assign to this user.
+    task.pk = None
+    task.results = None
+    task.save()
 
-    # Now go through and assign all results to this study and user.
+    # Now go through and assign all results to this task and user.
     for result in results:
         result.pk = None
-        result.study = study
+        result.task = task
         result.user = user
         result.save()
     return True
 
 
 @shared_task(name="create_gennifer_task")
-def create_task(algorithm_name, zenodo_id, hyperparameters, user_pk):
+def create_task(algorithm_name, zenodo_id, hyperparameters, user_pk, study_pk):
     # Get algorithm obj
     algo = Algorithm.objects.get(name=algorithm_name)
 
@@ -147,26 +148,29 @@ def create_task(algorithm_name, zenodo_id, hyperparameters, user_pk):
 
     # Get User obj
     user = User.objects.get(pk=user_pk)
+    
+    # Get Study obj
+    study = Study.objects.get(pk=study_pk)
 
     # Initialize dataset instance
     dataset, dataset_created = Dataset.objects.get_or_create(
             zenodo_id=zenodo_id,
-            upload_user=user,
+            user=user,
             )
 
     if dataset_created:
         dataset.save()
 
     if not algo_instance_created and not dataset_created:
-        # This means we've already run the study. So let's just return that and not bother our workers.
-        studies = InferenceStudy.objects.filter(
+        # This means we've already run the task. So let's just return that and not bother our workers.
+        tasks = Task.objects.filter(
                 algorithm_instance=algo_instance,
                 dataset=dataset,
                 status='SUCCESS',
                 )
         #TODO: Probably should add some timestamp handling here 
         if len(studies) > 0:
-            return_saved_study(studies, user)
+            return_saved_task(tasks, user)
             
     # Send to gennifer app
     gennifer_request = {
@@ -181,25 +185,26 @@ def create_task(algorithm_name, zenodo_id, hyperparameters, user_pk):
     status = get_status(algo, task_id)
     
     # Create Inference Study
-    study = InferenceStudy.objects.create(
+    task = Task.objects.create(
             algorithm_instance=algo_instance,
             user=user,
             dataset=dataset,
             status=status["task_status"],
+            study=study,
             )
-    # Save initial study
-    study.save()
+    # Save initial task
+    task.save()
 
-    # Enter a loop to keep checking back in and populate the study once it has completed.
+    # Enter a loop to keep checking back in and populate the task once it has completed.
     #TODO: Not sure if this is best practice
     while True:
         # Check in every 2 seconds
         time.sleep(5)
         status = get_status(algo, task_id)
         if status["task_status"] == 'SUCCESS':
-            return save_inference_study(study, status)
+            return save_inference_task(task, status)
         if status["task_status"] == "FAILURE":
-            return save_inference_study(study, status, failed=True)
-        if status["task_status"] != study.status:
-            study.status = status["task_status"]
-            study.save()
+            return save_inference_task(task, status, failed=True)
+        if status["task_status"] != task.status:
+            task.status = status["task_status"]
+            task.save()
