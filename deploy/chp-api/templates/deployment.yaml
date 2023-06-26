@@ -114,7 +114,7 @@ spec:
             name: {{ include "chp-api.fullname" . }}-configs
         - name: static-vol
           persistentVolumeClaim:
-            claimName: {{ include "chp-api.fullname" . }}-pvc
+            claimName: chp-api-pvc-chp-api-0
       {{- with .Values.affinity }}
       affinity:
         {{- toYaml . | nindent 8 }}
