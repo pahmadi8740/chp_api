@@ -39,7 +39,6 @@ AUTHENTICATION_BACKENDS = [
     'oauth2_provider.backends.OAuth2Backend',
     # Uncomment following if you want to access the admin
     #'django.contrib.auth.backends.ModelBackend',
-    '...',
 ]
 
 # Cors stuff (must go before installed apps)
@@ -230,5 +229,6 @@ CELERY_RESULT_BACKEND = os.environ.get("CELERY_RESULT_BACKEND", "redis://localho
 
 # Gennifer settings
 GENNIFER_ALGORITHM_URLS = [
-        "http://pidc:5000"
+        "http://pidc:5000",
+        "http://grisli:5000",
         ]
