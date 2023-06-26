@@ -113,7 +113,8 @@ spec:
           configMap:
             name: {{ include "chp-api.fullname" . }}-configs
         - name: static-vol
-          emptyDir: {}
+          persistentVolumeClaim:
+            claimName: {{ include "chp-api.fullname" . }}-pvc
       {{- with .Values.affinity }}
       affinity:
         {{- toYaml . | nindent 8 }}
