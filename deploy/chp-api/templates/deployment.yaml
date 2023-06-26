@@ -113,8 +113,7 @@ spec:
           configMap:
             name: {{ include "chp-api.fullname" . }}-configs
         - name: static-vol
-          configMap: 
-            name: {{ include "chp-api.fullname" . }}-static
+          emptyDir: {}
       {{- with .Values.affinity }}
       affinity:
         {{- toYaml . | nindent 8 }}
