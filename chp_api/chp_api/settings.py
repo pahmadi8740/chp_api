@@ -171,6 +171,13 @@ if not SECRET_KEY:
     with open(env("SECRET_KEY_FILE"), 'r') as sk_file:
         SECRET_KEY = sk_file.readline().strip()
 
+CSRF_TRUSTED_ORIGINS = env("CSRF_TRUSTED_ORIGINS", default=None)
+if not CSRF_TRUSTED_ORIGINS:
+    with open(env("CSRF_TRUSTED_ORIGINS_FILE"), 'r') as csrf_file:
+        CSRF_TRUSTED_ORIGINS = csrf_file.readline().strip().split(" ")
+else:
+    CSRF_TRUSTED_ORIGINS = CSRF_TRUSTED_ORIGINS.split(',')
+
 # Set UN, Email and Password for superuser
 DJANGO_SUPERUSER_USERNAME = env("DJANGO_SUPERUSER_USERNAME", default=None)
 if not DJANGO_SUPERUSER_USERNAME:

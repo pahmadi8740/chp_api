@@ -33,6 +33,7 @@ services:
       - db-password
       - django-key
       - allowed-hosts
+      - csrf-trusted-origins
       - django-superuser-username
       - django-superuser-email
       - django-superuser-password
@@ -47,11 +48,12 @@ services:
         #- POSTGRES_PASSWORD=31173e51d8f78b56606d06dfb66a1b126630cdf4711bed9427025d8979976f31
         #- SECRET_KEY=e1743ca40af220389cd1165d213e3d677f2d59c00d7b0f94e7a302c91f95f029
         #- DJANGO_ALLOWED_HOSTS=localhost,chp.thayer.dartmouth.edu
+        #- CSRF_TRUSTED_ORIGINS=localhost,chp.thayer.dartmouth.edu
         #- DJANGO_SUPERUSER_USERNAME=chp_admin
         #- DJANGO_SUPERUSER_EMAIL=chp_admin@chp.com
         #- DJANGO_SUPERUSER_PASSWORD=e12ff26f070819d9a72e317898148679680e6b3976e464b4102bd6eb18357919
-      - POSTGRES_PASSWORD_FILE=/run/secrets/db-password
       - SECRET_KEY_FILE=/run/secrets/django-key
+      - CSRF_TRUSTED_ORIGINS_FILE=/run/secrets/csrf-trusted-origins
       - DJANGO_ALLOWED_HOSTS_FILE=/run/secrets/allowed-hosts
       - DJANGO_SUPERUSER_USERNAME_FILE=/run/secrets/django-superuser-username
       - DJANGO_SUPERUSER_EMAIL_FILE=/run/secrets/django-superuser-email
@@ -109,6 +111,8 @@ volumes:
 secrets:
   allowed-hosts:
     file: secrets/chp_api/allowed_hosts.txt
+  csrf-trusted-origins:
+    file: secrets/chp_api/csrf_trusted_origins.txt
   db-password:
     file: secrets/db/password.txt
   django-key:
