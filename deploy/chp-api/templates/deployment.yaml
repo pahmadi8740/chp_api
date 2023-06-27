@@ -33,7 +33,7 @@ spec:
               protocol: TCP
           volumeMounts:
             - name: {{ include "chp-api.fullname" . }}-pvc
-              mountPath: /home/chp_api/web/staticfiles
+              mountPath: /home/chp_api/staticfiles
           env:
             - name: SECRET_KEY
               valueFrom:
