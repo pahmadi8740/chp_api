@@ -32,8 +32,8 @@ spec:
               containerPort: 8000
               protocol: TCP
           volumeMounts:
-            - name: static-vol
-              mountPath: /home/chp_api/web/staticfiles
+            - name: {{ include "chp-api.fullname" . }}-pvc
+              mountPath: /home/chp_api/staticfiles
           env:
             - name: SECRET_KEY
               valueFrom:
@@ -101,7 +101,7 @@ spec:
               containerPort: 8080
               protocol: TCP
           volumeMounts:
-            - name: static-vol
+            - name: {{ include "chp-api.fullname" . }}-pvc
               mountPath: /var/www/static
           env:
             - name: FOLDER
@@ -112,9 +112,6 @@ spec:
         - name: config-vol
           configMap:
             name: {{ include "chp-api.fullname" . }}-configs
-        - name: static-vol
-          configMap: 
-            name: {{ include "chp-api.fullname" . }}-static
       {{- with .Values.affinity }}
       affinity:
         {{- toYaml . | nindent 8 }}
