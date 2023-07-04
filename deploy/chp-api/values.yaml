@@ -20,6 +20,7 @@ fullnameOverride: ""
 app:
   debug: "0"
   secret_key: ""
+  djangoCSRFTrustedOrigins: ""
   djangoAllowedHosts: ""
   djangoSettingsModule: "chp_api.settings"
   djangoSuperuserUsername: "chp_admin"
