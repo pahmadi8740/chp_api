@@ -29,7 +29,8 @@ urlpatterns = [
         path('gennifer/api/', include('gennifer.urls')),
         path('api/token/', TokenObtainPairView.as_view(), name='token_obtain_pair'),
         path('api/token/refresh/', TokenRefreshView.as_view(), name='token_refresh'), 
-        path('o/', include('oauth2_provider.urls', namespace='oauth2_provider'))
+        path('o/', include('oauth2_provider.urls', namespace='oauth2_provider')),
+        path('users/', include('users.urls')),
         ]
 
 

@@ -52,7 +52,7 @@ class DatasetViewSet(viewsets.ModelViewSet):
     serializer_class = DatasetSerializer
     filter_backends = [DjangoFilterBackend]
     filterset_fields = ['user', 'zenodo_id']
-    permission_classes = [IsOwnerOrReadOnly]
+    permission_classes = [IsAuthenticated, TokenHasReadWriteScope]
 
 
     def perform_create(self, serializers):
