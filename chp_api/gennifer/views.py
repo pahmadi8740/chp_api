@@ -11,7 +11,7 @@ from rest_framework.response import Response
 from rest_framework.permissions import IsAuthenticated, IsAuthenticatedOrReadOnly
 from rest_framework.exceptions import ValidationError
 from django_filters.rest_framework import DjangoFilterBackend
-from oauth2_provider.contrib.rest_framework import TokenHasReadWriteScope
+#from oauth2_provider.contrib.rest_framework import TokenHasReadWriteScope, TokenHasScope
 
 from .models import (
         Dataset,
@@ -20,7 +20,10 @@ from .models import (
         Result, 
         Algorithm, 
         Gene, 
-        UserAnalysisSession
+        UserAnalysisSession,
+        AlgorithmInstance,
+        Hyperparameter,
+        HyperparameterInstance
         )
 from .serializers import (
         DatasetSerializer,
@@ -29,7 +32,10 @@ from .serializers import (
         ResultSerializer, 
         AlgorithmSerializer, 
         GeneSerializer,
-        UserAnalysisSessionSerializer
+        UserAnalysisSessionSerializer,
+        AlgorithmInstanceSerializer,
+        HyperparameterSerializer,
+        HyperparameterInstanceSerializer,
         )
 from .tasks import create_task
 from .permissions import IsOwnerOrReadOnly, IsAdminOrReadOnly
@@ -39,7 +45,7 @@ class UserAnalysisSessionViewSet(viewsets.ModelViewSet):
     serializer_class = UserAnalysisSessionSerializer
     #filter_backends = [DjangoFilterBackend]
     #filterset_fields = ['id', 'name', 'is_saved']
-    permission_classes = [IsOwnerOrReadOnly, IsAuthenticated]
+    permission_classes = [IsAuthenticated, IsOwnerOrReadOnly]#, TokenHasReadWriteScope]
 
     def get_queryset(self):
         user = self.request.user
@@ -52,8 +58,7 @@ class DatasetViewSet(viewsets.ModelViewSet):
     serializer_class = DatasetSerializer
     filter_backends = [DjangoFilterBackend]
     filterset_fields = ['user', 'zenodo_id']
-    permission_classes = [IsAuthenticated, TokenHasReadWriteScope]
-
+    permission_classes = [IsAuthenticated, IsOwnerOrReadOnly]#, TokenHasReadWriteScope]
 
     def perform_create(self, serializers):
         try:
@@ -62,42 +67,77 @@ class DatasetViewSet(viewsets.ModelViewSet):
             raise ValidationError(str(e))
 
 class StudyViewSet(viewsets.ModelViewSet):
-    queryset = Study.objects.all()
+    #queryset = Study.objects.all()
     serializer_class = StudySerializer
-    permission_classes = [IsOwnerOrReadOnly]
+    permission_classes = [IsAuthenticated, IsOwnerOrReadOnly]#, TokenHasReadWriteScope]
+    
+    def get_queryset(self):
+        user = self.request.user
+        return Study.objects.filter(user=user)
+    
+    def perform_create(self, serializers):
+        try:
+            serializers.save(user=self.request.user, status='RECEIVED')
+        except ValueError as e:
+            raise ValidationError(str(e))
 
 class TaskViewSet(viewsets.ModelViewSet):
-    queryset = Task.objects.all()
+    #queryset = Task.objects.all()
     serializer_class = TaskSerializer
     filter_backends = [DjangoFilterBackend]
     filterset_fields = ['is_public', 'dataset', 'algorithm_instance']
-    permission_classes = [IsOwnerOrReadOnly]
+    permission_classes = [IsAuthenticated, IsOwnerOrReadOnly]#, TokenHasReadWriteScope]
 
-    #def get_queryset(self):
-    #    user = self.request.user
-    #    return InferenceStudy.objects.filter(user=user)
+    def get_queryset(self):
+        user = self.request.user
+        return Task.objects.filter(user=user)
+    
+    def perform_create(self, serializers):
+        try:
+            serializers.save(user=self.request.user, status='RECEIVED')
+        except ValueError as e:
+            raise ValidationError(str(e))
 
 
 class ResultViewSet(viewsets.ModelViewSet):
-    queryset = Result.objects.all()
+    #queryset = Result.objects.all()
     serializer_class = ResultSerializer
     filter_backends = [DjangoFilterBackend]
     filterset_fields = ['is_public', 'task', 'tf', 'target']
-    permission_classes = [IsOwnerOrReadOnly]
+    permission_classes = [IsAuthenticated, IsOwnerOrReadOnly]#, TokenHasReadWriteScope]
 
-    #def get_queryset(self):
-    #    user = self.request.user
-    #    return InferenceResult.objects.filter(user=user)
+    def get_queryset(self):
+        user = self.request.user
+        return Result.objects.filter(user=user)
 
 class AlgorithmViewSet(viewsets.ModelViewSet):
     serializer_class = AlgorithmSerializer
     queryset = Algorithm.objects.all()
-    permissions = [IsAdminOrReadOnly]
+    permission_classes = [IsAuthenticated, IsAdminOrReadOnly]#, TokenHasReadWriteScope]
+    #required_scopes = ['read']
+
+class AlgorithmInstanceViewSet(viewsets.ModelViewSet):
+    queryset = AlgorithmInstance.objects.all()
+    serializer_class = AlgorithmInstanceSerializer
+    permission_classes = [IsAuthenticated, IsOwnerOrReadOnly]#, TokenHasReadWriteScope]
+
+class HyperparameterViewSet(viewsets.ModelViewSet):
+    serializer_class = HyperparameterSerializer
+    queryset = Hyperparameter.objects.all()
+    filter_backends = [DjangoFilterBackend]
+    filterset_fields = ['algorithm']
+    permission_classes = [IsAuthenticated, IsAdminOrReadOnly]#, TokenHasReadWriteScope]
+    #required_scopes = ['read']
+
+class HyperparameterInstanceViewSet(viewsets.ModelViewSet):
+    queryset = HyperparameterInstance.objects.all()
+    serializer_class = HyperparameterInstanceSerializer
+    permission_classes = [IsAuthenticated, IsOwnerOrReadOnly]#, TokenHasReadWriteScope]
 
 class GeneViewSet(viewsets.ModelViewSet):
     serializer_class = GeneSerializer
     queryset = Gene.objects.all()
-    permissions = [IsAdminOrReadOnly]
+    permission_classes = [IsAuthenticated, IsAdminOrReadOnly]#, TokenHasReadWriteScope]
 
 
 class CytoscapeView(APIView):
@@ -258,39 +298,26 @@ class run(APIView):
     def post(self, request):
         """ Request comes in as a list of algorithms to run.
         """
-        # Create study
-        study = Study.objects.create(
-                name = request.data['name'],
-                description = request.data.get('description', None),
-                status = 'RECIEVED',
-                user = request.user,
-                )
+        study_id = request.data.get("study_id", None)
+        if not study_id:
+            return JsonResponse({"error": 'Must pass a study_id.'})
+        response = {
+                "study_id": study_id,
+                "task_status": [],
+                }
+        # Get study
+        try:
+            study = Study.objects.get(pk=study_id, user=request.user)
+        except ObjectDoesNotExist:
+            response["error"] = 'The study does not exist for request user.'
+            return JsonResponse(response)
+        # Set Study Status to Started.
+        study.status = 'STARTED'
         study.save()
         # Build gennifer requests
-        tasks = request.data['tasks']
-        response = {"study_id": study.pk, "tasks": []}
+        tasks = Task.objects.filter(study=study)
         for task in tasks:
-            algorithm_name = task.get("algorithm_name", None)
-            zenodo_id = task.get("zenodo_id", None)
-            hyperparameters = task.get("hyperparameters", None)
-            if hyperparameters:
-                if len(hyperparameters) == 0:
-                    hyperparameters = None
-            if not algorithm_name:
-                task["error"] = "No algorithm name provided."
-                response["tasks"].append(task)
-                continue
-            if not zenodo_id:
-                task["error"] = "No dataset Zenodo identifer provided."
-                response["tasks"].append(task)
-                continue
-            try:
-                algo = Algorithm.objects.get(name=algorithm_name)
-            except ObjectDoesNotExist:
-                task["error"] = f"The algorithm: {algorithm_name} is not supported in Gennifer." 
-                response["tasks"].append(task)
-                continue
             # If all pass, now send to gennifer services
-            task["task_id"] = create_task.delay(algo.name, zenodo_id, hyperparameters, request.user.pk, study.pk).id
-            response["tasks"].append(task)
+            task_id = create_task.delay(task.pk).id
+            response["task_status"].append(task_id)
         return JsonResponse(response)

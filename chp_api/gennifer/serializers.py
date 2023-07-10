@@ -1,6 +1,17 @@
 from rest_framework import serializers
 
-from .models import Dataset, Study, Task, Result, Algorithm, Gene, UserAnalysisSession
+from .models import (
+        Dataset,
+        Study,
+        Task,
+        Result,
+        Algorithm,
+        Gene,
+        UserAnalysisSession,
+        AlgorithmInstance,
+        Hyperparameter,
+        HyperparameterInstance,
+        )
 
 
 class UserAnalysisSessionSerializer(serializers.ModelSerializer):
@@ -11,13 +22,14 @@ class UserAnalysisSessionSerializer(serializers.ModelSerializer):
 class DatasetSerializer(serializers.ModelSerializer):
     class Meta:
         model = Dataset
-        fields = ['title', 'zenodo_id', 'doi', 'description']
-        read_only_fields = ['title', 'doi', 'description']
+        fields = ['pk', 'title', 'zenodo_id', 'doi', 'description']
+        read_only_fields = ['pk', 'title', 'doi', 'description']
 
 class StudySerializer(serializers.ModelSerializer):
     class Meta:
         model = Study
-        fields = ['name', 'status', 'description', 'timestamp', 'user']
+        fields = ['pk', 'name', 'status', 'description', 'timestamp', 'user', 'tasks']
+        read_only_fields = ['pk', 'status']
 
 
 class TaskSerializer(serializers.ModelSerializer):
@@ -33,14 +45,23 @@ class TaskSerializer(serializers.ModelSerializer):
             'algorithm_instance',
             'dataset', 
             'timestamp', 
-            'max_study_edge_weight', 
-            'min_study_edge_weight', 
-            'avg_study_edge_weight', 
-            'std_study_edge_weight',
+            'max_task_edge_weight', 
+            'min_task_edge_weight', 
+            'avg_task_edge_weight', 
+            'std_task_edge_weight',
             'name',
             'study',
             'status',
             ]
+        read_only_fields = [
+                'pk',
+                'max_task_edge_weight', 
+                'min_task_edge_weight', 
+                'avg_task_edge_weight', 
+                'std_task_edge_weight', 
+                'name',
+                'status',
+                ]
 
 class ResultSerializer(serializers.ModelSerializer):
     class Meta:
@@ -64,6 +85,44 @@ class AlgorithmSerializer(serializers.ModelSerializer):
                 'directed',
                 ]
 
+class AlgorithmInstanceSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = AlgorithmInstance
+        fields = [
+                'pk',
+                'algorithm',
+                ]
+        read_only_fields = ['pk']
+
+    def create(self, validated_data):
+        instance, _ = AlgorithmInstance.objects.get_or_create(**validated_data)
+        return instance
+        
+class HyperparameterSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Hyperparameter
+        fields = [
+                'pk',
+                'name',
+                'algorithm',
+                'type',
+                ]
+        read_only_fields = ['pk', 'name', 'algorithm', 'type']
+
+class HyperparameterInstanceSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = HyperparameterInstance
+        fields = [
+                'pk',
+                'algorithm_instance',
+                'value_str',
+                'hyperparameter',
+                ]
+        read_only_fields = ['pk']
+
+    def create(self, validated_data):
+        instance, _ = HyperparameterInstance.objects.get_or_create(**validated_data)
+        return instance
 
 class GeneSerializer(serializers.ModelSerializer):
     class Meta:

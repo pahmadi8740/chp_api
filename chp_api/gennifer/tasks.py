@@ -128,53 +128,61 @@ def return_saved_task(tasks, user):
         result.save()
     return True
 
-
 @shared_task(name="create_gennifer_task")
-def create_task(algorithm_name, zenodo_id, hyperparameters, user_pk, study_pk):
-    # Get algorithm obj
-    algo = Algorithm.objects.get(name=algorithm_name)
+def create_task(task_pk):
+    # Get task
+    task = Task.objects.get(pk=task_pk)
+    algo = task.algorithm_instance.algorithm
+    user = task.user
+    ## Get algorithm obj
+    #algo = Algorithm.objects.get(name=algorithm_name)
 
-    # Get or create a new algorithm instance based on the hyperparameters
-    if not hyperparameters:
-        algo_instance, algo_instance_created = AlgorithmInstance.objects.get_or_create(
-                algorithm=algo,
-                hyperparameters__isnull=True,
-                )
-    else:
-        algo_instance, algo_instance_created = AlgorithmInstance.objects.get_or_create(
-                algorithm=algo,
-                hyperparameters=hyperparameters,
-                )
+    ## Get or create a new algorithm instance based on the hyperparameters
+    #if not hyperparameters:
+    #    algo_instance, algo_instance_created = AlgorithmInstance.objects.get_or_create(
+    #            algorithm=algo,
+    #            hyperparameters__isnull=True,
+    #            )
+    #else:
+    #    algo_instance, algo_instance_created = AlgorithmInstance.objects.get_or_create(
+    #            algorithm=algo,
+    #            hyperparameters=hyperparameters,
+    #            )
 
     # Get User obj
-    user = User.objects.get(pk=user_pk)
+    #user = User.objects.get(pk=user_pk)
     
     # Get Study obj
-    study = Study.objects.get(pk=study_pk)
+    #study = Study.objects.get(pk=study_pk)
 
     # Initialize dataset instance
-    dataset, dataset_created = Dataset.objects.get_or_create(
-            zenodo_id=zenodo_id,
-            user=user,
-            )
+    #dataset, dataset_created = Dataset.objects.get_or_create(
+    #        zenodo_id=zenodo_id,
+    #        user=user,
+    #        )
 
-    if dataset_created:
-        dataset.save()
+    #if dataset_created:
+    #    dataset.save()
 
-    if not algo_instance_created and not dataset_created:
-        # This means we've already run the task. So let's just return that and not bother our workers.
-        tasks = Task.objects.filter(
-                algorithm_instance=algo_instance,
-                dataset=dataset,
-                status='SUCCESS',
-                )
-        #TODO: Probably should add some timestamp handling here 
-        if len(studies) > 0:
-            return_saved_task(tasks, user)
-            
+    #if not algo_instance_created and not dataset_created:
+    #    # This means we've already run the task. So let's just return that and not bother our workers.
+    #    tasks = Task.objects.filter(
+    #            algorithm_instance=algo_instance,
+    #            dataset=dataset,
+    #            status='SUCCESS',
+    #            )
+    #    #TODO: Probably should add some timestamp handling here 
+    #    if len(studies) > 0:
+    #        return_saved_task(tasks, user)
+    
+    # Create Hyperparameter serialization
+    hyperparameters = {}
+    for h in task.algorithm_instance.hyperparameters.all():
+        hyperparameters[h.hyperparameter.name] = h.get_value()
+
     # Send to gennifer app
     gennifer_request = {
-            "zenodo_id": zenodo_id,
+            "zenodo_id": task.dataset.zenodo_id,
             "hyperparameters": hyperparameters,
             }
     task_id = requests.post(f'{algo.url}/run', json=gennifer_request).json()["task_id"]
@@ -184,16 +192,16 @@ def create_task(algorithm_name, zenodo_id, hyperparameters, user_pk, study_pk):
     # Get initial status
     status = get_status(algo, task_id)
     
-    # Create Inference Study
-    task = Task.objects.create(
-            algorithm_instance=algo_instance,
-            user=user,
-            dataset=dataset,
-            status=status["task_status"],
-            study=study,
-            )
+    
+    #task = Task.objects.create(
+    #        algorithm_instance=algo_instance,
+    #        user=user,
+    #        dataset=dataset,
+    #        status=status["task_status"],
+    #        study=study,
+    #        )
     # Save initial task
-    task.save()
+    #task.save()
 
     # Enter a loop to keep checking back in and populate the task once it has completed.
     #TODO: Not sure if this is best practice

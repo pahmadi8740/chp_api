@@ -1,7 +1,7 @@
 import requests
 from django.conf import settings
 
-from ..models import Algorithm
+from ..models import Algorithm, Hyperparameter
 
 
 def run():
@@ -17,3 +17,13 @@ def run():
                 directed=algo_info["directed"],
                 )
         algo.save()
+        # Load Hyperparameters
+        if algo_info["hyperparameters"]:
+            for hp_name, hp_info in algo_info["hyperparameters"].items():
+                hp = Hyperparameter.objects.create(
+                        name=hp_name,
+                        type=getattr(Hyperparameter, hp_info["type"]),
+                        algorithm=algo,
+                        info=hp_info["info"],
+                        )
+                hp.save()

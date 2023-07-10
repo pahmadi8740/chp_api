@@ -34,15 +34,54 @@ class Algorithm(models.Model):
 
 class AlgorithmInstance(models.Model):
     algorithm = models.ForeignKey(Algorithm, on_delete=models.CASCADE, related_name='instances')
-    hyperparameters = models.JSONField(null=True)
 
     def __str__(self):
         if self.hyperparameters:
-            hypers = tuple([f'{k}={v}' for k, v in self.hyperparameters.items()])
+            hypers = tuple([f'{h}' for h in self.hyperparameters])
         else:
             hypers = '()'
         return f'{self.algorithm.name}{hypers}'
 
+
+class Hyperparameter(models.Model):
+    INT = "int"
+    BOOL = "bool"
+    STR = "str"
+    FLOAT = "float"
+    TYPE_CHOICES = (
+            (INT, "Integer"),
+            (BOOL, "Boolean"),
+            (STR, "String"),
+            (FLOAT, "Float"),
+            )
+    name = models.CharField(max_length=128)
+    type = models.CharField(max_length=5, choices=TYPE_CHOICES, default=FLOAT)
+    algorithm = models.ForeignKey(Algorithm, on_delete=models.CASCADE, related_name='hyperparameters')
+    info = models.TextField(null=True, blank=True)
+
+    def get_type(self):
+        known_types = {
+                "int": int,
+                "bool": bool,
+                "str": str,
+                "float": float,
+                }
+        return known_types[self.type]
+    
+    def __str__(self):
+        return self.name
+
+
+class HyperparameterInstance(models.Model):
+    hyperparameter = models.ForeignKey(Hyperparameter, on_delete=models.CASCADE, related_name='instances')
+    value_str = models.CharField(max_length=128)
+    algorithm_instance = models.ForeignKey(AlgorithmInstance, on_delete=models.CASCADE, related_name='hyperparameters')
+
+    def get_value(self):
+        return self.hyperparameter.get_type()(self.value_str)
+
+    def __str__(self):
+        return f'{self.hyperparameter.name}={self.value}'
 
 class Dataset(models.Model):
     title = models.CharField(max_length=128)
@@ -100,10 +139,10 @@ class Task(models.Model):
     dataset = models.ForeignKey(Dataset, on_delete=models.CASCADE, related_name='tasks')
     timestamp = models.DateTimeField(auto_now_add=True)
     # Study characteristics for all edge weights in a given study over a dataset
-    max_study_edge_weight = models.FloatField(null=True)
-    min_study_edge_weight = models.FloatField(null=True)
-    avg_study_edge_weight = models.FloatField(null=True)
-    std_study_edge_weight = models.FloatField(null=True)
+    max_task_edge_weight = models.FloatField(null=True)
+    min_task_edge_weight = models.FloatField(null=True)
+    avg_task_edge_weight = models.FloatField(null=True)
+    std_task_edge_weight = models.FloatField(null=True)
     is_public = models.BooleanField(default=False)
     status = models.CharField(max_length=10)
     error_message = models.TextField(null=True, blank=True)
