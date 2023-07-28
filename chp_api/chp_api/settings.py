@@ -247,4 +247,7 @@ CELERY_RESULT_BACKEND = os.environ.get("CELERY_RESULT_BACKEND", "redis://localho
 GENNIFER_ALGORITHM_URLS = [
         "http://pidc:5000",
         "http://grisli:5000",
+        "http://genie3:5000",
+        "http://grnboost2:5000",
+        "http://bkb-grn:5000",
         ]

@@ -73,12 +73,18 @@ def save_inference_task(task, status, failed=False):
             except TypeError:
                 gene1_name = 'Not found in SRI Node Normalizer.'
                 gene1_chp_preferred_curie = None
+            except KeyError:
+                _, gene1_name = res[gene1]["id"]["identifier"].split(':')
+                gene1_chp_preferred_curie = get_chp_preferred_curie(res[gene1])
             try:
                 gene2_name = res[gene2]["id"]["label"]
                 gene2_chp_preferred_curie = get_chp_preferred_curie(res[gene2])
             except TypeError:
                 gene2_name = 'Not found in SRI Node Normalizer.'
                 gene2_chp_preferred_curie = None
+            except KeyError:
+                _, gene2_name = res[gene2]["id"]["identifier"].split(':')
+                gene2_chp_preferred_curie = get_chp_preferred_curie(res[gene2])
             gene1_obj, created = Gene.objects.get_or_create(
                     name=gene1_name,
                     curie=gene1,

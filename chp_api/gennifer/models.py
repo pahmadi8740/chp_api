@@ -37,7 +37,7 @@ class AlgorithmInstance(models.Model):
 
     def __str__(self):
         if self.hyperparameters:
-            hypers = tuple([f'{h}' for h in self.hyperparameters])
+            hypers = tuple([f'{h}' for h in self.hyperparameters.all()])
         else:
             hypers = '()'
         return f'{self.algorithm.name}{hypers}'
@@ -81,7 +81,7 @@ class HyperparameterInstance(models.Model):
         return self.hyperparameter.get_type()(self.value_str)
 
     def __str__(self):
-        return f'{self.hyperparameter.name}={self.value}'
+        return f'{self.hyperparameter.name}={self.value_str}'
 
 class Dataset(models.Model):
     title = models.CharField(max_length=128)
@@ -132,6 +132,7 @@ class Study(models.Model):
 
     def __str__(self):
         return self.name
+
 
 class Task(models.Model):
     algorithm_instance = models.ForeignKey(AlgorithmInstance, on_delete=models.CASCADE, related_name='tasks')

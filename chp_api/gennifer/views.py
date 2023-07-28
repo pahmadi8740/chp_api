@@ -136,12 +136,23 @@ class HyperparameterInstanceViewSet(viewsets.ModelViewSet):
 
 class GeneViewSet(viewsets.ModelViewSet):
     serializer_class = GeneSerializer
-    queryset = Gene.objects.all()
+    #queryset = Gene.objects.all()
     permission_classes = [IsAuthenticated, IsAdminOrReadOnly]#, TokenHasReadWriteScope]
+    
+    def get_queryset(self):
+        user = self.request.user
+        # Get user results
+        results = Result.objects.filter(user=user)
+        tf_genes = Gene.objects.filter(inference_result_tf__pk__in=results)
+        target_genes = Gene.objects.filter(inference_result_target__pk__in=results)
+        genes_union = tf_genes.union(target_genes)
+        print(len(genes_union))
+        return genes_union
 
-
-class CytoscapeView(APIView):
-
+class CytoscapeHandler:
+    def __init__(self, results):
+        self.results = results
+    
     def construct_node(self, gene_obj):
         if gene_obj.variant:
             name = f'{gene_obj.name}({gene_obj.variant})'
@@ -164,7 +175,7 @@ class CytoscapeView(APIView):
     
     def construct_edge(self, res, source_id, target_id):
         # Normalize edge weight based on the study
-        normalized_weight = (res.edge_weight - res.task.min_study_edge_weight) / (res.task.max_study_edge_weight - res.task.min_study_edge_weight)
+        normalized_weight = (res.edge_weight - res.task.min_task_edge_weight) / (res.task.max_task_edge_weight - res.task.min_task_edge_weight)
         directed = res.task.algorithm_instance.algorithm.directed
         edge_tuple = tuple(sorted([source_id, target_id]))
         edge = {
@@ -202,14 +213,14 @@ class CytoscapeView(APIView):
             pass
         return nodes, edges, processed_node_ids, processed_undirected_edges
 
-    def construct_cytoscape_data(self, results):
+    def construct_cytoscape_data(self):
         nodes = []
         edges = []
         processed_node_ids = set()
         processed_undirected_edges = set()
         elements = []
         # Construct graph
-        for res in results:
+        for res in self.results:
             nodes, edges, processed_node_ids, processed_undirected_edges  = self.add(
                     res,
                     nodes,
@@ -223,21 +234,26 @@ class CytoscapeView(APIView):
                 "elements": elements
                 }
 
+
+class CytoscapeView(APIView):
+
+
     def get(self, request):
         results = Result.objects.all()
-        cyto = self.construct_cytoscape_data(results)
+        cyto_handler = CytoscapeHandler(results)
+        cyto = cyto_handler.construct_cytoscape_data()
         return JsonResponse(cyto)
 
     def post(self, request):
         elements = []
         gene_ids = request.data.get("gene_ids", None)
-        task_ids = request.data.get("task_ids", None)
+        study_ids = request.data.get("study_ids", None)
         algorithm_ids = request.data.get("algorithm_ids", None)
         dataset_ids = request.data.get("dataset_ids", None)
         cached_inference_result_ids = request.data.get("cached_results", None)
 
         if not (study_ids and gene_ids) and not (algorithm_ids and dataset_ids and  gene_ids):
-            return JsonResponse({"elements": elements})
+            return JsonResponse({"elements": elements, "result_ids": []})
         
         # Create Filter
         filters = []
@@ -249,9 +265,11 @@ class CytoscapeView(APIView):
                         ]
                     )
         if study_ids:
-            filters.append({"field": 'task__pk', "operator": 'in', "value": study_ids})
+            tasks = Task.objects.filter(study__pk__in=study_ids)
+            task_ids = [task.pk for task in tasks]
+            filters.append({"field": 'task__pk', "operator": 'in', "value": task_ids})
         if algorithm_ids:
-            filters.append({"field": 'task__algorithm_instance__algorithm__pk', "operator": 'in', "value": study_ids})
+            filters.append({"field": 'task__algorithm_instance__algorithm__pk', "operator": 'in', "value": algorithm_ids})
         if dataset_ids:
             filters.append({"field": 'task__dataset__zenodo_id', "operator": 'in', "value": dataset_ids})
 
@@ -267,30 +285,89 @@ class CytoscapeView(APIView):
         results = Result.objects.filter(query)
 
         if len(results) == 0:
-            return JsonResponse({"elements": elements})
+            return JsonResponse({"elements": elements, "result_ids": []})
         
         # Exclude results that have already been sent to user
         if cached_inference_result_ids:
-            logs.append('filtering')
             results = results.exclude(pk__in=cached_inference_result_ids)
 
-        nodes = []
-        edges = []
-        processed_node_ids = set()
-        processed_undirected_edges = set()
-        for res in results:
-            nodes, edges, processed_node_ids, processed_undirected_edges  = self.add(
-                    res,
-                    nodes,
-                    edges,
-                    processed_node_ids,
-                    processed_undirected_edges,
-                    )
-            elements.extend(nodes)
-            elements.extend(edges)
-        return JsonResponse({"elements": elements})
+        # Capture result_ids
+        result_ids = [res.pk for res in results]
 
+        # Initialize Cytoscape Handler
+        cyto_handler = CytoscapeHandler(results)
+        elements_dict = cyto_handler.construct_cytoscape_data()
 
+        elements_dict["result_ids"] = result_ids
+        return JsonResponse(elements_dict)
+
+class StudyDownloadView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request, study_id=None):
+        if not study_id:
+            return JsonResponse({"detail": 'No study ID was passed.'})
+        # Set response
+        response = {
+                "study_id": study_id,
+                }
+        # Get study
+        try:
+            study = Study.objects.get(pk=study_id, user=request.user)
+        except ObjectDoesNotExist:
+            response["error"] = 'The study does not exist for request user.'
+            return JsonResponse(response)
+
+        response["description"] = study.description
+        response["status"] = study.status
+        response["tasks"] = []
+
+        # Get tasks assocaited with study
+        tasks = Task.objects.filter(study=study)
+
+        # Collect task information
+        for task in tasks:
+            task_json = {}
+            # Collect task information
+            task_json["max_task_edge_weight"] = task.max_task_edge_weight
+            task_json["min_task_edge_weight"] = task.min_task_edge_weight
+            task_json["avg_task_edge_weight"] = task.avg_task_edge_weight
+            task_json["std_task_edge_weight"] = task.std_task_edge_weight
+            task_json["status"] = task.status
+            # Collect algo hyperparameters
+            hyper_instance_objs = task.algorithm_instance.hyperparameters.all()
+            hypers = {}
+            for hyper in hyper_instance_objs:
+                hypers[hyper.hyperparameter.name] = {
+                        "value": hyper.value_str,
+                        "info": hyper.hyperparameter.info
+                        }
+            # Collect Algorithm instance information
+            task_json["algorithm"] = {
+                    "name": task.algorithm_instance.algorithm.name,
+                    "description": task.algorithm_instance.algorithm.description,
+                    "edge_weight_description": task.algorithm_instance.algorithm.edge_weight_description,
+                    "edge_weight_type": task.algorithm_instance.algorithm.edge_weight_type,
+                    "directed": task.algorithm_instance.algorithm.directed,
+                    "hyperparameters": hypers
+                    }
+            # Collect Dataset information
+            task_json["dataset"] = {
+                    "title": task.dataset.title,
+                    "zenodo_id": task.dataset.zenodo_id,
+                    "description": task.dataset.description,
+                    }
+            # Build cytoscape graph
+            if task.status == 'SUCCESS':
+                results = Result.objects.filter(task=task)
+                cyto_handler = CytoscapeHandler(results)
+                task_json["graph"] = cyto_handler.construct_cytoscape_data()
+            else:
+                task_json["graph"] = None
+            response["tasks"].append(task_json)
+
+        return JsonResponse(response)
+                    
 
 class run(APIView):
     permission_classes = [IsAuthenticated]

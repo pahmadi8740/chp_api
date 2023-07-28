@@ -20,4 +20,4 @@ docker compose -f compose.chp-api.yaml run api python3 manage.py runscript algor
 
 docker compose -f compose.chp-api.yaml run --user root api python3 manage.py collectstatic --noinput
 
-echo "Check logs with: docker compose logs -f"
+echo "Check logs with: docker compose -f compose.chp-api.yaml -f compose.gennifer.yaml logs -f"

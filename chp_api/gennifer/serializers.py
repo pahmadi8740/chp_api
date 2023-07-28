@@ -1,3 +1,4 @@
+from collections import defaultdict
 from rest_framework import serializers
 
 from .models import (
@@ -26,10 +27,24 @@ class DatasetSerializer(serializers.ModelSerializer):
         read_only_fields = ['pk', 'title', 'doi', 'description']
 
 class StudySerializer(serializers.ModelSerializer):
+    task_status = serializers.SerializerMethodField('get_task_status')
+
+    def get_task_status(self, study):
+        status = defaultdict(int)
+        for task in study.tasks.all():
+            status[task.status] += 1
+        status = dict(status)
+        status = sorted([f'{count} {state}'.title() for state, count in status.items()])
+        if len(status) == 0:
+            return ''
+        elif len(status) == 1:
+            return status[0]
+        return ' and '.join([', '.join(status[:-1]), status[-1]])
+
     class Meta:
         model = Study
-        fields = ['pk', 'name', 'status', 'description', 'timestamp', 'user', 'tasks']
-        read_only_fields = ['pk', 'status']
+        fields = ['pk', 'name', 'status', 'task_status', 'description', 'timestamp', 'user', 'tasks']
+        read_only_fields = ['pk', 'status', 'task_status']
 
 
 class TaskSerializer(serializers.ModelSerializer):

@@ -20,4 +20,5 @@ urlpatterns = [
     path('', include(router.urls)),
     path('run/', views.run.as_view()),
     path('graph/', views.CytoscapeView.as_view()),
+    path('download_study/<int:study_id>', views.StudyDownloadView.as_view())
     ]

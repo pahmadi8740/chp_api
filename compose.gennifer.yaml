@@ -1,6 +1,22 @@
 version: '3.8'
 
 services:
+  frontend:
+    build:
+        context: ./gennifer/frontend
+        dockerfile: Dockerfile
+    ports:
+      - 3000:3000
+    environment:
+        - NEXTAUTH_SECRET=X/NTPIqf088gXiYFi7WF0iH3NRJRPE3nZ0oOkRXf5es=
+        - NEXTAUTH_URL=https://chp.thayer.dartmouth.edu
+        - NEXTAUTH_URL_INTERNAL=http://127.0.0.1:3000
+        - CREDENTIALS_URL=https://chp.thayer.dartmouth.edu/o/token/
+        - GENNIFER_CLIENT_ID=jHM4ETk5wi2WUVPElpMFJtZqwY2oBKHVMmTsY9ry
+        - GENNIFER_CLIENT_SECRET=hY0XfS8YLGMojWuvUOPga4sJpEO9isltF7Xk7wXjyFHwWmxkifRXcPbnmhUM0oVO4Zlz349jbtBePIlaafkWubReqEBCoIcCzaZLa2a9pIlq55yow2TBvMDHnImrXvig
+        - GENNIFER_USER_DETAILS_URL=https://chp.thayer.dartmouth.edu/users/me/
+        - GENNIFER_BASE_URL=https://chp.thayer.dartmouth.edu/gennifer/api/
+        - NEXT_PUBLIC_GENNIFER_BASE_URL=https://chp.thayer.dartmouth.edu/gennifer/api/
   
   pidc:
     build: 
@@ -128,6 +144,44 @@ services:
         - grnboost2
         - redis
 
+  bkb-grn:
+    build:
+        context: ./gennifer/bkb-grn
+        dockerfile: Dockerfile
+    restart: always
+    user: gennifer_user
+    ports:
+        - 5008:5000
+    secrets:
+        - gennifer_key
+    environment:
+        - PYTHONUNBUFFERED=1
+        - SECRET_KEY_FILE=/run/secrets/gennifer_key
+        - CELERY_BROKER_URL=redis://redis:6379/0
+        - CELERY_RESULT_BACKEND=redis://redis:6379/0
+          #command: gunicorn -c gunicorn.config.py -b 0.0.0.0:5000 'grnboost2:create_app()'
+    command: flask --app bkb_grn run --debug --host 0.0.0.0
+    depends_on:
+        - redis
+
+  worker-bkb-grn:
+    build:
+        context: ./gennifer/bkb-grn
+        dockerfile: Dockerfile
+    secrets:
+        - gurobi_lic
+    command: celery --app bkb_grn.tasks.celery worker -Q bkb_grn --loglevel=info
+    environment:
+        - PYTHONUNBUFFERED=1
+        - CELERY_BROKER_URL=redis://redis:6379/0
+        - CELERY_RESULT_BACKEND=redis://redis:6379/0
+        - GRB_LICENSE_FILE=/run/secrets/gurobi_lic
+    depends_on:
+        - bkb-grn
+        - redis
+
 secrets:
   gennifer_key:
     file: secrets/gennifer/secret_key.txt
+  gurobi_lic:
+    file: secrets/gennifer/gurobi.lic

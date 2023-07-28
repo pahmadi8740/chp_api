@@ -11,8 +11,8 @@ services:
       - DJANGO_SERVER_ADDR=api:8000
       - STATIC_SERVER_ADDR=static-fs:8080
       - FLOWER_DASHBOARD_ADDR=dashboard:5556
-        #- NEXTJS_SERVER_ADDR=chatgpt:3000
-      - NEXTJS_SERVER_ADDR=api:8000
+      - NEXTJS_SERVER_ADDR=frontend:3000
+        #- NEXTJS_SERVER_ADDR=api:8000
     ports:
       - "80:80"
     depends_on:
