@@ -7,6 +7,7 @@ from bmt import Toolkit
 from .base import Dispatcher
 from .models import Transaction, DispatcherSetting
 from .serializers import TransactionListSerializer, TransactionDetailSerializer
+from .permissions import CustomQueryPostPermission
 
 from django.http import HttpResponse, JsonResponse
 from django.shortcuts import get_object_or_404
@@ -19,6 +20,7 @@ from rest_framework import generics
 TOOLKIT = Toolkit()
 
 class query(APIView):
+    permission_classes = [CustomQueryPostPermission]
     
     def post(self, request):
         # Get current trapi and biolink versions

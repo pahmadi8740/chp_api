@@ -79,13 +79,14 @@ services:
       retries: 3
     volumes:
       - static-files:/home/chp_api/staticfiles
-        #command: gunicorn -c gunicorn.config.py -b 0.0.0.0:8000 chp_api.wsgi:application
-    command: python3 manage.py runserver 0.0.0.0:8000
+    command: gunicorn -c gunicorn.config.py -b 0.0.0.0:8000 chp_api.wsgi:application
+    #command: python3 manage.py runserver 0.0.0.0:8000
   
   worker-api:
     build: 
         context: ./chp_api
         dockerfile: Dockerfile
+    restart: always
     secrets:
       - db-password
       - django-key
@@ -125,6 +126,7 @@ services:
     build: 
         context: ./chp_api
         dockerfile: Dockerfile
+    restart: always
     secrets:
       - db-password
       - django-key
@@ -164,6 +166,7 @@ services:
         - worker-api
 
   redis:
+    restart: always
     image: redis:6-alpine
   
   db:
@@ -189,6 +192,7 @@ services:
 
   static-fs:
       image: halverneus/static-file-server:latest
+      restart: always
       environment:
           - FOLDER=/var/www
           - DEBUG=true

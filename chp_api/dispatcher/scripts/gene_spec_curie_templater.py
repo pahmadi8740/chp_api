@@ -37,13 +37,13 @@ def _get_ascendants(curies, category):
                 "query_graph": query_graph,
             }
         }
-        url = 'https://ontology-kp.apps.renci.org/query'
+        url = 'https://automat.renci.org/ubergraph/1.4/query/'
         r = requests.post(url, json=query, timeout=1000)
         answer = json.loads(r.content)
-        for edge_id, edge in answer['message']['knowledge_graph']['edges'].items():
-            subject = edge['subject']
-            object = edge['object']
-            mapping[object].add(subject)
+        for result in answer['message']['results']:
+            child = result['node_bindings']['n1'][0]['id']
+            parent = result['node_bindings']['n0'][0]['id']
+            mapping[parent].add(child)
     return dict(mapping)
 
 

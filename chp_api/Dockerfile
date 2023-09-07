@@ -48,6 +48,8 @@ ARG DEBIAN_FRONTEND=noninterative
 # copy repo to new image
 COPY --from=intermediate /usr/src/chp_api/wheels /wheels
 COPY --from=intermediate /usr/src/chp_api/requirements.txt .
+# Running this command to ensure version 1 of pydantic is being used until reasoner-pydantic is updated. 
+RUN pip3 install pydantic==1.10.12
 RUN pip3 install --no-cache /wheels/*
 
 # copy project

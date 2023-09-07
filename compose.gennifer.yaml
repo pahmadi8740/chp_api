@@ -5,6 +5,7 @@ services:
     build:
         context: ./gennifer/frontend
         dockerfile: Dockerfile
+    restart: always
     ports:
       - 3000:3000
     environment:
@@ -32,8 +33,8 @@ services:
         - SECRET_KEY_FILE=/run/secrets/gennifer_key
         - CELERY_BROKER_URL=redis://redis:6379/0
         - CELERY_RESULT_BACKEND=redis://redis:6379/0
-          #command: gunicorn -c gunicorn.config.py -b 0.0.0.0:5000 'pidc:create_app()'
-    command: flask --app pidc run --debug --host 0.0.0.0
+    command: gunicorn -c gunicorn.config.py -b 0.0.0.0:5000 'pidc:create_app()'
+    #command: flask --app pidc run --debug --host 0.0.0.0
     depends_on:
         - redis
  
@@ -41,6 +42,7 @@ services:
     build: 
         context: ./gennifer/pidc
         dockerfile: Dockerfile
+    restart: always
     command: celery --app pidc.tasks.celery worker -Q pidc --loglevel=info
     environment:
         - CELERY_BROKER_URL=redis://redis:6379/0
@@ -64,8 +66,8 @@ services:
         - CELERY_BROKER_URL=redis://redis:6379/0
         - CELERY_RESULT_BACKEND=redis://redis:6379/0
         - PYTHONUNBUFFERED=1
-          #command: gunicorn -c gunicorn.config.py -b 0.0.0.0:5000 'pidc:create_app()'
-    command: flask --app grisli run --debug --host 0.0.0.0
+    command: gunicorn -c gunicorn.config.py -b 0.0.0.0:5000 'grisli:create_app()'
+    #command: flask --app grisli run --debug --host 0.0.0.0
     depends_on:
         - redis
 
@@ -73,6 +75,7 @@ services:
     build: 
         context: ./gennifer/grisli
         dockerfile: Dockerfile
+    restart: always
     command: celery --app grisli.tasks.celery worker -Q grisli --loglevel=info
     environment:
         - CELERY_BROKER_URL=redis://redis:6379/0
@@ -96,8 +99,8 @@ services:
         - SECRET_KEY_FILE=/run/secrets/gennifer_key
         - CELERY_BROKER_URL=redis://redis:6379/0
         - CELERY_RESULT_BACKEND=redis://redis:6379/0
-          #command: gunicorn -c gunicorn.config.py -b 0.0.0.0:5000 'genie3:create_app()'
-    command: flask --app genie3 run --debug --host 0.0.0.0
+    command: gunicorn -c gunicorn.config.py -b 0.0.0.0:5000 'genie3:create_app()'
+    #command: flask --app genie3 run --debug --host 0.0.0.0
     depends_on:
         - redis
 
@@ -105,6 +108,7 @@ services:
     build:
         context: ./gennifer/genie3
         dockerfile: Dockerfile
+    restart: always
     command: celery --app genie3.tasks.celery worker -Q genie3 --loglevel=info
     environment:
         - CELERY_BROKER_URL=redis://redis:6379/0
@@ -127,8 +131,8 @@ services:
         - SECRET_KEY_FILE=/run/secrets/gennifer_key
         - CELERY_BROKER_URL=redis://redis:6379/0
         - CELERY_RESULT_BACKEND=redis://redis:6379/0
-          #command: gunicorn -c gunicorn.config.py -b 0.0.0.0:5000 'grnboost2:create_app()'
-    command: flask --app grnboost2 run --debug --host 0.0.0.0
+    command: gunicorn -c gunicorn.config.py -b 0.0.0.0:5000 'grnboost2:create_app()'
+    #command: flask --app grnboost2 run --debug --host 0.0.0.0
     depends_on:
         - redis
 
@@ -136,6 +140,7 @@ services:
     build:
         context: ./gennifer/grnboost2
         dockerfile: Dockerfile
+    restart: always
     command: celery --app grnboost2.tasks.celery worker -Q grnboost2 --loglevel=info
     environment:
         - CELERY_BROKER_URL=redis://redis:6379/0
@@ -159,8 +164,8 @@ services:
         - SECRET_KEY_FILE=/run/secrets/gennifer_key
         - CELERY_BROKER_URL=redis://redis:6379/0
         - CELERY_RESULT_BACKEND=redis://redis:6379/0
-          #command: gunicorn -c gunicorn.config.py -b 0.0.0.0:5000 'grnboost2:create_app()'
-    command: flask --app bkb_grn run --debug --host 0.0.0.0
+    command: gunicorn -c gunicorn.config.py -b 0.0.0.0:5000 'bkb_grn:create_app()'
+    #command: flask --app bkb_grn run --debug --host 0.0.0.0
     depends_on:
         - redis
 
@@ -168,6 +173,7 @@ services:
     build:
         context: ./gennifer/bkb-grn
         dockerfile: Dockerfile
+    restart: always
     secrets:
         - gurobi_lic
     command: celery --app bkb_grn.tasks.celery worker -Q bkb_grn --loglevel=info
