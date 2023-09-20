@@ -18,7 +18,7 @@ fullnameOverride: ""
 
 # django applicaiton configuration
 app:
-  debug: "1"
+  debug: "0"
   secret_key: ""
   djangoCSRFTrustedOrigins: ""
   djangoAllowedHosts: ""
