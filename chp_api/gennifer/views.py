@@ -1,5 +1,7 @@
 import requests
 
+from collections import defaultdict
+
 from django.http import HttpResponse, JsonResponse
 from django.shortcuts import get_object_or_404
 from django.core.exceptions import ObjectDoesNotExist
@@ -23,7 +25,7 @@ from .models import (
         UserAnalysisSession,
         AlgorithmInstance,
         Hyperparameter,
-        HyperparameterInstance
+        HyperparameterInstance,
         )
 from .serializers import (
         DatasetSerializer,
@@ -173,11 +175,40 @@ class CytoscapeHandler:
                 }
         return node, str(gene_obj.pk)
     
+    def construct_edge_annotations(self, annotations):
+        obj = {"openai": {"justification": None}, "translator": []}
+        tr_dict = defaultdict(list)
+        for a in annotations:
+            if a.type == 'openai':
+                obj["openai"]["justification"] = a.oai_justification
+                continue
+            if a.type == 'translator':
+                tr_dict[a.tr_formatted_relation_string].append(
+                    {
+                        "predicate": a.tr_predicate,
+                        "qualified_predicate": a.tr_qualified_predicate,
+                        "object_modifier": a.tr_object_modifier,
+                        "object_aspect": a.tr_object_aspect,
+                        "resource_id": a.tr_resource_id,
+                        "primary_source": a.tr_primary_source,
+                    }
+                )
+        # Reformat to list
+        for relation, tr_results in tr_dict.items():
+            obj["translator"].append(
+                {
+                    "formatted_relation": relation,
+                    "results": tr_results
+                }
+            )
+        return obj
+    
     def construct_edge(self, res, source_id, target_id):
         # Normalize edge weight based on the study
         normalized_weight = (res.edge_weight - res.task.min_task_edge_weight) / (res.task.max_task_edge_weight - res.task.min_task_edge_weight)
         directed = res.task.algorithm_instance.algorithm.directed
         edge_tuple = tuple(sorted([source_id, target_id]))
+        annotations = res.annotations.all()
         edge = {
                 "data": {
                     "id": str(res.pk),
@@ -187,6 +218,7 @@ class CytoscapeHandler:
                     "weight": normalized_weight,
                     "algorithm": str(res.task.algorithm_instance),
                     "directed": directed,
+                    "annotations": self.construct_edge_annotations(annotations),
                     }
                 }
         return edge, edge_tuple, directed
@@ -228,8 +260,8 @@ class CytoscapeHandler:
                     processed_node_ids,
                     processed_undirected_edges,
                     )
-            elements.extend(nodes)
-            elements.extend(edges)
+        elements.extend(nodes)
+        elements.extend(edges)
         return {
                 "elements": elements
                 }

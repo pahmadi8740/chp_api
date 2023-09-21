@@ -185,9 +185,47 @@ services:
     depends_on:
         - bkb-grn
         - redis
+  
+  annotator:
+    build:
+        context: ./gennifer/annotator
+        dockerfile: Dockerfile
+    restart: always
+    user: gennifer_user
+    ports:
+        - 5009:5000
+    secrets:
+        - gennifer_key
+        - openai_api_key
+    environment:
+        - SECRET_KEY_FILE=/run/secrets/gennifer_key
+        - CELERY_BROKER_URL=redis://redis:6379/0
+        - CELERY_RESULT_BACKEND=redis://redis:6379/0
+        - OPENAI_API_KEY_FILE=/run/secrets/openai_api_key
+    command: gunicorn -c gunicorn.config.py -b 0.0.0.0:5000 'annotator:create_app()'
+    #command: flask --app annotator run --debug --host 0.0.0.0
+    depends_on:
+        - redis
+
+  worker-annotator:
+    build:
+        context: ./gennifer/annotator
+        dockerfile: Dockerfile
+    command: celery --app annotator.tasks.celery worker -Q annotation --loglevel=info
+    secrets:
+        - openai_api_key
+    environment:
+        - CELERY_BROKER_URL=redis://redis:6379/0
+        - CELERY_RESULT_BACKEND=redis://redis:6379/0
+        - OPENAI_API_KEY_FILE=/run/secrets/openai_api_key
+    depends_on:
+        - annotator
+        - redis
 
 secrets:
   gennifer_key:
     file: secrets/gennifer/secret_key.txt
   gurobi_lic:
     file: secrets/gennifer/gurobi.lic
+  openai_api_key:
+    file: secrets/gennifer/openai_api_key.txt

@@ -17,3 +17,5 @@ redis
 pandas
 django-cors-headers
 django-oauth-toolkit
+nltk
+pattern

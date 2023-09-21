@@ -12,6 +12,7 @@ from .models import (
         AlgorithmInstance,
         Hyperparameter,
         HyperparameterInstance,
+        Annotation,
         )
 
 
@@ -149,3 +150,19 @@ class GeneSerializer(serializers.ModelSerializer):
                 'variant',
                 'chp_preferred_curie',
                 ]
+        
+class AnnotationSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Annotation
+        fields = [
+            'type',
+            'timestamp',
+            'tr_formatted_relation_string',
+            'tr_predicate',
+            'tr_qualified_predicate',
+            'tr_object_modifier',
+            'tr_object_aspect',
+            'tr_resource_id',
+            'tr_primary_source',
+            'oai_justification',
+        ]

@@ -68,10 +68,9 @@ services:
         # Comment this for development
         #- DJANGO_SETTINGS_MODULE=mysite.settings.base
     depends_on:
-      db:
-        condition: service_healthy
-    depends_on:
-        - static-fs
+      - static-fs
+      - db
+        #condition: service_healthy
     healthcheck:
         #test: ["CMD-SHELL", "curl --silent --fail localhost:8000/flask-health-check || exit 1"]
       interval: 10s

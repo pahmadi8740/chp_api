@@ -5,15 +5,19 @@ import requests
 
 from django.db import transaction
 from django.contrib.auth import get_user_model
+from django.db.models import Q
 from celery import shared_task
 from celery.utils.log import get_task_logger
 from copy import deepcopy
+from nltk.stem import WordNetLemmatizer
+from pattern.en import conjugate
 
-from .models import Dataset, Gene, Study, Task, Result, Algorithm, AlgorithmInstance
+from .models import Dataset, Gene, Study, Task, Result, Algorithm, AlgorithmInstance, Annotated, Annotation, Publication
 from dispatcher.models import DispatcherSetting
 
 logger = get_task_logger(__name__)
 User = get_user_model()
+wnl = WordNetLemmatizer()
 
 def normalize_nodes(curies):
     dispatcher_settings = DispatcherSetting.load()
@@ -102,23 +106,29 @@ def save_inference_task(task, status, failed=False):
             if created:
                 gene2_obj.save()
             # Construct and save Result
-            result = Result.objects.create(
+            result, created = Result.objects.get_or_create(
                     tf=gene1_obj,
                     target=gene2_obj,
                     edge_weight=row["EdgeWeight"],
                     task=task,
                     user=task.user,
                     )
-            result.save()
+            if created:
+                result.save()
     task.save()
+    # Collect all result PKs for this task
+    result_pks = [res.pk for res in task.results.all()]
+    # Send to annotation worker
+    create_annotations_task(result_pks, task.algorithm_instance.algorithm.directed)
     return True
 
-def get_status(algo, task_id):
+def get_status(algo, task_id, url=None):
+    if url:
+        return requests.get(f'{url}/status/{task_id}', headers={'Cache-Control': 'no-cache'}).json()
     return requests.get(f'{algo.url}/status/{task_id}', headers={'Cache-Control': 'no-cache'}).json()
 
-
 def return_saved_task(tasks, user):
-    task = studies[0]
+    task = tasks[0]
     # Copy task results
     results = deepcopy(task.results)
     # Create a new task that is a duplicate but assign to this user.
@@ -133,6 +143,129 @@ def return_saved_task(tasks, user):
         result.user = user
         result.save()
     return True
+
+def construct_annotation_request(results, directed):
+    data = []
+    for result in results:
+        data.append({
+            "source": {
+                "id": result.tf.curie,
+                "name": result.tf.name,
+            },
+            "target": {
+                "id": result.target.curie,
+                "name": result.target.name,
+            },
+            "result_pk": result.pk,
+            })
+    return {"data": data, "directed": directed}
+
+def make_tr_formatted_relation(
+        predicate,
+        qualified_predicate,
+        object_modifier,
+        object_aspect,
+        ):
+    formatted_str = predicate.replace('biolink:', '').replace('_', ' ')
+    if qualified_predicate:
+        qp = wnl.lemmatize(qualified_predicate.replace('biolink:', ''), 'v')
+        try:
+            qp = conjugate(qp, 'part')
+        except RuntimeError:
+            # This function fails the first time its run so just run again, see: https://github.com/clips/pattern/issues/295
+            qp = conjugate(qp, 'part')
+            pass
+        formatted_str += f' By {qp}'
+    if object_modifier:
+        om = object_modifier.replace('_', ' ')
+        formatted_str += f' {om}'
+    if object_aspect:
+        oa = object_aspect.replace('_', ' ')
+        formatted_str += f' {oa}'
+    return formatted_str.title()
+
+def save_annotation_task(status, failed=False):
+    if failed:
+        print('Annotation Failed')
+        return
+    annotations = status["task_result"]
+    for annotation in annotations:
+        result = Result.objects.get(pk=annotation["result_pk"])
+        if annotation["justification"]:
+            # Make OpenAI Annotation
+            oai_justification = Annotation.objects.create(
+                    type='openai',
+                    oai_justification=annotation["justification"]
+                    )
+            oai_annotated = Annotated.objects.create(
+                    result=result,
+                    annotation=oai_justification,
+                    )
+            oai_justification.save()
+            oai_annotated.save()
+        # Make translator annotations
+        for tr_result in annotation["results"]:
+            tr_annotation = Annotation.objects.create(
+                    type='translator',
+                    tr_formatted_relation_string=make_tr_formatted_relation(
+                        tr_result["predicate"],
+                        tr_result["qualified_predicate"],
+                        tr_result["object_modifier"],
+                        tr_result["object_aspect"],
+                    ),
+                    tr_predicate= tr_result["predicate"],
+                    tr_qualified_predicate=tr_result["qualified_predicate"],
+                    tr_object_modifier=tr_result["object_modifier"],
+                    tr_object_aspect=tr_result["object_aspect"],
+                    tr_resource_id=tr_result["resource_id"],
+                    tr_primary_source=tr_result["primary_source"],
+                    )
+            tr_annotation.save()
+            tr_annotated = Annotated.objects.create(
+                result=result,
+                annotation=tr_annotation,
+            )
+            tr_annotated.save()
+    print('Saved annotations.')
+    return
+
+@shared_task(name="create_annotations_task")
+def create_annotations_task(result_pks, directed):
+    results = Result.objects.filter(pk__in = result_pks)
+    results_to_be_annotated = []
+    # First go through results and ensure we haven't already made an annotation request
+    for result in results:
+        matched_annotations = [a.annotation for a in Annotated.objects.filter(
+            result__tf__curie=result.tf.curie,
+            result__target__curie=result.target.curie,
+            result__task__algorithm_instance__algorithm__directed=result.task.algorithm_instance.algorithm.directed
+            )]
+        if len(matched_annotations) == 0:
+            results_to_be_annotated.append(result)
+            continue
+        for ma in matched_annotations:
+            annotated = Annotated.objects.create(
+                    annotation = ma,
+                    result=result,
+                    )
+            annotated.save()
+    # Construct annotation service request
+    r = construct_annotation_request(results_to_be_annotated, directed)
+    # Send to annotation service and wait
+    annotate_id = requests.post('http://annotator:5000/run', json=r).json()["task_id"]
+    # Get initial status
+    status = get_status(None, annotate_id, url='http://annotator:5000')
+
+    # Enter a loop to keep checking back in and populate the task once it has completed.
+    #TODO: Not sure if this is best practice
+    while True:
+        # Check in every 10 seconds
+        time.sleep(10)
+        status = get_status(None, annotate_id, url='http://annotator:5000')
+        if status["task_status"] == 'SUCCESS':
+            return save_annotation_task(status)
+        if status["task_status"] == "FAILURE":
+            return save_annotation_task(status, failed=True)
 
 @shared_task(name="create_gennifer_task")
 def create_task(task_pk):

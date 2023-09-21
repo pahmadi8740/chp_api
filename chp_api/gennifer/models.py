@@ -89,6 +89,7 @@ class Dataset(models.Model):
     doi = models.CharField(max_length=128)
     description = models.TextField(null=True, blank=True)
     user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, null=True, blank=True)
+    public = models.BooleanField(default=False)
 
     def save(self, *args, **kwargs):
         import re
@@ -162,6 +163,37 @@ class Result(models.Model):
     task = models.ForeignKey(Task, on_delete=models.CASCADE, related_name='results')
     is_public = models.BooleanField(default=False)
     user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, null=True, blank=True, related_name='results')
+    annotations = models.ManyToManyField('Annotation', through='Annotated')
 
     def __str__(self):
         return f'{self.tf}:{self.tf.curie} -> regulates -> {self.target}:{self.target.curie}'
+
+class Annotation(models.Model):
+    # Type of annotation
+    TYPE_CHOICES = (
+            ('openai', "OpenAI"),
+            ('translator', "Translator"),
+            )
+    type = models.CharField(max_length=32, choices=TYPE_CHOICES, default='translator')
+    timestamp = models.DateTimeField(auto_now_add=True)
+    results = models.ManyToManyField('Result', through='Annotated')
+    # Translator fields
+    tr_formatted_relation_string = models.CharField(max_length=256, null=True, blank=True)
+    tr_predicate = models.CharField(max_length=128, null=True, blank=True)
+    tr_qualified_predicate = models.CharField(max_length=128, null=True, blank=True)
+    tr_object_modifier = models.CharField(max_length=128, null=True, blank=True)
+    tr_object_aspect = models.CharField(max_length=128, null=True, blank=True)
+    tr_resource_id = models.CharField(max_length=128, null=True, blank=True)
+    tr_primary_source = models.CharField(max_length=128, null=True, blank=True)
+    # OpenAI fields
+    oai_justification = models.TextField(null=True, blank=True)
+
+
+class Publication(models.Model):
+    curie = models.CharField(max_length=128)
+    annotation = models.ForeignKey(Annotation, on_delete=models.CASCADE, related_name='publications')  
+    
+class Annotated(models.Model):
+    result = models.ForeignKey(Result, on_delete=models.CASCADE)
+    annotation = models.ForeignKey(Annotation, on_delete=models.CASCADE)
+
