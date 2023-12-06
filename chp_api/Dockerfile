@@ -8,7 +8,7 @@ FROM python:3.8 as intermediate
 # set work directory
 WORKDIR /usr/src/chp_api
 
-RUN git clone --single-branch --branch gene_spec_pydantic-ghyde https://github.com/di2ag/gene-specificity.git
+RUN git clone --single-branch --branch master https://github.com/di2ag/gene-specificity.git
 
 # Upgrade pip
 RUN pip3 install --upgrade pip
