@@ -2,7 +2,7 @@ import tqdm
 import json
 import requests
 from collections import defaultdict
-from gene_specificity.models import CurieTemplate, CurieTemplateMatch, SpecificityMeanGene, SpecificityMeanTissue
+from gene_specificity.models import CurieTemplate, CurieTemplateMatch GeneToTissue, TissueToGene
 
 CHUNK_SIZE = 500
 
@@ -48,12 +48,14 @@ def _get_ascendants(curies, category):
 
 
 def run():
-    objects = SpecificityMeanGene.objects.all()
+    gene_objects = GeneToTissue.objects.all()
+    tissue_objects = TissueToGene.objects.all()
     gene_curies = set()
+    for gene_object in gene_objects:
+        gene_curies.add(gene_object.gene_id)
     tissue_curies = set()
-    for object in objects:
-        gene_curies.add(object.gene_curie)
-        tissue_curies.add(object.tissue_curie)
+    for tissue_object in tissue_objects:
+        tissue_curies.add(tissue_object.tissue_id)
     gene_ascendants = _get_ascendants(list(gene_curies), 'biolink:Gene')
     tissue_ascendants = _get_ascendants(list(tissue_curies), 'biolink:GrossAnatomicalStructure')
 
