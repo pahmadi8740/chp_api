@@ -18,7 +18,6 @@ def run():
             norm_spec_val = data_obj['norm_spec']
             p_val = data_obj['p_val']
             if p_val > p_val_thresh:
-                x = input()
                 break
             gtt = GeneToTissue(gene_id = gene_id, tissue_id = tissue_id, spec = spec_val, norm_spec = norm_spec_val, p_val = p_val)
             gtt.save()
@@ -32,12 +31,11 @@ def run():
         for gene_id, data_obj in gene_dict.items():
              if i == max_count:
                 break
-            spec_val = data_obj['spec']
-            norm_spec_val = data_obj['norm_spec']
-            p_val = data_obj['p_val']
-            if p_val > p_val_thresh:
-                x = input()
-                break
-            ttg = TissueToGene(tissue_id = tissue_id, gene_id = gene_id, spec = spec_val, norm_spec = norm_spec_val, p_val = p_val)
-            ttg.save()
-            i += 1
+             spec_val = data_obj['spec']
+             norm_spec_val = data_obj['norm_spec']
+             p_val = data_obj['p_val']
+             if p_val > p_val_thresh:
+                 break
+             ttg = TissueToGene(tissue_id = tissue_id, gene_id = gene_id, spec = spec_val, norm_spec = norm_spec_val, p_val = p_val)
+             ttg.save()
+             i += 1

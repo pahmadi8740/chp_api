@@ -2,7 +2,7 @@ import tqdm
 import json
 import requests
 from collections import defaultdict
-from gene_specificity.models import CurieTemplate, CurieTemplateMatch GeneToTissue, TissueToGene
+from gene_specificity.models import CurieTemplate, CurieTemplateMatch, GeneToTissue, TissueToGene
 
 CHUNK_SIZE = 500
 
