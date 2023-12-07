@@ -2,7 +2,7 @@ import tqdm
 import json
 import requests
 from collections import defaultdict
-from gene_specificity.models import CurieTemplate, CurieTemplateMatch, SpecificityMeanGene, SpecificityMeanTissue
+from gene_specificity.models import CurieTemplate, CurieTemplateMatch, GeneToTissue, TissueToGene
 
 CHUNK_SIZE = 500
 
@@ -37,23 +37,25 @@ def _get_ascendants(curies, category):
                 "query_graph": query_graph,
             }
         }
-        url = 'https://automat.renci.org/ubergraph/1.4/query/'
+        url = 'https://ontology-kp.apps.renci.org/query'
         r = requests.post(url, json=query, timeout=1000)
         answer = json.loads(r.content)
-        for result in answer['message']['results']:
-            child = result['node_bindings']['n1'][0]['id']
-            parent = result['node_bindings']['n0'][0]['id']
-            mapping[parent].add(child)
+        for edge_id, edge in answer['message']['knowledge_graph']['edges'].items():
+            subject = edge['subject']
+            object = edge['object']
+            mapping[object].add(subject)
     return dict(mapping)
 
 
 def run():
-    objects = SpecificityMeanGene.objects.all()
+    gene_objects = GeneToTissue.objects.all()
+    tissue_objects = TissueToGene.objects.all()
     gene_curies = set()
+    for gene_object in gene_objects:
+        gene_curies.add(gene_object.gene_id)
     tissue_curies = set()
-    for object in objects:
-        gene_curies.add(object.gene_curie)
-        tissue_curies.add(object.tissue_curie)
+    for tissue_object in tissue_objects:
+        tissue_curies.add(tissue_object.tissue_id)
     gene_ascendants = _get_ascendants(list(gene_curies), 'biolink:Gene')
     tissue_ascendants = _get_ascendants(list(tissue_curies), 'biolink:GrossAnatomicalStructure')
 
