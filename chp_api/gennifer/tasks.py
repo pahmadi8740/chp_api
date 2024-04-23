@@ -348,6 +348,7 @@ def create_task(task_pk):
         # Check in every 2 seconds
         time.sleep(5)
         status = get_status(algo, task_id)
+        print(status)
         if status["task_status"] == 'SUCCESS':
             return save_inference_task(task, status)
         if status["task_status"] == "FAILURE":

@@ -28,6 +28,10 @@ app:
   djangoSuperuserEmail: "chp_admin@chp.com"
   staticfsFolder: "/var/www"
   staticfsDebug: "0"
+  OtelPythonLoggingAutoInstrumentationEnabled: "true"
+  OtelTracesExporter: "jaeger"
+  OtelExporterJaegerAgentHost: "jaeger-otel-agent.sri"
+  OtelExporterJaegerAgentPort: "6831"
 
 # database connection information
 db: 

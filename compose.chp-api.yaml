@@ -66,7 +66,12 @@ services:
         # Uncomment this for production
         #- DJANGO_SETTINGS_MODULE=mysite.settings.production
         # Comment this for development
-        #- DJANGO_SETTINGS_MODULE=mysite.settings.base
+      - DJANGO_SETTINGS_MODULE=chp_api.settings
+        # For Open Telemetry
+      - OTEL_PYTHON_LOGGING_AUTO_INSTRUMENTATION_ENABLED=true
+      - OTEL_TRACES_EXPORTER=jaeger
+      - OTEL_EXPORTER_JAEGER_AGENT_HOST=jaeger-otel-agent.sri
+      - OTEL_EXPORTER_JAEGER_AGENT_PORT=6831
     depends_on:
       - static-fs
       - db
@@ -78,7 +83,10 @@ services:
       retries: 3
     volumes:
       - static-files:/home/chp_api/staticfiles
-    command: gunicorn -c gunicorn.config.py -b 0.0.0.0:8000 chp_api.wsgi:application
+    #command: uwsgi --http :8000 --max-requests=200 --master --pidfile=/tmp/project-master.pid --logto /tmp/mylog.log --module chp_api.wsgi:application
+    #command: opentelemetry-instrument --traces_exporter console --metrics_exporter console uwsgi --http :8000 --max-requests=200 --master --pidfile=/tmp/project-master.pid  --module chp_api.wsgi:application
+    command: opentelemetry-instrument --traces_exporter jaeger --metrics_exporter console uwsgi --http :8000 --max-requests=200 --master --pidfile=/tmp/project-master.pid --module chp_api.wsgi:application
+    #command: gunicorn -c gunicorn.config.py -b 0.0.0.0:8000 chp_api.wsgi:application
     #command: python3 manage.py runserver 0.0.0.0:8000
   
   worker-api:
