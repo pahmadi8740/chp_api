@@ -13,6 +13,9 @@ RUN git clone --single-branch --branch master https://github.com/di2ag/gene-spec
 # Upgrade pip
 RUN pip3 install --upgrade pip
 
+# Upgrade pip
+RUN pip3 install --upgrade pip
+
 # install dependencies
 COPY ./requirements.txt .
 RUN pip3 wheel --no-cache-dir --no-deps --wheel-dir /usr/src/chp_api/wheels -r requirements.txt
@@ -48,7 +51,7 @@ ARG DEBIAN_FRONTEND=noninterative
 # copy repo to new image
 COPY --from=intermediate /usr/src/chp_api/wheels /wheels
 COPY --from=intermediate /usr/src/chp_api/requirements.txt .
-# Running this command to ensure version 1 of pydantic is being used until reasoner-pydantic is updated. 
+# Running this command to ensure version 1 of pydantic is being used until reasoner-pydantic is updated.
 RUN pip3 install pydantic==1.10.12
 RUN pip3 install --no-cache /wheels/*
 

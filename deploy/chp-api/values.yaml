@@ -80,7 +80,7 @@ ingress:
      
 tolerations: 
   - key: "transltr"
-    value: "chp-api"
+    value: "managed-app"
     operator: "Equal"
     effect: "NoSchedule"
 
@@ -93,9 +93,9 @@ affinity:
           - key: app
             operator: In
             values:
-            - chp-api
+            - managed-app
         topologyKey: "kubernetes.io/hostname"
-  # this ensures pod only runs on node with label application=chp-api
+  # this ensures pod only runs on node with label application=managed-app
   nodeAffinity:
     requiredDuringSchedulingIgnoredDuringExecution:
       nodeSelectorTerms:
@@ -103,4 +103,4 @@ affinity:
           - key: application
             operator: In
             values:
-            - chp-api
+            - managed-app

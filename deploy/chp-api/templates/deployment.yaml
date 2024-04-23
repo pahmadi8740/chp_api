@@ -21,6 +21,10 @@ spec:
         {{- toYaml .Values.podSecurityContext | nindent 8 }}
       containers:
         - name: {{ .Chart.Name }}
+          {{- with .Values.chp_api.resources }}
+          resources:
+            {{- toYaml . | nindent 12 }}
+          {{- end }}
           securityContext:
             {{- toYaml .Values.securityContext | nindent 12 }}
           image: "{{ .Values.image.repository }}:{{ .Values.image.tag | default .Chart.AppVersion }}"
@@ -89,6 +93,10 @@ spec:
             - name: OTEL_EXPORTER_JAEGER_AGENT_PORT
               value: "{{ .Values.app.OtelExporterJaegerAgentPort }}"
         - name: {{ .Chart.Name }}-nginx
+          {{- with .Values.chp_api_nginx.resources }}
+          resources:
+            {{- toYaml . | nindent 12 }}
+          {{- end }}
           securityContext:
             {{- toYaml .Values.securityContextNginx | nindent 12 }}
           image: "{{ .Values.image.repository }}:{{ .Values.image.nginxTag | default .Chart.AppVersion }}"
@@ -102,6 +110,10 @@ spec:
               mountPath: /etc/nginx/conf.d/default.conf
               subPath: nginx.conf
         - name: {{ .Chart.Name }}-staticfs
+          {{- with .Values.chp_api_staticfs.resources }}
+          resources:
+            {{- toYaml . | nindent 12 }}
+          {{- end }}
           securityContext:
             {{- toYaml .Values.securityContextStaticfs | nindent 12 }}
           image: "{{ .Values.image.repository }}:{{ .Values.image.staticfsTag | default .Chart.AppVersion }}"
