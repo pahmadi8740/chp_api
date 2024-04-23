@@ -3,12 +3,15 @@
 ###########
 
 # first stage of build to pull repos
-FROM python:3.8 as intermediate
+FROM python:3.9 as intermediate
 
 # set work directory
 WORKDIR /usr/src/chp_api
 
-RUN git clone --single-branch --branch gene_spec_pydantic-ghyde https://github.com/di2ag/gene-specificity.git
+RUN git clone --single-branch --branch master https://github.com/di2ag/gene-specificity.git
+
+# Upgrade pip
+RUN pip3 install --upgrade pip
 
 # Upgrade pip
 RUN pip3 install --upgrade pip
@@ -25,7 +28,7 @@ RUN cd gene-specificity && python3 setup.py bdist_wheel && cd dist && cp gene_sp
 #########
 
 #pull official base image
-FROM python:3.8
+FROM python:3.9
 
 # add app user
 RUN groupadd chp_api && useradd -ms /bin/bash -g chp_api chp_api
@@ -53,10 +56,13 @@ RUN pip3 install pydantic==1.10.12
 RUN pip3 install --no-cache /wheels/*
 
 # copy project
-COPY ./chp_api/chp_api $APP_HOME/chp_api
-COPY ./chp_api/manage.py $APP_HOME
-COPY ./chp_api/dispatcher $APP_HOME/dispatcher
-COPY ./gunicorn.config.py $APP_HOME
+COPY . .
+#COPY ./chp_api $APP_HOME/chp_api
+#COPY ./manage.py $APP_HOME
+#COPY ./dispatcher $APP_HOME/dispatcher
+#COPY ./gennifer $APP_HOME/gennifer
+#COPY ./chp_db_fixture.json.gz $APP_HOME
+#COPY ./gunicorn.config.py $APP_HOME
 
 # chown all the files to the app user
 RUN chown -R chp_api:chp_api $APP_HOME \

@@ -30,7 +30,7 @@ spec:
           image: "{{ .Values.image.repository }}:{{ .Values.image.tag | default .Chart.AppVersion }}"
           imagePullPolicy: {{ .Values.image.pullPolicy }}
           command: ["/bin/sh"]
-          args: ["-c", "python3 manage.py collectstatic --noinput && gunicorn -c gunicorn.config.py --log-file=- --env DJANGO_SETTINGS_MODULE=chp_api.settings chp_api.wsgi:application --bind 0.0.0.0:8000"]
+          args: ["-c", "opentelemetry-instrument --traces_exporter jaeger --metrics_exporter console uwsgi --http :8000 --max-requests=200 --master --pidfile=/tmp/project-master.pid --module chp_api.wsgi:application"]
           ports:
             - name: http-app
               containerPort: 8000
@@ -84,6 +84,14 @@ spec:
               value: "{{ .Values.app.djangoSuperuserUsername }}"
             - name: DJANGO_SUPERUSER_EMAIL
               value: "{{ .Values.app.djangoSuperuserEmail }}"
+            - name: OTEL_PYTHON_LOGGING_AUTO_INSTRUMENTATION_ENABLED
+              value: "{{ .Values.app.OtelPythonLoggingAutoInstrumentationEnabled }}"
+            - name: OTEL_TRACES_EXPORTER
+              value: "{{ .Values.app.OtelTracesExporter }}"
+            - name: OTEL_EXPORTER_JAEGER_AGENT_HOST
+              value: "{{ .Values.app.OtelExporterJaegerAgentHost }}"
+            - name: OTEL_EXPORTER_JAEGER_AGENT_PORT
+              value: "{{ .Values.app.OtelExporterJaegerAgentPort }}"
         - name: {{ .Chart.Name }}-nginx
           {{- with .Values.chp_api_nginx.resources }}
           resources:

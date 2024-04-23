@@ -10,8 +10,10 @@ For the full list of settings and their values, see
 https://docs.djangoproject.com/en/3.0/ref/settings/
 """
 import os
-from importlib import import_module
 import environ as environ # type: ignore
+
+from importlib import import_module
+
 
 # Initialise environment variables
 env = environ.Env()
@@ -27,8 +29,32 @@ DATA_UPLOAD_MAX_MEMORY_SIZE = None
 REST_FRAMEWORK = {
     'DEFAULT_PARSER_CLASSES': [
         'rest_framework.parsers.JSONParser',
-    ]
+    ],
+    'DEFAULT_AUTHENTICATION_CLASSES': (
+        #'rest_framework_simplejwt.authentication.JWTAuthentication',
+        'oauth2_provider.contrib.rest_framework.OAuth2Authentication',
+        ),
+    'DEFAULT_PERMISSION_CLASSES': (
+        'rest_framework.permissions.IsAuthenticatedOrReadOnly',
+        )
 }
+
+AUTHENTICATION_BACKENDS = [
+    'oauth2_provider.backends.OAuth2Backend',
+    # Uncomment following if you want to access the admin
+    'django.contrib.auth.backends.ModelBackend',
+]
+
+OAUTH2_PROVIDER = {
+    # this is the list of available scopes
+    'SCOPES': {'read': 'Read scope', 'write': 'Write scope', 'groups': 'Access to your groups'}
+}
+
+# Cors stuff (must go before installed apps)
+CORS_ALLOWED_ORIGINS = [
+        'http://localhost',
+        'http://localhost:3000',
+        ]
 
 # Application definition
 INSTALLED_BASE_APPS = [
@@ -38,13 +64,20 @@ INSTALLED_BASE_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
+    'corsheaders',
     'rest_framework',
+    'rest_framework_simplejwt',
+    'django_filters',
     'dispatcher.apps.DispatcherConfig',
     'django_extensions',
+    'users',
+    'oauth2_provider',
+    #'gennifer', # Need to make into CHP app
 ]
 
 INSTALLED_CHP_APPS = [
     'gene_specificity',
+    'gennifer',
     ]
 
 # CHP Versions
@@ -54,6 +87,7 @@ VERSIONS = {app_name: app.__version__ for app_name, app in [(app_name, import_mo
 INSTALLED_APPS = INSTALLED_BASE_APPS + INSTALLED_CHP_APPS
 
 MIDDLEWARE = [
+    'corsheaders.middleware.CorsMiddleware',
     'django.middleware.security.SecurityMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
@@ -61,6 +95,8 @@ MIDDLEWARE = [
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
+    'django.contrib.auth.middleware.AuthenticationMiddleware',
+    'oauth2_provider.middleware.OAuth2TokenMiddleware',
 ]
 
 ROOT_URLCONF = 'chp_api.urls'
@@ -115,6 +151,10 @@ AUTH_PASSWORD_VALIDATORS = [
         'NAME': 'django.contrib.auth.password_validation.NumericPasswordValidator',
     },
 ]
+
+# Authorization
+AUTH_USER_MODEL='users.User'
+LOGIN_URL='/admin/login/'
 
 # Internationalization
 # https://docs.djangoproject.com/en/3.0/topics/i18n/
@@ -193,3 +233,21 @@ DJANGO_SUPERUSER_PASSWORD = env("DJANGO_SUPERUSER_PASSWORD", default=None)
 if not DJANGO_SUPERUSER_PASSWORD:
     with open(env("DJANGO_SUPERUSER_PASSWORD_FILE"), 'r') as dsp_file:
         os.environ["DJANGO_SUPERUSER_PASSWORD"] = dsp_file.readline().strip()
+
+# Simple JWT Settings
+SIMPLE_JWT = {
+        "TOKEN_OBTAIN_SERIALIZER": "chp_api.serializers.ChpTokenObtainPairSerializer",
+        }
+
+# Celery Settings
+CELERY_BROKER_URL = os.environ.get("CELERY_BROKER_URL", "redis://localhost:6379")
+CELERY_RESULT_BACKEND = os.environ.get("CELERY_RESULT_BACKEND", "redis://localhost:6379")
+
+# Gennifer settings
+GENNIFER_ALGORITHM_URLS = [
+        "http://pidc:5000",
+        "http://grisli:5000",
+        "http://genie3:5000",
+        "http://grnboost2:5000",
+        "http://bkb-grn:5000",
+        ]
